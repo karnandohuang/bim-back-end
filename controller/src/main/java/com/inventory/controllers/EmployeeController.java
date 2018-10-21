@@ -51,24 +51,28 @@ public class EmployeeController {
         return mapper.createJson(list);
     }
 
-    @RequestMapping(value = "api/employees/{id}", consumes = "application/json", produces = "application/json",
-            method = RequestMethod.GET)
-    public String EmployeeData(@PathVariable String id) throws IOException{
+    @RequestMapping(value = "api/employees/{id}", consumes = "application/json",
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            headers = "Accept=application/json", method = RequestMethod.GET)
+    public @ResponseBody
+    String EmployeeData(@PathVariable String id) throws IOException{
            EmployeeResponse response = employeeService.getEmployee(id);
-            return mapper.createJson(response.getValue());
+            return mapper.createJson(response);
     }
 
     @RequestMapping(value = "api/employees", consumes = "application/json", produces = "application/json",
             method = RequestMethod.POST)
-    public StandardResponse insertEmployee(@RequestBody EmployeeRequest request){
-
+    public @ResponseBody
+    String insertEmployee(@RequestBody EmployeeRequest request){
+        StandardResponse response;
         Employee employee = setEmployee(request);
 
             if( employeeService.saveEmployee(employee).equals(null)) {
-                return new StandardResponse("false", "save failed");
+                response = new StandardResponse("false", "save failed");
             } else{
-                return new StandardResponse("true", "");
+                response = new StandardResponse("true", "");
             }
+            return mapper.createJson(response);
     }
 
     private Employee setEmployee(@RequestBody EmployeeRequest request) {
@@ -86,19 +90,24 @@ public class EmployeeController {
 
     @RequestMapping(value = "api/employees", consumes = "application/json", produces = "application/json",
             method = RequestMethod.PUT)
-    public StandardResponse editEmployee(@RequestBody EmployeeRequest request){
+    public @ResponseBody
+    String editEmployee(@RequestBody EmployeeRequest request){
+        StandardResponse response;
         Employee employee = setEmployee(request);
         if( employeeService.saveEmployee(employee).equals(null)) {
-            return new StandardResponse("false", "save failed");
+            response =  new StandardResponse("false", "save failed");
         } else{
-            return new StandardResponse("true", "");
+            response =  new StandardResponse("true", "");
         }
+        return mapper.createJson(response);
     }
 
     @RequestMapping(value = "api/employees", produces = MediaType.APPLICATION_JSON_VALUE,
             method = RequestMethod.DELETE, headers = "Accept=application/json")
-    public DeleteResponse deleteEmployee(@RequestBody DeleteRequest request){
-            return employeeService.deleteEmployee(request.getIds());
+    public @ResponseBody
+    String deleteEmployee(@RequestBody DeleteRequest request){
+        DeleteResponse response = employeeService.deleteEmployee(request.getIds());
+            return mapper.createJson(response);
     }
 
 

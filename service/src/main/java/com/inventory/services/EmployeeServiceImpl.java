@@ -3,6 +3,7 @@ package com.inventory.services;
 import com.inventory.models.Employee;
 import com.inventory.models.Paging;
 import com.inventory.repositories.EmployeeRepository;
+import com.inventory.webmodels.requests.DeleteRequest;
 import com.inventory.webmodels.responses.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public EmployeeResponse getEmployee(String id) {
        EmployeeResponse response =  new EmployeeResponse();
-       response.setValue(employeeRepository.getOne(id));
+       response.setValue(employeeRepository.findById(id).get());
         return response;
     }
 
@@ -77,6 +78,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                 listOfResponse.add(new StandardResponse("false", "id " + id + " not found"));
             }
         }
-        return new DeleteResponse(listOfResponse);
+                DeleteResponse response = new DeleteResponse("success", "");
+                response.setValue(listOfResponse);
+                return response;
     }
 }
