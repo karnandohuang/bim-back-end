@@ -13,6 +13,8 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
+import static com.inventory.models.Constant.*;
+
 @Data
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
@@ -22,21 +24,23 @@ import java.util.Date;
 )
 public abstract class BaseEntity implements Serializable {
 
+    @Temporal(TemporalType.DATE)
     @DateTimeFormat(pattern = "dd-MM-yyyy")
-    @Column(name = "createddate")
+    @Column(name = COLUMN_NAME_CREATED_DATE, updatable = false)
     @CreatedDate
     protected Date createdDate;
 
+    @Temporal(TemporalType.DATE)
     @DateTimeFormat(pattern = "dd-MM-yyyy")
-    @Column(name = "updateddate")
+    @Column(name = COLUMN_NAME_UPDATED_DATE)
     @LastModifiedDate
     protected Date updatedDate;
 
     @CreatedBy
-    @Column(name = "createdby")
+    @Column(name = COLUMN_NAME_CREATED_BY, updatable = false)
     protected String createdBy;
 
     @LastModifiedBy
-    @Column(name = "updatedby")
+    @Column(name = COLUMN_NAME_UPDATED_BY)
     protected String updatedBy;
 }

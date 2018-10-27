@@ -1,13 +1,12 @@
 package com.inventory.webmodels.responses;
+
 import com.inventory.models.Employee;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.util.Optional;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 
-@Setter
-@Getter
+@Data
+@AllArgsConstructor
 public class EmployeeResponse {
 
     private Employee value;

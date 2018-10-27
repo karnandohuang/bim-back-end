@@ -1,18 +1,14 @@
 package com.inventory.webmodels.responses;
 
-import com.inventory.models.Employee;
 import com.inventory.models.Paging;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-import java.util.List;
-
-@Setter
-@Getter
+@Data
 public class BaseResponse<T> {
-    private String success;
+    private Boolean success;
     private String code;
     private T value;
     private Paging paging;
+    private String errorMessage;
 
 }

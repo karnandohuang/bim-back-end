@@ -2,7 +2,9 @@ package com.inventory.webmodels.requests;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class DeleteRequest {
-    private String[] ids;
+    private List<String> ids;
 }
