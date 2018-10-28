@@ -13,6 +13,7 @@ import java.sql.Statement;
 public class EmployeeIdGenerator implements IdentifierGenerator {
 
     private final String DEFAULT_SEQUENCE_NAME = "employee_sequence";
+
     @Override
     public Serializable generate(SharedSessionContractImplementor sharedSessionContractImplementor
             , Object o) throws HibernateException {
@@ -31,7 +32,7 @@ public class EmployeeIdGenerator implements IdentifierGenerator {
             try {
                 statement.executeUpdate("UPDATE " + DEFAULT_SEQUENCE_NAME + " SET next_val = (next_val+1)");
                 rs = statement.executeQuery("SELECT next_val FROM  " + DEFAULT_SEQUENCE_NAME);
-            }catch(Exception e){
+            } catch (Exception e) {
                 System.out.println("In catch, cause : Table is not available.");
                 statement.execute("CREATE table " + DEFAULT_SEQUENCE_NAME + "(sequence_id SERIAL NOT NULL," +
                         "next_val INT NOT NULL)");

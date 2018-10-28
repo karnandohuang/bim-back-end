@@ -35,7 +35,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         } catch (Exception e) {
             return null;
         }
-        if(encoder.matches(password, employee.getPassword()))
+        if (encoder.matches(password, employee.getPassword()))
             return employeeRepository.save(employee);
         else
             return null;

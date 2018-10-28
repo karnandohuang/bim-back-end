@@ -22,13 +22,11 @@ import static com.inventory.controllers.API_PATH.*;
 public class EmployeeController {
 
     @Autowired
+    DataMapper mapper;
+    @Autowired
     private EmployeeService employeeService;
 
-    @Autowired
-    DataMapper mapper;
-
-
-    @GetMapping(value = API_PATH_EMPLOYEES, produces =  MediaType.APPLICATION_JSON_VALUE,
+    @GetMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<ListOfEmployeeResponse> listOfEmployee() throws IOException {
         Paging paging = new Paging();

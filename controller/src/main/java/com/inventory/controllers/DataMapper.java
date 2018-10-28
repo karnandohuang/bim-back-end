@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class DataMapper {
 
-    public Employee mapEmployee(EmployeeRequest request){
+    public Employee mapEmployee(EmployeeRequest request) {
         Employee employee = new Employee();
         employee.setId(request.getId());
         employee.setName(request.getName());
@@ -24,7 +24,7 @@ public class DataMapper {
         return employee;
     }
 
-    public Request mapRequest(RequestHTTPRequest requestBody){
+    public Request mapRequest(RequestHTTPRequest requestBody) {
         Request request = new Request();
         request.setId(requestBody.getId());
         request.setEmployeeId(requestBody.getEmployeeId());
@@ -35,7 +35,8 @@ public class DataMapper {
         return request;
     }
 
-    public BaseResponse<String> getStandardBaseResponse(boolean success, String errorMessage){
+
+    public BaseResponse<String> getStandardBaseResponse(boolean success, String errorMessage) {
         BaseResponse<String> response = new BaseResponse<>();
         response.setCode(HttpStatus.OK.toString());
         response.setSuccess(success);
@@ -44,7 +45,7 @@ public class DataMapper {
         return response;
     }
 
-    public BaseResponse getBaseResponse(boolean success, String errorMessage){
+    public BaseResponse getBaseResponse(boolean success, String errorMessage) {
         BaseResponse response = new BaseResponse<>();
         response.setCode(HttpStatus.OK.toString());
         response.setSuccess(success);

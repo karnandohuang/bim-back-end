@@ -1,8 +1,5 @@
 package com.inventory.models;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Constant {
 
     public static final String EMPLOYEE_TABLE_NAME = "employees";

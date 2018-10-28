@@ -1,6 +1,5 @@
 package com.inventory.services;
 
-import com.inventory.models.BaseEntity;
 import org.springframework.data.domain.AuditorAware;
 
 import java.util.Optional;
