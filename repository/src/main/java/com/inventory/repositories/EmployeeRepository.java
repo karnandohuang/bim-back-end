@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, String> {
 
-    Employee findByEmailEqualsAndPasswordEquals(String email, String password);
+    Employee findByEmail(String email);
 }

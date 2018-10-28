@@ -47,8 +47,8 @@ public class EmployeeController {
     public BaseResponse<String> login(@RequestBody LoginRequest request) throws IOException {
         Paging paging = new Paging();
         Employee employee = employeeService.login(request.getEmail(), request.getPassword());
-        if (employee.equals(null))
-            return mapper.getStandardBaseResponse(false, "Employee not found");
+        if (employee == null)
+            return mapper.getStandardBaseResponse(false, "Email or Password is wrong!");
         return mapper.getStandardBaseResponse(true, "");
     }
 
@@ -76,7 +76,7 @@ public class EmployeeController {
     public BaseResponse<String> insertEmployee(@RequestBody EmployeeRequest request) {
         Employee employee = mapper.mapEmployee(request);
 
-        if (employeeService.saveEmployee(employee).equals(null)) {
+        if (employeeService.saveEmployee(employee) == (null)) {
             return mapper.getStandardBaseResponse(false, "save failed");
         } else {
             return mapper.getStandardBaseResponse(true, "");

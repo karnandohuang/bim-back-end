@@ -36,6 +36,7 @@
             <postgresql.version>9.4-1206-jdbc42</postgresql.version>
             <cglib.version>3.0</cglib.version>
             <orika.version>1.4.6</orika.version>
+            <springsecurity.version>5.0.8.RELEASE</springsecurity.version>
     </properties>
 
     <dependencyManagement>
@@ -121,6 +122,11 @@
                 <groupId>ma.glasnost.orika</groupId>
                 <artifactId>orika-core</artifactId>
                 <version>${orika.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-crypto</artifactId>
+                <version>${springsecurity.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

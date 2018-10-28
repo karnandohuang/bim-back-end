@@ -4,6 +4,7 @@ import com.inventory.models.Employee;
 import com.inventory.models.Paging;
 import com.inventory.repositories.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -16,6 +17,9 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Autowired
     private EmployeeRepository employeeRepository;
 
+    @Autowired
+    private PasswordEncoder encoder;
+
     @Override
     @Transactional
     public Employee getEmployee(String id) {
@@ -24,14 +28,17 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public Employee login(String email, String password) {
-        Employee employee = new Employee();
+        Employee employee;
         try {
-            employee = employeeRepository.findByEmailEqualsAndPasswordEquals(
-                    email, password);
+            employee = employeeRepository.findByEmail(
+                    email);
         } catch (Exception e) {
             return null;
         }
-        return employee;
+        if(encoder.matches(password, employee.getPassword()))
+            return employeeRepository.save(employee);
+        else
+            return null;
     }
 
 
@@ -57,6 +64,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional
     public Employee saveEmployee(Employee employee) {
+        employee.setPassword(encoder.encode(employee.getPassword()));
         return employeeRepository.save(employee);
     }
 
