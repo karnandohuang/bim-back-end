@@ -17,8 +17,8 @@ import java.util.List;
 
 import static com.inventory.controllers.API_PATH.*;
 
+@CrossOrigin
 @RestController
-@CrossOrigin(origins = "localhost")
 public class EmployeeController {
 
     @Autowired
@@ -31,12 +31,8 @@ public class EmployeeController {
     public BaseResponse<ListOfEmployeeResponse> listOfEmployee() throws IOException {
         Paging paging = new Paging();
         ListOfEmployeeResponse list = new ListOfEmployeeResponse(employeeService.getEmployeeList(paging));
-        BaseResponse<ListOfEmployeeResponse> response = new BaseResponse<>();
-        response.setCode(HttpStatus.OK.toString());
+        BaseResponse<ListOfEmployeeResponse> response = mapper.getBaseResponse(true, "");
         response.setValue(list);
-        response.setErrorMessage("");
-        response.setSuccess(true);
-        response.setPaging(paging);
         return response;
     }
 

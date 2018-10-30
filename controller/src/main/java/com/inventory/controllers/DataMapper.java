@@ -1,9 +1,9 @@
 package com.inventory.controllers;
 
 import com.inventory.models.Employee;
-import com.inventory.models.Request;
+import com.inventory.models.Item;
 import com.inventory.webmodels.requests.EmployeeRequest;
-import com.inventory.webmodels.requests.RequestHTTPRequest;
+import com.inventory.webmodels.requests.ItemRequest;
 import com.inventory.webmodels.responses.BaseResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class DataMapper {
 
-    public Employee mapEmployee(EmployeeRequest request) {
+    public Employee mapEmployee(EmployeeRequest request){
         Employee employee = new Employee();
         employee.setId(request.getId());
         employee.setName(request.getName());
@@ -24,19 +24,20 @@ public class DataMapper {
         return employee;
     }
 
-    public Request mapRequest(RequestHTTPRequest requestBody) {
-        Request request = new Request();
-        request.setId(requestBody.getId());
-        request.setEmployeeId(requestBody.getEmployeeId());
-        request.setItemId(requestBody.getItemId());
-        request.setQty(requestBody.getQty());
-        request.setStatus(requestBody.getStatus());
-        request.setNotes(requestBody.getNotes());
-        return request;
+    public Item mapItem(ItemRequest request){
+        Item item = new Item();
+        item.setId(request.getId());
+        item.setName(request.getName());
+        item.setSku(request.getSku());
+        item.setPrice(request.getPrice());
+        item.setLocation(request.getLocation());
+        item.setQty(request.getQty());
+        item.setImageUrl(request.getImageUrl());
+
+        return item;
     }
 
-
-    public BaseResponse<String> getStandardBaseResponse(boolean success, String errorMessage) {
+    public BaseResponse<String> getStandardBaseResponse(boolean success, String errorMessage){
         BaseResponse<String> response = new BaseResponse<>();
         response.setCode(HttpStatus.OK.toString());
         response.setSuccess(success);
@@ -45,7 +46,7 @@ public class DataMapper {
         return response;
     }
 
-    public BaseResponse getBaseResponse(boolean success, String errorMessage) {
+    public BaseResponse getBaseResponse(boolean success, String errorMessage){
         BaseResponse response = new BaseResponse<>();
         response.setCode(HttpStatus.OK.toString());
         response.setSuccess(success);
