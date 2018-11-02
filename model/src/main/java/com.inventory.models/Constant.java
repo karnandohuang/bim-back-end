@@ -4,6 +4,8 @@ public class Constant {
 
     public static final String EMPLOYEE_TABLE_NAME = "employees";
     public static final String REQUEST_TABLE_NAME = "requests";
+    public static final String ITEM_TABLE_NAME = "items";
+
     public static final String DATABASE_NAME = "inventory";
     public static final String SCHEMA_NAME = "public";
 
@@ -15,6 +17,14 @@ public class Constant {
     public static final String EMPLOYEE_COLUMN_NAME_DOB = "dob";
     public static final String EMPLOYEE_COLUMN_NAME_POSITION = "position";
     public static final String EMPLOYEE_COLUMN_NAME_DIVISION = "division";
+
+    public static final String ITEM_COLUMN_NAME_SKU = "sku";
+    public static final String ITEM_COLUMN_NAME_NAME = "name";
+    public static final String ITEM_COLUMN_NAME_PRICE = "price";
+    public static final String ITEM_COLUMN_NAME_QTY = "qty";
+    public static final String ITEM_COLUMN_NAME_LOCATION = "location";
+    public static final String ITEM_COLUMN_NAME_IMAGE_URL = "imageurl";
+
 
     public static final String REQUEST_COLUMN_NAME_EMPLOYEE_ID = "employeeId";
     public static final String REQUEST_COLUMN_NAME_ITEM_ID = "itemId";

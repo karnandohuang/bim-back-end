@@ -16,8 +16,8 @@ import java.util.List;
 
 import static com.inventory.controllers.API_PATH.*;
 
+@CrossOrigin
 @RestController
-@CrossOrigin(origins = "localhost")
 public class EmployeeController {
 
     @Autowired
