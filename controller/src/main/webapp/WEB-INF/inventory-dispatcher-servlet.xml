@@ -18,8 +18,8 @@ http://www.springframework.org/schema/mvc ">
         <property name="driverClassName" value="org.postgresql.Driver"/>
         <property name="url"
                   value="jdbc:postgresql://localhost:5432/inventory"/>
-        <property name="username" value="karnandohuang"/>
-        <property name="password" value=""/>
+        <property name="username" value="postgres"/>
+        <property name="password" value="power7500"/>
     </bean>
     <bean id="emf"
           class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">

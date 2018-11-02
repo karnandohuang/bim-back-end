@@ -2,8 +2,10 @@ package com.inventory.controllers;
 
 import com.inventory.models.Employee;
 import com.inventory.models.Item;
+import com.inventory.models.Request;
 import com.inventory.webmodels.requests.EmployeeRequest;
 import com.inventory.webmodels.requests.ItemRequest;
+import com.inventory.webmodels.requests.RequestHTTPRequest;
 import com.inventory.webmodels.responses.BaseResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -35,6 +37,17 @@ public class DataMapper {
         item.setImageUrl(request.getImageUrl());
 
         return item;
+    }
+
+    public Request mapRequest(RequestHTTPRequest requestBody){
+        Request request = new Request();
+        request.setId(requestBody.getId());
+        request.setEmployeeId(requestBody.getEmployeeId());
+        request.setItemId(requestBody.getItemId());
+        request.setQty(requestBody.getQty());
+        request.setNotes("");
+        request.setStatus("Pending");
+        return request;
     }
 
     public BaseResponse<String> getStandardBaseResponse(boolean success, String errorMessage){

@@ -36,7 +36,10 @@
             <postgresql.version>9.4-1206-jdbc42</postgresql.version>
             <cglib.version>3.0</cglib.version>
             <orika.version>1.4.6</orika.version>
-            <springsecurity.version>5.0.8.RELEASE</springsecurity.version>
+            <spring.security.version>5.0.8.RELEASE</spring.security.version>
+            <spring.session.version>1.2.2.RELEASE</spring.session.version>
+            <spring.redis.version>1.5.0.RELEASE</spring.redis.version>
+            <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
     </properties>
 
     <dependencyManagement>
@@ -126,7 +129,33 @@
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-crypto</artifactId>
-                <version>${springsecurity.version}</version>
+                <version>${spring.security.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-core</artifactId>
+                <version>${spring.security.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-config</artifactId>
+                <version>${spring.security.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.session</groupId>
+                <artifactId>spring-session</artifactId>
+                <version>${spring.session.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-redis</artifactId>
+                <version>${spring.redis.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>${javax.servlet.api.version}</version>
+                <scope>provided</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -25,7 +25,7 @@ public class ItemIdGenerator implements IdentifierGenerator {
 
 
         try {
-            connection = DriverManager.getConnection(DATABASE_URL, "karnandohuang", "");
+            connection = DriverManager.getConnection(DATABASE_URL, "postgres", "power7500");
             statement = connection.createStatement();
             try {
                 rs = statement.executeQuery("SELECT NEXTVAL('" + DEFAULT_SEQUENCE_NAME + "')");
@@ -44,7 +44,6 @@ public class ItemIdGenerator implements IdentifierGenerator {
                 System.out.println("Generated Id: " + result);
             }
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return result;
