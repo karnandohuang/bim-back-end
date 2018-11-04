@@ -65,24 +65,24 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional
     public List<Employee> getSuperiorList(String name, Paging paging) {
-        List<Employee> list = new ArrayList<>();
+        List<Employee> listOfSuperior = new ArrayList<>();
+        List<Employee> listOfSortedSuperior = new ArrayList<>();
         if(paging.getSortedType().matches("desc"))
-            list = employeeRepository.findAll(new Sort(Sort.Direction.DESC, paging.getSortedBy()));
+            listOfSuperior = employeeRepository.findAll(new Sort(Sort.Direction.DESC, paging.getSortedBy()));
         else
-            list = employeeRepository.findAll(new Sort(Sort.Direction.ASC, paging.getSortedBy()));
-        int totalRecords = list.size();
+            listOfSuperior = employeeRepository.findAll(new Sort(Sort.Direction.ASC, paging.getSortedBy()));
+        int totalRecords = listOfSuperior.size();
         paging.setTotalRecords(totalRecords);
         int offset = (paging.getPageSize() * (paging.getPageNumber()-1));
-        List<Employee> listOfSuperior = new ArrayList<>();
         for(int i = 0; i < paging.getPageSize(); i++){
-            if((offset + i) >= list.size() || i >= offset) {
+            if((offset + i) >= listOfSortedSuperior.size() || i >= offset) {
                 break;
             }
-            if (list.get((offset + i)).getSuperiorId().equals("null")) {
-                listOfSuperior.add(list.get((offset + i)));
+            if (listOfSortedSuperior.get((offset + i)).getSuperiorId().equals("null")) {
+                listOfSortedSuperior.add(listOfSortedSuperior.get((offset + i)));
             }
         }
-        return listOfSuperior;
+        return listOfSortedSuperior;
     }
 
 //    @Override

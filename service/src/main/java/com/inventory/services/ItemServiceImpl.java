@@ -4,6 +4,7 @@ import com.inventory.models.Item;
 import com.inventory.models.Paging;
 import com.inventory.repositories.ItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -27,14 +28,19 @@ public class ItemServiceImpl implements ItemService {
     public List<Item> getItemList(String name, Paging paging) {
         List<Item> listOfSortedItem = new ArrayList<>();
         List<Item> listOfItem = new ArrayList<>();
-        if(paging.getSortedType().matches("desc"))
-            listOfItem = itemRepository.findAllByNameIsContainingDesc(name, paging.getSortedBy());
-        else
-            listOfItem = itemRepository.findAllByNameIsContainingAsc(name, paging.getSortedBy());
-        long totalRecords = listOfItem.size();
-        long offset = ((totalRecords / paging.getPageSize()) * paging.getPageNumber());
-        for(long i = (offset+1); i < paging.getPageSize(); i++){
-            listOfSortedItem.add(listOfItem.get((int)i));
+        if(paging.getSortedType().matches("desc")) {
+            listOfItem = itemRepository.findAll(new Sort(Sort.Direction.DESC, paging.getSortedBy()));
+        }else {
+            listOfItem = itemRepository.findAll(new Sort(Sort.Direction.ASC, paging.getSortedBy()));
+        }
+        int totalRecords = listOfItem.size();
+        paging.setTotalRecords(totalRecords);
+        int offset = (paging.getPageSize() * (paging.getPageNumber()-1));
+        for(int i = 0; i < paging.getPageSize(); i++){
+            if((offset + i) >= totalRecords || i >= offset) {
+                break;
+            }
+            listOfSortedItem.add(listOfItem.get((offset + i)));
         }
         return listOfSortedItem;
     }

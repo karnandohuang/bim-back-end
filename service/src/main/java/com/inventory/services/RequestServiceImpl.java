@@ -4,6 +4,7 @@ import com.inventory.models.Paging;
 import com.inventory.models.Request;
 import com.inventory.repositories.RequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,14 +27,19 @@ public class RequestServiceImpl implements RequestService {
     public List<Request> getRequestList(Paging paging) {
         List<Request> listOfSortedRequest = new ArrayList<>();
         List<Request> listOfRequest = new ArrayList<>();
-        if(paging.getSortedType().matches("desc"))
-            listOfRequest = requestRepository.findAllByDesc(paging.getSortedBy());
-        else
-            listOfRequest = requestRepository.findAllByAsc(paging.getSortedBy());
-        long totalRecords = listOfRequest.size();
-        long offset = ((totalRecords / paging.getPageSize()) * paging.getPageNumber());
-        for(long i = (offset+1); i < paging.getPageSize(); i++){
-            listOfSortedRequest.add(listOfRequest.get((int)i));
+        if(paging.getSortedType().matches("desc")) {
+            listOfRequest = requestRepository.findAll(new Sort(Sort.Direction.DESC, paging.getSortedBy()));
+        }else {
+            listOfRequest = requestRepository.findAll(new Sort(Sort.Direction.ASC, paging.getSortedBy()));
+        }
+        int totalRecords = listOfRequest.size();
+        paging.setTotalRecords(totalRecords);
+        int offset = (paging.getPageSize() * (paging.getPageNumber()-1));
+        for(int i = 0; i < paging.getPageSize(); i++){
+            if((offset + i) >= totalRecords || i >= offset) {
+                break;
+            }
+            listOfSortedRequest.add(listOfRequest.get((offset + i)));
         }
         return listOfSortedRequest;
     }

@@ -32,7 +32,7 @@ public class ItemController {
 
     @PostMapping(value = API_PATH_ITEMS, produces = MediaType.APPLICATION_JSON_VALUE,
         consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<ListOfItemResponse> listOfItem(@RequestBody ListOfObjectRequest request) throws IOException{
+    public BaseResponse<ListOfItemResponse> items(@RequestBody ListOfObjectRequest request) throws IOException{
         Paging paging = mapper.getPaging(request);
         ListOfItemResponse list = new ListOfItemResponse(itemService.getItemList(request.getName(), paging));
         BaseResponse<ListOfItemResponse> response = mapper.getBaseResponse(true, "", paging);
@@ -51,7 +51,7 @@ public class ItemController {
 
     @RequestMapping(value = API_PATH_ITEMS, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE, method = {RequestMethod.POST, RequestMethod.PUT})
-    public BaseResponse<String> insertItem(@RequestBody ItemRequest request){
+    public BaseResponse<String> items(@RequestBody ItemRequest request){
         Item item = mapper.mapItem(request);
 
         if (itemService.saveItem(item) == null)

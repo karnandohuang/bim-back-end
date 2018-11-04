@@ -28,8 +28,6 @@ public class EmployeeController {
     public BaseResponse<ListOfEmployeeResponse> listOfEmployee
             (@RequestBody ListOfObjectRequest request) throws IOException {
         Paging paging = mapper.getPaging(request);
-        if(request.getName() == null)
-            request.setName("");
         ListOfEmployeeResponse list =
                 new ListOfEmployeeResponse(employeeService.getEmployeeList(request.getName(), paging));
         BaseResponse<ListOfEmployeeResponse> response = mapper.getBaseResponse(true, "", paging);
