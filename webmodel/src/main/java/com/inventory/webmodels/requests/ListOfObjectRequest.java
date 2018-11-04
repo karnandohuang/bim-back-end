@@ -10,6 +10,8 @@ public class ListOfObjectRequest {
 
     private int pageNumber;
     private int pageSize;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String sortedBy;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

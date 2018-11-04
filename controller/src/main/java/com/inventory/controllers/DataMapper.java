@@ -74,7 +74,10 @@ public class DataMapper {
         Paging paging = new Paging();
         paging.setPageNumber(request.getPageNumber());
         paging.setPageSize(request.getPageSize());
-        paging.setSortedBy(request.getSortedBy());
+        if (request.getSortedType() != null)
+            paging.setSortedBy(request.getSortedBy());
+        else
+            paging.setSortedBy("updateddate");
         if(request.getSortedType() != null)
             paging.setSortedType(request.getSortedType());
         else
