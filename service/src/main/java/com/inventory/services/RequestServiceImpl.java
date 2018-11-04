@@ -1,5 +1,6 @@
 package com.inventory.services;
 
+import com.inventory.models.Paging;
 import com.inventory.models.Request;
 import com.inventory.repositories.RequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +23,19 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     @Transactional
-    public List<Request> getRequestList() {
-        return requestRepository.findAll();
+    public List<Request> getRequestList(Paging paging) {
+        List<Request> listOfSortedRequest = new ArrayList<>();
+        List<Request> listOfRequest = new ArrayList<>();
+        if(paging.getSortedType().matches("desc"))
+            listOfRequest = requestRepository.findAllByDesc(paging.getSortedBy());
+        else
+            listOfRequest = requestRepository.findAllByAsc(paging.getSortedBy());
+        long totalRecords = listOfRequest.size();
+        long offset = ((totalRecords / paging.getPageSize()) * paging.getPageNumber());
+        for(long i = (offset+1); i < paging.getPageSize(); i++){
+            listOfSortedRequest.add(listOfRequest.get((int)i));
+        }
+        return listOfSortedRequest;
     }
 
     @Override

@@ -24,8 +24,19 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
-    public List<Item> getItemList(Paging paging) {
-        return itemRepository.findAll();
+    public List<Item> getItemList(String name, Paging paging) {
+        List<Item> listOfSortedItem = new ArrayList<>();
+        List<Item> listOfItem = new ArrayList<>();
+        if(paging.getSortedType().matches("desc"))
+            listOfItem = itemRepository.findAllByNameIsContainingDesc(name, paging.getSortedBy());
+        else
+            listOfItem = itemRepository.findAllByNameIsContainingAsc(name, paging.getSortedBy());
+        long totalRecords = listOfItem.size();
+        long offset = ((totalRecords / paging.getPageSize()) * paging.getPageNumber());
+        for(long i = (offset+1); i < paging.getPageSize(); i++){
+            listOfSortedItem.add(listOfItem.get((int)i));
+        }
+        return listOfSortedItem;
     }
 
     @Override

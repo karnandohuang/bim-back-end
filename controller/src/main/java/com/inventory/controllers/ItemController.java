@@ -5,6 +5,7 @@ import com.inventory.models.Paging;
 import com.inventory.services.ItemService;
 import com.inventory.webmodels.requests.DeleteRequest;
 import com.inventory.webmodels.requests.ItemRequest;
+import com.inventory.webmodels.requests.ListOfObjectRequest;
 import com.inventory.webmodels.responses.BaseResponse;
 import com.inventory.webmodels.responses.DeleteResponse;
 import com.inventory.webmodels.responses.ItemResponse;
@@ -29,17 +30,13 @@ public class ItemController {
     @Autowired
     DataMapper mapper;
 
-    @GetMapping(value = API_PATH_ITEMS, produces = MediaType.APPLICATION_JSON_VALUE,
+    @PostMapping(value = API_PATH_ITEMS, produces = MediaType.APPLICATION_JSON_VALUE,
         consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<ListOfItemResponse> listOfItem() throws IOException{
-        Paging paging = new Paging();
-        ListOfItemResponse list = new ListOfItemResponse(itemService.getItemList(paging));
-        BaseResponse<ListOfItemResponse> response = new BaseResponse<>();
-        response.setCode(HttpStatus.OK.toString());
+    public BaseResponse<ListOfItemResponse> listOfItem(@RequestBody ListOfObjectRequest request) throws IOException{
+        Paging paging = mapper.getPaging(request);
+        ListOfItemResponse list = new ListOfItemResponse(itemService.getItemList(request.getName(), paging));
+        BaseResponse<ListOfItemResponse> response = mapper.getBaseResponse(true, "", paging);
         response.setValue(list);
-        response.setErrorMessage("");
-        response.setSuccess(true);
-        response.setPaging(paging);
         return response;
     }
 
@@ -47,7 +44,7 @@ public class ItemController {
     produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<ItemResponse> ItemData(@PathVariable String id) throws IOException{
         ItemResponse itemResponse = new ItemResponse(itemService.getItem(id));
-        BaseResponse<ItemResponse> response = mapper.getBaseResponse(true, "");
+        BaseResponse<ItemResponse> response = mapper.getBaseResponse(true, "", new Paging());
         response.setValue(itemResponse);
         return response;
     }
@@ -72,9 +69,9 @@ public class ItemController {
         List<String> error = itemService.deleteItem(request.getIds());
 
         if(error.size() <= 0){
-            response = mapper.getBaseResponse(true, "");
+            response = mapper.getBaseResponse(true, "", new Paging());
         }else {
-            response = mapper.getBaseResponse(false, "There is an error");
+            response = mapper.getBaseResponse(false, "There is an error", new Paging());
             deleteResponse.setValue(error);
             response.setValue(deleteResponse);
         }

@@ -2,9 +2,11 @@ package com.inventory.controllers;
 
 import com.inventory.models.Employee;
 import com.inventory.models.Item;
+import com.inventory.models.Paging;
 import com.inventory.models.Request;
 import com.inventory.webmodels.requests.EmployeeRequest;
 import com.inventory.webmodels.requests.ItemRequest;
+import com.inventory.webmodels.requests.ListOfObjectRequest;
 import com.inventory.webmodels.requests.RequestHTTPRequest;
 import com.inventory.webmodels.responses.BaseResponse;
 import org.springframework.http.HttpStatus;
@@ -59,11 +61,24 @@ public class DataMapper {
         return response;
     }
 
-    public BaseResponse getBaseResponse(boolean success, String errorMessage){
+    public BaseResponse getBaseResponse(boolean success, String errorMessage, Paging paging){
         BaseResponse response = new BaseResponse<>();
         response.setCode(HttpStatus.OK.toString());
         response.setSuccess(success);
         response.setErrorMessage(errorMessage);
+        response.setPaging(paging);
         return response;
+    }
+
+    public Paging getPaging(ListOfObjectRequest request){
+        Paging paging = new Paging();
+        paging.setPageNumber(request.getPageNumber());
+        paging.setPageSize(request.getPageSize());
+        paging.setSortedBy(request.getSortedBy());
+        if(request.getSortedType() != null)
+            paging.setSortedType(request.getSortedType());
+        else
+            paging.setSortedType("asc");
+        return paging;
     }
 }

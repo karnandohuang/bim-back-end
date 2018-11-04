@@ -6,6 +6,7 @@ import com.inventory.models.Request;
 import com.inventory.services.ItemService;
 import com.inventory.services.RequestService;
 import com.inventory.webmodels.requests.DeleteRequest;
+import com.inventory.webmodels.requests.ListOfObjectRequest;
 import com.inventory.webmodels.requests.RequestHTTPRequest;
 import com.inventory.webmodels.responses.BaseResponse;
 import com.inventory.webmodels.responses.DeleteResponse;
@@ -41,10 +42,11 @@ public class RequestController {
 
     @GetMapping(value = API_PATH_REQUESTS, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<ListOfRequestResponse> listOfRequest() throws IOException {
-        Paging paging = new Paging();
-        ListOfRequestResponse list = new ListOfRequestResponse(requestService.getRequestList());
-        BaseResponse<ListOfRequestResponse> response = mapper.getBaseResponse(true, "");
+    public BaseResponse<ListOfRequestResponse> listOfRequest
+            (@RequestBody ListOfObjectRequest request) throws IOException {
+        Paging paging = mapper.getPaging(request);
+        ListOfRequestResponse list = new ListOfRequestResponse(requestService.getRequestList(paging));
+        BaseResponse<ListOfRequestResponse> response = mapper.getBaseResponse(true, "", paging);
         response.setValue(list);
         return response;
     }
@@ -53,7 +55,7 @@ public class RequestController {
             consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<RequestResponse> getRequest(@PathVariable String id) throws IOException {
         RequestResponse requestResponse = new RequestResponse(requestService.getRequest(id));
-        BaseResponse<RequestResponse> response = mapper.getBaseResponse(true, "");
+        BaseResponse<RequestResponse> response = mapper.getBaseResponse(true, "", new Paging());
         response.setValue(requestResponse);
         return response;
     }
@@ -100,9 +102,9 @@ public class RequestController {
             }
         }
         if (error.size() <= 0 && errorOfItem.size() <= 0) {
-            response = mapper.getBaseResponse(true, "");
+            response = mapper.getBaseResponse(true, "", new Paging());
         } else {
-            response = mapper.getBaseResponse(false, "There is an error");
+            response = mapper.getBaseResponse(false, "There is an error", new Paging());
             if(error.size() > 0)
                 deleteResponse.setValue(error);
             else

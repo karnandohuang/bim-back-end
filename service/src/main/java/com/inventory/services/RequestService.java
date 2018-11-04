@@ -1,5 +1,6 @@
 package com.inventory.services;
 
+import com.inventory.models.Paging;
 import com.inventory.models.Request;
 
 import java.util.List;
@@ -9,7 +10,7 @@ public interface RequestService {
 
     Request getRequest(String id);
 
-    List<Request> getRequestList();
+    List<Request> getRequestList(Paging paging);
 
     Request saveRequest(Request request);
 

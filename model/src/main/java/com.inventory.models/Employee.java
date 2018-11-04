@@ -19,7 +19,7 @@ import static com.inventory.models.Constant.*;
 @Table(name = EMPLOYEE_TABLE_NAME, schema = SCHEMA_NAME, catalog = DATABASE_NAME)
 @JsonPropertyOrder({"id", "name", "superiorId", "dob", "email", "password", "position", "division", "createdDate",
         "updatedDate", "createdBy", "updatedBy"})
-public class Employee extends BaseEntity implements UserDetails {
+public class Employee extends BaseEntity{
     @Id
     @GenericGenerator(name = "employee_sequence", strategy = "com.inventory.models.generators.EmployeeIdGenerator")
     @GeneratedValue(generator = "employee_sequence")
@@ -39,34 +39,4 @@ public class Employee extends BaseEntity implements UserDetails {
     private String position;
     @Column(name = EMPLOYEE_COLUMN_NAME_DIVISION)
     private String division;
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
-    }
-
-    @Override
-    public String getUsername() {
-        return null;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return false;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return false;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return false;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return false;
-    }
 }
