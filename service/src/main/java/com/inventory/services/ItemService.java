@@ -10,7 +10,7 @@ public interface ItemService {
 
     Item getItem(String id);
 
-    List<Item> getItemList(String name, Paging paging);
+    List<Item> getItemList(Paging paging);
 
     Item saveItem(Item item);
 

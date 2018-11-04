@@ -25,7 +25,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
-    public List<Item> getItemList(String name, Paging paging) {
+    public List<Item> getItemList(Paging paging) {
         List<Item> listOfSortedItem = new ArrayList<>();
         List<Item> listOfItem = new ArrayList<>();
         if(paging.getSortedType().matches("desc")) {
@@ -37,7 +37,7 @@ public class ItemServiceImpl implements ItemService {
         paging.setTotalRecords(totalRecords);
         int offset = (paging.getPageSize() * (paging.getPageNumber()-1));
         for(int i = 0; i < paging.getPageSize(); i++){
-            if((offset + i) >= totalRecords || i >= offset) {
+            if ((offset + i) >= totalRecords) {
                 break;
             }
             listOfSortedItem.add(listOfItem.get((offset + i)));

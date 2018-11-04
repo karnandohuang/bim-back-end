@@ -8,7 +8,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class RequestServiceImpl implements RequestService {
@@ -36,7 +39,7 @@ public class RequestServiceImpl implements RequestService {
         paging.setTotalRecords(totalRecords);
         int offset = (paging.getPageSize() * (paging.getPageNumber()-1));
         for(int i = 0; i < paging.getPageSize(); i++){
-            if((offset + i) >= totalRecords || i >= offset) {
+            if ((offset + i) >= totalRecords) {
                 break;
             }
             listOfSortedRequest.add(listOfRequest.get((offset + i)));

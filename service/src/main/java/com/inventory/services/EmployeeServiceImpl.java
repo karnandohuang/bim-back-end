@@ -42,29 +42,9 @@ public class EmployeeServiceImpl implements EmployeeService {
             return null;
     }
 
-
-//    @Override
-//    @Transactional
-//    public List<Employee> getSuperiorList(Paging paging) {
-//        List<Employee> list = new ArrayList<>();
-//        if(paging.getSortedType().matches("desc"))
-//            list = employeeRepository.findAllByDesc(paging.getSortedBy());
-//        else
-//            list = employeeRepository.findAllByAsc(paging.getSortedBy());
-//        long totalRecords = list.size();
-//        long offset = ((totalRecords / paging.getPageSize()) * paging.getPageNumber());
-//        List<Employee> listOfSuperior = new ArrayList<>();
-//        for (long i = (offset+1); i < paging.getPageSize(); i++) {
-//            if (list.get((int)i).getSuperiorId().equals("null")) {
-//                listOfSuperior.add(list.get((int)i));
-//            }
-//        }
-//        return listOfSuperior;
-//    }
-
     @Override
     @Transactional
-    public List<Employee> getSuperiorList(String name, Paging paging) {
+    public List<Employee> getSuperiorList(Paging paging) {
         List<Employee> listOfSuperior = new ArrayList<>();
         List<Employee> listOfSortedSuperior = new ArrayList<>();
         if(paging.getSortedType().matches("desc"))
@@ -75,9 +55,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         paging.setTotalRecords(totalRecords);
         int offset = (paging.getPageSize() * (paging.getPageNumber()-1));
         for(int i = 0; i < paging.getPageSize(); i++){
-            if((offset + i) >= listOfSortedSuperior.size() || i >= offset) {
+            if ((offset + i) >= listOfSortedSuperior.size())
                 break;
-            }
             if (listOfSortedSuperior.get((offset + i)).getSuperiorId().equals("null")) {
                 listOfSortedSuperior.add(listOfSortedSuperior.get((offset + i)));
             }
@@ -85,26 +64,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         return listOfSortedSuperior;
     }
 
-//    @Override
-//    @Transactional
-//    public List<Employee> getEmployeeList(Paging paging) {
-//        List<Employee> listOfSortedEmployee = new ArrayList<>();
-//        List<Employee> listOfEmployee = new ArrayList<>();
-//        if(paging.getSortedType().matches("desc"))
-//            listOfEmployee = employeeRepository.findAllByDesc(paging.getSortedBy());
-//        else
-//            listOfEmployee = employeeRepository.findAllByAsc(paging.getSortedBy());
-//        long totalRecords = listOfEmployee.size();
-//        long offset = ((totalRecords / paging.getPageSize()) * paging.getPageNumber());
-//        for(long i = (offset+1); i < paging.getPageSize(); i++){
-//            listOfSortedEmployee.add(listOfEmployee.get((int)i));
-//        }
-//        return listOfSortedEmployee;
-//    }
-
     @Override
     @Transactional
-    public List<Employee> getEmployeeList(String name, Paging paging) {
+    public List<Employee> getEmployeeList(Paging paging) {
         List<Employee> listOfSortedEmployee = new ArrayList<>();
         List<Employee> listOfEmployee = new ArrayList<>();
         if(paging.getSortedType().matches("desc")) {
@@ -116,9 +78,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         paging.setTotalRecords(totalRecords);
         int offset = (paging.getPageSize() * (paging.getPageNumber()-1));
         for(int i = 0; i < paging.getPageSize(); i++){
-            if((offset + i) >= totalRecords || i >= offset) {
+            if ((offset + i) >= totalRecords)
                 break;
-            }
             listOfSortedEmployee.add(listOfEmployee.get((offset + i)));
         }
         return listOfSortedEmployee;

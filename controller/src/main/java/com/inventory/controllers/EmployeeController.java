@@ -3,7 +3,9 @@ package com.inventory.controllers;
 import com.inventory.models.Employee;
 import com.inventory.models.Paging;
 import com.inventory.services.EmployeeService;
-import com.inventory.webmodels.requests.*;
+import com.inventory.webmodels.requests.DeleteRequest;
+import com.inventory.webmodels.requests.ListOfObjectRequest;
+import com.inventory.webmodels.requests.LoginRequest;
 import com.inventory.webmodels.responses.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -20,6 +22,7 @@ public class EmployeeController {
 
     @Autowired
     DataMapper mapper;
+
     @Autowired
     private EmployeeService employeeService;
 
@@ -29,7 +32,7 @@ public class EmployeeController {
             (@RequestBody ListOfObjectRequest request) throws IOException {
         Paging paging = mapper.getPaging(request);
         ListOfEmployeeResponse list =
-                new ListOfEmployeeResponse(employeeService.getEmployeeList(request.getName(), paging));
+                new ListOfEmployeeResponse(employeeService.getEmployeeList(paging));
         BaseResponse<ListOfEmployeeResponse> response = mapper.getBaseResponse(true, "", paging);
         response.setValue(list);
         return response;
@@ -50,7 +53,7 @@ public class EmployeeController {
             (@RequestBody ListOfObjectRequest request) throws IOException {
         Paging paging = mapper.getPaging(request);
         ListOfSuperiorResponse list =
-                new ListOfSuperiorResponse(employeeService.getSuperiorList(request.getName(), paging));
+                new ListOfSuperiorResponse(employeeService.getSuperiorList(paging));
         BaseResponse<ListOfSuperiorResponse> response = mapper.getBaseResponse(true, "", paging);
         response.setValue(list);
         return response;
