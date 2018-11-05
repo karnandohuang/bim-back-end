@@ -4,7 +4,7 @@ import com.inventory.models.Employee;
 import com.inventory.models.Paging;
 import com.inventory.services.EmployeeService;
 import com.inventory.webmodels.requests.DeleteRequest;
-import com.inventory.webmodels.requests.ListOfObjectRequest;
+import com.inventory.webmodels.requests.EmployeeRequest;
 import com.inventory.webmodels.requests.LoginRequest;
 import com.inventory.webmodels.responses.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +26,15 @@ public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
 
-    @PostMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE,
+    @GetMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<ListOfEmployeeResponse> listOfEmployee
-            (@RequestBody ListOfObjectRequest request) throws IOException {
-        Paging paging = mapper.getPaging(request);
+    public BaseResponse<ListOfEmployeeResponse> listOfEmployee(
+            @RequestParam int pageNumber,
+            @RequestParam int pageSize,
+            @RequestParam(required = false) String sortedBy,
+            @RequestParam(required = false) String sortedType
+    ) throws IOException {
+        Paging paging = mapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         ListOfEmployeeResponse list =
                 new ListOfEmployeeResponse(employeeService.getEmployeeList(paging));
         BaseResponse<ListOfEmployeeResponse> response = mapper.getBaseResponse(true, "", paging);
@@ -47,11 +51,15 @@ public class EmployeeController {
         return mapper.getStandardBaseResponse(true, "");
     }
 
-    @PostMapping(value = API_PATH_GET_SUPERIORS, produces = MediaType.APPLICATION_JSON_VALUE,
+    @GetMapping(value = API_PATH_GET_SUPERIORS, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<ListOfSuperiorResponse> listOfSuperior
-            (@RequestBody ListOfObjectRequest request) throws IOException {
-        Paging paging = mapper.getPaging(request);
+    public BaseResponse<ListOfSuperiorResponse> listOfSuperior(
+            @RequestParam int pageNumber,
+            @RequestParam int pageSize,
+            @RequestParam(required = false) String sortedBy,
+            @RequestParam(required = false) String sortedType
+    ) throws IOException {
+        Paging paging = mapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         ListOfSuperiorResponse list =
                 new ListOfSuperiorResponse(employeeService.getSuperiorList(paging));
         BaseResponse<ListOfSuperiorResponse> response = mapper.getBaseResponse(true, "", paging);
@@ -68,17 +76,17 @@ public class EmployeeController {
         return response;
     }
 
-//    @RequestMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE,
-//            consumes = MediaType.APPLICATION_JSON_VALUE, method = {RequestMethod.POST, RequestMethod.PUT})
-//    public BaseResponse<String> insertEmployee(@RequestBody EmployeeRequest request) {
-//        Employee employee = mapper.mapEmployee(request);
-//
-//        if (employeeService.saveEmployee(employee) == (null)) {
-//            return mapper.getStandardBaseResponse(false, "save failed");
-//        } else {
-//            return mapper.getStandardBaseResponse(true, "");
-//        }
-//    }
+    @RequestMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE, method = {RequestMethod.POST, RequestMethod.PUT})
+    public BaseResponse<String> insertEmployee(@RequestBody EmployeeRequest request) {
+        Employee employee = mapper.mapEmployee(request);
+
+        if (employeeService.saveEmployee(employee) == (null)) {
+            return mapper.getStandardBaseResponse(false, "save failed");
+        } else {
+            return mapper.getStandardBaseResponse(true, "");
+        }
+    }
 
     @DeleteMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)

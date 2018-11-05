@@ -6,9 +6,9 @@ import com.inventory.models.Paging;
 import com.inventory.models.Request;
 import com.inventory.webmodels.requests.EmployeeRequest;
 import com.inventory.webmodels.requests.ItemRequest;
-import com.inventory.webmodels.requests.ListOfObjectRequest;
 import com.inventory.webmodels.requests.RequestHTTPRequest;
 import com.inventory.webmodels.responses.BaseResponse;
+import com.inventory.webmodels.responses.UploadFileResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -37,7 +37,6 @@ public class DataMapper {
         item.setLocation(request.getLocation());
         item.setQty(request.getQty());
         item.setImageUrl(request.getImageUrl());
-
         return item;
     }
 
@@ -61,6 +60,14 @@ public class DataMapper {
         return response;
     }
 
+    public BaseResponse<UploadFileResponse> getUploadBaseResponse(boolean success, String errorMessage) {
+        BaseResponse<UploadFileResponse> response = new BaseResponse<>();
+        response.setCode(HttpStatus.OK.toString());
+        response.setSuccess(success);
+        response.setErrorMessage(errorMessage);
+        return response;
+    }
+
     public BaseResponse getBaseResponse(boolean success, String errorMessage, Paging paging){
         BaseResponse response = new BaseResponse<>();
         response.setCode(HttpStatus.OK.toString());
@@ -70,16 +77,16 @@ public class DataMapper {
         return response;
     }
 
-    public Paging getPaging(ListOfObjectRequest request){
+    public Paging getPaging(int pageNumber, int pageSize, String sortedBy, String sortedType) {
         Paging paging = new Paging();
-        paging.setPageNumber(request.getPageNumber());
-        paging.setPageSize(request.getPageSize());
-        if (request.getSortedType() != null)
-            paging.setSortedBy(request.getSortedBy());
+        paging.setPageNumber(pageNumber);
+        paging.setPageSize(pageSize);
+        if (sortedBy != null)
+            paging.setSortedBy(sortedBy);
         else
-            paging.setSortedBy("updateddate");
-        if(request.getSortedType() != null)
-            paging.setSortedType(request.getSortedType());
+            paging.setSortedBy("updatedDate");
+        if (sortedType != null)
+            paging.setSortedType(sortedType);
         else
             paging.setSortedType("asc");
         return paging;

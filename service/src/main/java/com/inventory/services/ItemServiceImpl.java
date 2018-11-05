@@ -6,8 +6,13 @@ import com.inventory.repositories.ItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,5 +68,31 @@ public class ItemServiceImpl implements ItemService {
             }
         }
         return listOfNotFoundIds;
+    }
+
+    @Override
+    public String uploadFile(MultipartFile file) {
+        File convertFile = new File("C:\\Users\\olive\\Desktop\\bim-back-end\\resources\\" +
+                file.getOriginalFilename());
+        try {
+            convertFile.createNewFile();
+        } catch (IOException e) {
+            //throw custom exception;
+            e.printStackTrace();
+        }
+        FileOutputStream fout = null;
+        try {
+            fout = new FileOutputStream(convertFile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            fout.write(file.getBytes());
+            fout.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return convertFile.getAbsolutePath();
     }
 }

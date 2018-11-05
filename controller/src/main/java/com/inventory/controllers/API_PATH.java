@@ -11,5 +11,6 @@ public class API_PATH {
 
     public static final String API_PATH_ITEMS = "api/items";
     public static final String API_PATH_GET_ITEM = "api/items/{id}";
+    public static final String API_PATH_UPLOAD_IMAGE = "api/upload";
 
 }

@@ -6,14 +6,12 @@ import com.inventory.models.Request;
 import com.inventory.services.ItemService;
 import com.inventory.services.RequestService;
 import com.inventory.webmodels.requests.DeleteRequest;
-import com.inventory.webmodels.requests.ListOfObjectRequest;
 import com.inventory.webmodels.requests.RequestHTTPRequest;
 import com.inventory.webmodels.responses.BaseResponse;
 import com.inventory.webmodels.responses.DeleteResponse;
 import com.inventory.webmodels.responses.ListOfRequestResponse;
 import com.inventory.webmodels.responses.RequestResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -42,9 +40,13 @@ public class RequestController {
 
     @GetMapping(value = API_PATH_REQUESTS, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<ListOfRequestResponse> listOfRequest
-            (@RequestBody ListOfObjectRequest request) throws IOException {
-        Paging paging = mapper.getPaging(request);
+    public BaseResponse<ListOfRequestResponse> listOfRequest(
+            @RequestParam int pageNumber,
+            @RequestParam int pageSize,
+            @RequestParam(required = false) String sortedBy,
+            @RequestParam(required = false) String sortedType
+    ) throws IOException {
+        Paging paging = mapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         ListOfRequestResponse list = new ListOfRequestResponse(requestService.getRequestList(paging));
         BaseResponse<ListOfRequestResponse> response = mapper.getBaseResponse(true, "", paging);
         response.setValue(list);

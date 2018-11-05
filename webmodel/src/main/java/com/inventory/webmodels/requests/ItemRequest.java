@@ -11,6 +11,6 @@ public class ItemRequest {
     private String name;
     private int price;
     private String location;
-    private String imageUrl;
     private int qty;
+    private String imageUrl;
 }

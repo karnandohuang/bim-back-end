@@ -55,9 +55,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         paging.setTotalRecords(totalRecords);
         int offset = (paging.getPageSize() * (paging.getPageNumber()-1));
         for(int i = 0; i < paging.getPageSize(); i++){
-            if ((offset + i) >= listOfSortedSuperior.size())
+            if ((offset + i) >= listOfSuperior.size())
                 break;
-            if (listOfSortedSuperior.get((offset + i)).getSuperiorId().equals("null")) {
+            if (listOfSuperior.get((offset + i)).getSuperiorId().matches("null")) {
                 listOfSortedSuperior.add(listOfSortedSuperior.get((offset + i)));
             }
         }
