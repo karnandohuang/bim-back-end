@@ -9,4 +9,5 @@ public class Paging {
     private int totalRecords;
     private String sortedBy;
     private String sortedType;
+    private int totalPage;
 }

@@ -51,8 +51,6 @@ public class EmployeeServiceImpl implements EmployeeService {
             listOfSuperior = employeeRepository.findAll(new Sort(Sort.Direction.DESC, paging.getSortedBy()));
         else
             listOfSuperior = employeeRepository.findAll(new Sort(Sort.Direction.ASC, paging.getSortedBy()));
-        int totalRecords = listOfSuperior.size();
-        paging.setTotalRecords(totalRecords);
         int offset = (paging.getPageSize() * (paging.getPageNumber()-1));
         for(int i = 0; i < paging.getPageSize(); i++){
             if ((offset + i) >= listOfSuperior.size())
@@ -61,6 +59,10 @@ public class EmployeeServiceImpl implements EmployeeService {
                 listOfSortedSuperior.add(listOfSuperior.get((offset + i)));
             }
         }
+        int totalRecords = listOfSortedSuperior.size();
+        paging.setTotalRecords(totalRecords);
+        int totalPage = (totalRecords / paging.getPageSize()) + 1;
+        paging.setTotalPage(totalPage);
         return listOfSortedSuperior;
     }
 
@@ -77,6 +79,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         int totalRecords = listOfEmployee.size();
         paging.setTotalRecords(totalRecords);
         int offset = (paging.getPageSize() * (paging.getPageNumber()-1));
+        int totalPage = (totalRecords / paging.getPageSize()) + 1;
+        paging.setTotalPage(totalPage);
         for(int i = 0; i < paging.getPageSize(); i++){
             if ((offset + i) >= totalRecords)
                 break;

@@ -23,7 +23,7 @@ public class RequestIdGenerator implements IdentifierGenerator {
         String prefix = "RQ";
 
         try {
-            connection = DriverManager.getConnection(DATABASE_URL,"postgres","power7500");
+            connection = DriverManager.getConnection(DATABASE_URL, "bim", "bim");
             statement = connection.createStatement();
             try {
                 rs = statement.executeQuery("SELECT  NEXTVAL('" + DEFAULT_SEQUENCE_NAME + "')");
