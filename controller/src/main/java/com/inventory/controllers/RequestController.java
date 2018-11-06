@@ -3,6 +3,7 @@ package com.inventory.controllers;
 import com.inventory.models.Item;
 import com.inventory.models.Paging;
 import com.inventory.models.Request;
+import com.inventory.services.EmployeeService;
 import com.inventory.services.ItemService;
 import com.inventory.services.RequestService;
 import com.inventory.webmodels.requests.DeleteRequest;
@@ -36,6 +37,9 @@ public class RequestController {
     ItemService itemService;
 
     @Autowired
+    EmployeeService employeeService;
+
+    @Autowired
     DataMapper mapper;
 
     @GetMapping(value = API_PATH_REQUESTS, produces = MediaType.APPLICATION_JSON_VALUE,
@@ -47,7 +51,17 @@ public class RequestController {
             @RequestParam(required = false) String sortedType
     ) throws IOException {
         Paging paging = mapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
-        ListOfRequestResponse list = new ListOfRequestResponse(requestService.getRequestList(paging));
+        List<Request> listOfRequest = requestService.getRequestList(paging);
+        List<RequestResponse> listOfRequestResponse = new ArrayList<>();
+        for (Request request : listOfRequest) {
+            RequestResponse requestResponse = new RequestResponse();
+            requestResponse.setRequest(request);
+            requestResponse.setEmployeeName(employeeService.getEmployee(request.getEmployeeId()).getName());
+            requestResponse.setItemSKU(itemService.getItem(request.getItemId()).getSku());
+            requestResponse.setItemName(itemService.getItem(request.getItemId()).getName());
+            listOfRequestResponse.add(requestResponse);
+        }
+        ListOfRequestResponse list = new ListOfRequestResponse(listOfRequestResponse);
         BaseResponse<ListOfRequestResponse> response = mapper.getBaseResponse(true, "", paging);
         response.setValue(list);
         return response;
@@ -56,7 +70,8 @@ public class RequestController {
     @GetMapping(value = API_PATH_GET_REQUEST, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<RequestResponse> getRequest(@PathVariable String id) throws IOException {
-        RequestResponse requestResponse = new RequestResponse(requestService.getRequest(id));
+        RequestResponse requestResponse = new RequestResponse();
+        requestResponse.setRequest(requestService.getRequest(id));
         BaseResponse<RequestResponse> response = mapper.getBaseResponse(true, "", new Paging());
         response.setValue(requestResponse);
         return response;

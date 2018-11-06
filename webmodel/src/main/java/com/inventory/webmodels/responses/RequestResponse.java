@@ -1,12 +1,15 @@
 package com.inventory.webmodels.responses;
 
 import com.inventory.models.Request;
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
+@NoArgsConstructor
 public class RequestResponse {
 
     private Request request;
+    private String employeeName;
+    private String itemSKU;
+    private String itemName;
 }

@@ -44,9 +44,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional
-    public List<Employee> getSuperiorList(Paging paging) {
+    public List<Employee> getSuperiorList(String name, Paging paging) {
         List<Employee> listOfSuperior = new ArrayList<>();
-        List<Employee> listOfEmployee = getEmployeeListFromRepository(paging);
+        List<Employee> listOfEmployee = getEmployeeListFromRepository(name, paging);
         for (Employee em : listOfEmployee) {
             if (em.getSuperiorId().matches("null"))
                 listOfSuperior.add(em);
@@ -60,7 +60,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         int offset = paging.getPageSize() * (paging.getPageNumber() - 1);
         int totalRecords = listOfEmployee.size();
         paging.setTotalRecords(totalRecords);
-        int totalPage = Math.round((float) totalRecords / paging.getPageSize());
+        int totalPage = (int) Math.ceil((float) totalRecords / paging.getPageSize());
         paging.setTotalPage(totalPage);
         for (int i = 0; i < paging.getPageSize(); i++) {
             if ((offset + i) >= listOfEmployee.size())
@@ -70,19 +70,19 @@ public class EmployeeServiceImpl implements EmployeeService {
         return listOfSortedEmployee;
     }
 
-    private List<Employee> getEmployeeListFromRepository(Paging paging) {
+    private List<Employee> getEmployeeListFromRepository(String name, Paging paging) {
         List<Employee> listOfEmployee;
         if (paging.getSortedType().matches("desc"))
-            listOfEmployee = employeeRepository.findAll(new Sort(Sort.Direction.DESC, paging.getSortedBy()));
+            listOfEmployee = employeeRepository.findAllByNameContaining(name, new Sort(Sort.Direction.DESC, paging.getSortedBy()));
         else
-            listOfEmployee = employeeRepository.findAll(new Sort(Sort.Direction.ASC, paging.getSortedBy()));
+            listOfEmployee = employeeRepository.findAllByNameContaining(name, new Sort(Sort.Direction.ASC, paging.getSortedBy()));
         return listOfEmployee;
     }
 
     @Override
     @Transactional
-    public List<Employee> getEmployeeList(Paging paging) {
-        List<Employee> listOfEmployee = getEmployeeListFromRepository(paging);
+    public List<Employee> getEmployeeList(String name, Paging paging) {
+        List<Employee> listOfEmployee = getEmployeeListFromRepository(name, paging);
         List<Employee> listOfSortedEmployee = setSortedDataWithPaging(paging, listOfEmployee);
         return listOfSortedEmployee;
     }

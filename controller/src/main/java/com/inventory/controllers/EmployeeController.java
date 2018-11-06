@@ -29,6 +29,7 @@ public class EmployeeController {
     @GetMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<ListOfEmployeeResponse> listOfEmployee(
+            @RequestParam(required = false) String name,
             @RequestParam int pageNumber,
             @RequestParam int pageSize,
             @RequestParam(required = false) String sortedBy,
@@ -36,7 +37,7 @@ public class EmployeeController {
     ) throws IOException {
         Paging paging = mapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         ListOfEmployeeResponse list =
-                new ListOfEmployeeResponse(employeeService.getEmployeeList(paging));
+                new ListOfEmployeeResponse(employeeService.getEmployeeList(name, paging));
         BaseResponse<ListOfEmployeeResponse> response = mapper.getBaseResponse(true, "", paging);
         response.setValue(list);
         return response;
@@ -54,6 +55,7 @@ public class EmployeeController {
     @GetMapping(value = API_PATH_GET_SUPERIORS, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<ListOfSuperiorResponse> listOfSuperior(
+            @RequestParam(required = false) String name,
             @RequestParam int pageNumber,
             @RequestParam int pageSize,
             @RequestParam(required = false) String sortedBy,
@@ -61,7 +63,7 @@ public class EmployeeController {
     ) throws IOException {
         Paging paging = mapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         ListOfSuperiorResponse list =
-                new ListOfSuperiorResponse(employeeService.getSuperiorList(paging));
+                new ListOfSuperiorResponse(employeeService.getSuperiorList(name, paging));
         BaseResponse<ListOfSuperiorResponse> response = mapper.getBaseResponse(true, "", paging);
         response.setValue(list);
         return response;
