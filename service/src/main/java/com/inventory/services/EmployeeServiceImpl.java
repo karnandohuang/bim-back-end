@@ -46,46 +46,44 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public List<Employee> getSuperiorList(Paging paging) {
         List<Employee> listOfSuperior = new ArrayList<>();
-        List<Employee> listOfSortedSuperior = new ArrayList<>();
-        if(paging.getSortedType().matches("desc"))
-            listOfSuperior = employeeRepository.findAll(new Sort(Sort.Direction.DESC, paging.getSortedBy()));
-        else
-            listOfSuperior = employeeRepository.findAll(new Sort(Sort.Direction.ASC, paging.getSortedBy()));
-        int offset = (paging.getPageSize() * (paging.getPageNumber()-1));
-        for(int i = 0; i < paging.getPageSize(); i++){
-            if ((offset + i) >= listOfSuperior.size())
-                break;
-            else if (listOfSuperior.get((offset + i)).getSuperiorId().matches("null")) {
-                listOfSortedSuperior.add(listOfSuperior.get((offset + i)));
-            }
+        List<Employee> listOfEmployee = getEmployeeListFromRepository(paging);
+        for (Employee em : listOfEmployee) {
+            if (em.getSuperiorId().matches("null"))
+                listOfSuperior.add(em);
         }
-        int totalRecords = listOfSortedSuperior.size();
-        paging.setTotalRecords(totalRecords);
-        int totalPage = (totalRecords / paging.getPageSize()) + 1;
-        paging.setTotalPage(totalPage);
+        List<Employee> listOfSortedSuperior = setSortedDataWithPaging(paging, listOfSuperior);
         return listOfSortedSuperior;
+    }
+
+    private List<Employee> setSortedDataWithPaging(Paging paging, List<Employee> listOfEmployee) {
+        List<Employee> listOfSortedEmployee = new ArrayList<>();
+        int offset = paging.getPageSize() * (paging.getPageNumber() - 1);
+        int totalRecords = listOfEmployee.size();
+        paging.setTotalRecords(totalRecords);
+        int totalPage = Math.round((float) totalRecords / paging.getPageSize());
+        paging.setTotalPage(totalPage);
+        for (int i = 0; i < paging.getPageSize(); i++) {
+            if ((offset + i) >= listOfEmployee.size())
+                break;
+            listOfSortedEmployee.add(listOfEmployee.get((offset + i)));
+        }
+        return listOfSortedEmployee;
+    }
+
+    private List<Employee> getEmployeeListFromRepository(Paging paging) {
+        List<Employee> listOfEmployee;
+        if (paging.getSortedType().matches("desc"))
+            listOfEmployee = employeeRepository.findAll(new Sort(Sort.Direction.DESC, paging.getSortedBy()));
+        else
+            listOfEmployee = employeeRepository.findAll(new Sort(Sort.Direction.ASC, paging.getSortedBy()));
+        return listOfEmployee;
     }
 
     @Override
     @Transactional
     public List<Employee> getEmployeeList(Paging paging) {
-        List<Employee> listOfSortedEmployee = new ArrayList<>();
-        List<Employee> listOfEmployee = new ArrayList<>();
-        if(paging.getSortedType().matches("desc")) {
-            listOfEmployee = employeeRepository.findAll(new Sort(Sort.Direction.DESC, paging.getSortedBy()));
-        }else {
-            listOfEmployee = employeeRepository.findAll(new Sort(Sort.Direction.ASC, paging.getSortedBy()));
-        }
-        int totalRecords = listOfEmployee.size();
-        paging.setTotalRecords(totalRecords);
-        int offset = (paging.getPageSize() * (paging.getPageNumber()-1));
-        int totalPage = (totalRecords / paging.getPageSize()) + 1;
-        paging.setTotalPage(totalPage);
-        for(int i = 0; i < paging.getPageSize(); i++){
-            if ((offset + i) >= totalRecords)
-                break;
-            listOfSortedEmployee.add(listOfEmployee.get((offset + i)));
-        }
+        List<Employee> listOfEmployee = getEmployeeListFromRepository(paging);
+        List<Employee> listOfSortedEmployee = setSortedDataWithPaging(paging, listOfEmployee);
         return listOfSortedEmployee;
     }
 

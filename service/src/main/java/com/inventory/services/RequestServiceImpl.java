@@ -25,16 +25,21 @@ public class RequestServiceImpl implements RequestService {
         return requestRepository.findById(id).get();
     }
 
+    private List<Request> getRequestListFromRepository(Paging paging) {
+        List<Request> listOfRequest;
+        if (paging.getSortedType().matches("desc")) {
+            listOfRequest = requestRepository.findAll(new Sort(Sort.Direction.DESC, paging.getSortedBy()));
+        } else {
+            listOfRequest = requestRepository.findAll(new Sort(Sort.Direction.ASC, paging.getSortedBy()));
+        }
+        return listOfRequest;
+    }
+
     @Override
     @Transactional
     public List<Request> getRequestList(Paging paging) {
         List<Request> listOfSortedRequest = new ArrayList<>();
-        List<Request> listOfRequest = new ArrayList<>();
-        if(paging.getSortedType().matches("desc")) {
-            listOfRequest = requestRepository.findAll(new Sort(Sort.Direction.DESC, paging.getSortedBy()));
-        }else {
-            listOfRequest = requestRepository.findAll(new Sort(Sort.Direction.ASC, paging.getSortedBy()));
-        }
+        List<Request> listOfRequest = getRequestListFromRepository(paging);
         int totalRecords = listOfRequest.size();
         paging.setTotalRecords(totalRecords);
         int offset = (paging.getPageSize() * (paging.getPageNumber()-1));
