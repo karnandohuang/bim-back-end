@@ -36,6 +36,8 @@ public class EmployeeController {
             @RequestParam(required = false) String sortedType
     ) throws IOException {
         Paging paging = mapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
+        if (name == null)
+            name = "";
         ListOfEmployeeResponse list =
                 new ListOfEmployeeResponse(employeeService.getEmployeeList(name, paging));
         BaseResponse<ListOfEmployeeResponse> response = mapper.getBaseResponse(true, "", paging);
@@ -62,6 +64,8 @@ public class EmployeeController {
             @RequestParam(required = false) String sortedType
     ) throws IOException {
         Paging paging = mapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
+        if (name == null)
+            name = "";
         ListOfSuperiorResponse list =
                 new ListOfSuperiorResponse(employeeService.getSuperiorList(name, paging));
         BaseResponse<ListOfSuperiorResponse> response = mapper.getBaseResponse(true, "", paging);
