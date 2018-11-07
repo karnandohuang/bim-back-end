@@ -46,7 +46,7 @@ public class ItemServiceImpl implements ItemService {
         int totalRecords = listOfItem.size();
         paging.setTotalRecords(totalRecords);
         int offset = (paging.getPageSize() * (paging.getPageNumber()-1));
-        int totalPage = (totalRecords / paging.getPageSize());
+        int totalPage = (int) Math.ceil((float) totalRecords / paging.getPageSize());
         paging.setTotalPage(totalPage);
         for(int i = 0; i < paging.getPageSize(); i++){
             if ((offset + i) >= totalRecords) {
