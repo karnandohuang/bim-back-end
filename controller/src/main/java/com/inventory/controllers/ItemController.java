@@ -29,13 +29,16 @@ public class ItemController {
     @GetMapping(value = API_PATH_ITEMS, produces = MediaType.APPLICATION_JSON_VALUE,
         consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<ListOfItemResponse> getItemList(
+            @RequestParam(required = false) String name,
             @RequestParam int pageNumber,
             @RequestParam int pageSize,
             @RequestParam(required = false) String sortedBy,
             @RequestParam(required = false) String sortedType
     ) throws IOException {
         Paging paging = mapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
-        ListOfItemResponse list = new ListOfItemResponse(itemService.getItemList(paging));
+        if (name == null)
+            name = "";
+        ListOfItemResponse list = new ListOfItemResponse(itemService.getItemList(name, paging));
         BaseResponse<ListOfItemResponse> response = mapper.getBaseResponse(true, "", paging);
         response.setValue(list);
         return response;

@@ -11,7 +11,7 @@ public interface ItemService {
 
     Item getItem(String id);
 
-    List<Item> getItemList(Paging paging);
+    List<Item> getItemList(String name, Paging paging);
 
     Item saveItem(Item item);
 
