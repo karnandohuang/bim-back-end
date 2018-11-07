@@ -67,7 +67,7 @@ public class RequestController {
     @GetMapping(value = API_PATH_EMPLOYEE_REQUESTS, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<ListOfItemResponse> listOfEmployeeRequest(
-            @PathVariable String employeeId,
+            @RequestParam String employeeId,
             @RequestParam int pageNumber,
             @RequestParam int pageSize,
             @RequestParam(required = false) String sortedBy,
