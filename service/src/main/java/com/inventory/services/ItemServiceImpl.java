@@ -28,21 +28,21 @@ public class ItemServiceImpl implements ItemService {
         return itemRepository.findById(id).get();
     }
 
-    private List<Item> getItemListFromRepository(Paging paging) {
+    private List<Item> getItemListFromRepository(String name, Paging paging) {
         List<Item> listOfItem;
         if(paging.getSortedType().matches("desc")) {
-            listOfItem = itemRepository.findAll(new Sort(Sort.Direction.DESC, paging.getSortedBy()));
+            listOfItem = itemRepository.findAllByNameContaining(name, new Sort(Sort.Direction.DESC, paging.getSortedBy()));
         }else {
-            listOfItem = itemRepository.findAll(new Sort(Sort.Direction.ASC, paging.getSortedBy()));
+            listOfItem = itemRepository.findAllByNameContaining(name, new Sort(Sort.Direction.ASC, paging.getSortedBy()));
         }
         return listOfItem;
     }
 
     @Override
     @Transactional
-    public List<Item> getItemList(Paging paging) {
+    public List<Item> getItemList(String name, Paging paging) {
         List<Item> listOfSortedItem = new ArrayList<>();
-        List<Item> listOfItem = getItemListFromRepository(paging);
+        List<Item> listOfItem = getItemListFromRepository(name, paging);
         int totalRecords = listOfItem.size();
         paging.setTotalRecords(totalRecords);
         int offset = (paging.getPageSize() * (paging.getPageNumber()-1));
