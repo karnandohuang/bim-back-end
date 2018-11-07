@@ -10,5 +10,5 @@ import java.util.List;
 
 @Repository
 public interface ItemRepository extends JpaRepository<Item, String> {
-    List<Item> findAllByNameContaining(String name, Sort sort);
+    List<Item> findAllByNameContainingIgnoreCase(String name, Sort sort);
 }

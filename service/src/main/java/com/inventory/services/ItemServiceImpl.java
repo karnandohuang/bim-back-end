@@ -31,9 +31,9 @@ public class ItemServiceImpl implements ItemService {
     private List<Item> getItemListFromRepository(String name, Paging paging) {
         List<Item> listOfItem;
         if(paging.getSortedType().matches("desc")) {
-            listOfItem = itemRepository.findAllByNameContaining(name, new Sort(Sort.Direction.DESC, paging.getSortedBy()));
+            listOfItem = itemRepository.findAllByNameContainingIgnoreCase(name, new Sort(Sort.Direction.DESC, paging.getSortedBy()));
         }else {
-            listOfItem = itemRepository.findAllByNameContaining(name, new Sort(Sort.Direction.ASC, paging.getSortedBy()));
+            listOfItem = itemRepository.findAllByNameContainingIgnoreCase(name, new Sort(Sort.Direction.ASC, paging.getSortedBy()));
         }
         return listOfItem;
     }

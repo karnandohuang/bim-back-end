@@ -73,9 +73,9 @@ public class EmployeeServiceImpl implements EmployeeService {
     private List<Employee> getEmployeeListFromRepository(String name, Paging paging) {
         List<Employee> listOfEmployee;
         if (paging.getSortedType().matches("desc"))
-            listOfEmployee = employeeRepository.findAllByNameContaining(name, new Sort(Sort.Direction.DESC, paging.getSortedBy()));
+            listOfEmployee = employeeRepository.findAllByNameContainingIgnoreCase(name, new Sort(Sort.Direction.DESC, paging.getSortedBy()));
         else
-            listOfEmployee = employeeRepository.findAllByNameContaining(name, new Sort(Sort.Direction.ASC, paging.getSortedBy()));
+            listOfEmployee = employeeRepository.findAllByNameContainingIgnoreCase(name, new Sort(Sort.Direction.ASC, paging.getSortedBy()));
         return listOfEmployee;
     }
 
