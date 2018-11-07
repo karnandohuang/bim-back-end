@@ -4,6 +4,7 @@ import com.inventory.models.Employee;
 import com.inventory.models.Item;
 import com.inventory.models.Paging;
 import com.inventory.models.Request;
+import com.inventory.webmodels.requests.ChangeRequestStatusRequest;
 import com.inventory.webmodels.requests.EmployeeRequest;
 import com.inventory.webmodels.requests.ItemRequest;
 import com.inventory.webmodels.requests.RequestHTTPRequest;
@@ -48,6 +49,17 @@ public class DataMapper {
         request.setQty(requestBody.getQty());
         request.setNotes("");
         request.setStatus("Pending");
+        return request;
+    }
+
+    public Request mapRequest(ChangeRequestStatusRequest requestBody) {
+        Request request = new Request();
+        request.setId(requestBody.getId());
+        if (requestBody.getNotes() == null)
+            request.setNotes("");
+        else
+            request.setNotes(requestBody.getNotes());
+        request.setStatus(requestBody.getStatus());
         return request;
     }
 
