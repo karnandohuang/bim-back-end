@@ -12,5 +12,5 @@ public interface EmployeeRepository extends JpaRepository<Employee, String> {
 
     Employee findByEmail(String email);
 
-    List<Employee> findAllByNameContaining(String name, Sort sort);
+    List<Employee> findAllByNameContainingIgnoreCase(String name, Sort sort);
 }
