@@ -8,6 +8,8 @@ public class API_PATH {
 
     public static final String API_PATH_REQUESTS = "api/requests";
     public static final String API_PATH_GET_REQUEST = "api/requests/{id}";
+    public static final String API_PATH_CHANGE_STATUS_REQUEST = "api/requests/change";
+    public static final String API_PATH_EMPLOYEE_REQUESTS = "api/requests/employee";
 
     public static final String API_PATH_ITEMS = "api/items";
     public static final String API_PATH_GET_ITEM = "api/items/{id}";

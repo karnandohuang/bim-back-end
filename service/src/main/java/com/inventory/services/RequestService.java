@@ -12,6 +12,8 @@ public interface RequestService {
 
     List<Request> getRequestList(Paging paging);
 
+    List<Request> getEmployeeRequestList(String employeeId, Paging paging);
+
     Request saveRequest(Request request);
 
     List<String> deleteRequests(List<String> ids);

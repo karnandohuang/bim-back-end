@@ -1,5 +1,7 @@
 package com.inventory.controllers;
 
+import com.inventory.mappers.ItemMapper;
+import com.inventory.mappers.ResponseMapper;
 import com.inventory.models.Item;
 import com.inventory.models.Paging;
 import com.inventory.services.ItemService;
@@ -24,7 +26,10 @@ public class ItemController {
     private ItemService itemService;
 
     @Autowired
-    DataMapper mapper;
+    ItemMapper itemMapper;
+
+    @Autowired
+    ResponseMapper responseMapper;
 
     @GetMapping(value = API_PATH_ITEMS, produces = MediaType.APPLICATION_JSON_VALUE,
         consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -35,11 +40,11 @@ public class ItemController {
             @RequestParam(required = false) String sortedBy,
             @RequestParam(required = false) String sortedType
     ) throws IOException {
-        Paging paging = mapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
+        Paging paging = responseMapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         if (name == null)
             name = "";
         ListOfItemResponse list = new ListOfItemResponse(itemService.getItemList(name, paging));
-        BaseResponse<ListOfItemResponse> response = mapper.getBaseResponse(true, "", paging);
+        BaseResponse<ListOfItemResponse> response = responseMapper.getBaseResponse(true, "", paging);
         response.setValue(list);
         return response;
     }
@@ -48,7 +53,7 @@ public class ItemController {
     produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<ItemResponse> ItemData(@PathVariable String id) throws IOException{
         ItemResponse itemResponse = new ItemResponse(itemService.getItem(id));
-        BaseResponse<ItemResponse> response = mapper.getBaseResponse(true, "", new Paging());
+        BaseResponse<ItemResponse> response = responseMapper.getBaseResponse(true, "", new Paging());
         response.setValue(itemResponse);
         return response;
     }
@@ -56,10 +61,10 @@ public class ItemController {
     @RequestMapping(value = API_PATH_ITEMS, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE, method = {RequestMethod.POST, RequestMethod.PUT})
     public BaseResponse<String> insertItem(@RequestBody ItemRequest request) {
-        Item item = mapper.mapItem(request);
+        Item item = itemMapper.getMappedItem(request);
         if (itemService.saveItem(item) == null)
-            return mapper.getStandardBaseResponse(false, "save failed");
-        return mapper.getStandardBaseResponse(true, "success");
+            return responseMapper.getStandardBaseResponse(false, "save failed");
+        return responseMapper.getStandardBaseResponse(true, "success");
     }
 
     @PostMapping(value = API_PATH_UPLOAD_IMAGE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -69,9 +74,9 @@ public class ItemController {
         UploadFileResponse value = new UploadFileResponse(imagePath);
         BaseResponse<UploadFileResponse> response = null;
         if (imagePath == null)
-            response = mapper.getUploadBaseResponse(false, "save failed");
+            response = responseMapper.getUploadBaseResponse(false, "save failed");
         else
-            response = mapper.getUploadBaseResponse(true, "success");
+            response = responseMapper.getUploadBaseResponse(true, "success");
         response.setValue(value);
         return response;
     }
@@ -85,9 +90,9 @@ public class ItemController {
         List<String> error = itemService.deleteItem(request.getIds());
 
         if(error.size() <= 0){
-            response = mapper.getBaseResponse(true, "", new Paging());
+            response = responseMapper.getBaseResponse(true, "", new Paging());
         }else {
-            response = mapper.getBaseResponse(false, "There is an error", new Paging());
+            response = responseMapper.getBaseResponse(false, "There is an error", new Paging());
             deleteResponse.setValue(error);
             response.setValue(deleteResponse);
         }

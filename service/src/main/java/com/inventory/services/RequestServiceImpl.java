@@ -35,6 +35,18 @@ public class RequestServiceImpl implements RequestService {
         return listOfRequest;
     }
 
+    private List<Request> getEmployeeRequestListFromRepository(String employeeId, Paging paging) {
+        List<Request> listOfRequest;
+        if (paging.getSortedType().matches("desc")) {
+            listOfRequest = requestRepository.findAllByEmployeeId(employeeId,
+                    new Sort(Sort.Direction.DESC, paging.getSortedBy()));
+        } else {
+            listOfRequest = requestRepository.findAllByEmployeeId(employeeId,
+                    new Sort(Sort.Direction.ASC, paging.getSortedBy()));
+        }
+        return listOfRequest;
+    }
+
 
     @Override
     @Transactional
@@ -47,6 +59,24 @@ public class RequestServiceImpl implements RequestService {
         int totalPage = (totalRecords / paging.getPageSize());
         paging.setTotalPage(totalPage);
         for(int i = 0; i < paging.getPageSize(); i++){
+            if ((offset + i) >= totalRecords) {
+                break;
+            }
+            listOfSortedRequest.add(listOfRequest.get((offset + i)));
+        }
+        return listOfSortedRequest;
+    }
+
+    @Override
+    public List<Request> getEmployeeRequestList(String employeeId, Paging paging) {
+        List<Request> listOfSortedRequest = new ArrayList<>();
+        List<Request> listOfRequest = getEmployeeRequestListFromRepository(employeeId, paging);
+        int totalRecords = listOfRequest.size();
+        paging.setTotalRecords(totalRecords);
+        int offset = (paging.getPageSize() * (paging.getPageNumber() - 1));
+        int totalPage = (int) Math.ceil((float) (totalRecords / paging.getPageSize()));
+        paging.setTotalPage(totalPage);
+        for (int i = 0; i < paging.getPageSize(); i++) {
             if ((offset + i) >= totalRecords) {
                 break;
             }
