@@ -107,27 +107,35 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public List<String> changeStatusRequests(List<String> ids, String status, String notes) {
-        List<String> listOfNotFoundIds = new ArrayList<>();
+        List<String> listOfErrors = new ArrayList<>();
         for (String id : ids) {
             try {
                 Request request = requestRepository.findById(id).get();
-                request.setStatus(status);
-                request.setNotes(notes);
-                requestRepository.save(request);
+                if (request.getStatus().equals(status))
+                    listOfErrors.add("failed because status is already" + status);
+                else {
+                    request.setStatus(status);
+                    request.setNotes(notes);
+                    requestRepository.save(request);
+                }
             } catch (NullPointerException e) {
-                listOfNotFoundIds.add("id " + id + " not found");
+                listOfErrors.add("id " + id + " not found");
             }
         }
-        return listOfNotFoundIds;
+        return listOfErrors;
     }
 
     @Override
     public Map<String, Integer> getRecoveredItems(List<String> ids){
-        Map<String, Integer> listOfRecoveredItem = new HashMap<>();
+        Map<String, Integer> listOfRecoveredItems = new HashMap<>();
+        int qty = 0;
         for(String id : ids) {
+            qty = 0;
             Request request = requestRepository.findById(id).get();
-            listOfRecoveredItem.put(request.getItemId(), request.getQty());
+            if (listOfRecoveredItems.get(request.getItemId()) != null)
+                qty = listOfRecoveredItems.get(request.getItemId());
+            listOfRecoveredItems.put(request.getItemId(), qty + request.getQty());
         }
-        return listOfRecoveredItem;
+        return listOfRecoveredItems;
     }
 }

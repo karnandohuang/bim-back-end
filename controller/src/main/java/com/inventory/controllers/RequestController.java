@@ -127,14 +127,14 @@ public class RequestController {
             consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     public BaseResponse<ChangeRequestStatusResponse> changeStatus(@RequestBody ChangeRequestStatusRequest requestBody) {
-        Request rb = requestMapper.getMappedRequest(requestBody);
-        BaseResponse<ChangeRequestStatusResponse> response = null;
+        BaseResponse<ChangeRequestStatusResponse> response;
+        Request request = requestMapper.getMappedRequest(requestBody);
         ChangeRequestStatusResponse changeRequestStatusResponse = new ChangeRequestStatusResponse();
         Map<String, Integer> listOfRecoveredItems = new HashMap<>();
         List<String> errorOfItem = new ArrayList<>();
         List<String> errors = requestService.changeStatusRequests(requestBody.getIds(),
-                requestBody.getStatus(), requestBody.getNotes());
-        if (requestBody.getStatus().matches("Rejected")) {
+                request.getStatus(), request.getNotes());
+        if (request.getStatus().equals("Rejected")) {
             listOfRecoveredItems = requestService.getRecoveredItems(requestBody.getIds());
             errorOfItem = new ArrayList<>();
             for (Map.Entry<String, Integer> entry : listOfRecoveredItems.entrySet()) {
@@ -147,7 +147,7 @@ public class RequestController {
             }
         }
         if (errors.size() <= 0 && errorOfItem.size() <= 0) {
-            response = responseMapper.getBaseResponse(true, "", new Paging());
+            response = responseMapper.getBaseResponse(true, "nothing", new Paging());
         } else {
             response = responseMapper.getBaseResponse(false, "There is an error", new Paging());
             if (errors.size() > 0)
@@ -157,8 +157,8 @@ public class RequestController {
                 changeRequestStatusResponse.setErrors(errors);
             } else
                 changeRequestStatusResponse.setErrorOfItem(errorOfItem);
-            response.setValue(changeRequestStatusResponse);
         }
+        response.setValue(changeRequestStatusResponse);
         return response;
     }
 
