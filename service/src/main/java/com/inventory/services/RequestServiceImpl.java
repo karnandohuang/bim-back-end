@@ -106,8 +106,24 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
+    public List<String> changeStatusRequests(List<String> ids, String status, String notes) {
+        List<String> listOfNotFoundIds = new ArrayList<>();
+        for (String id : ids) {
+            try {
+                Request request = requestRepository.findById(id).get();
+                request.setStatus(status);
+                request.setNotes(notes);
+                requestRepository.save(request);
+            } catch (NullPointerException e) {
+                listOfNotFoundIds.add("id " + id + " not found");
+            }
+        }
+        return listOfNotFoundIds;
+    }
+
+    @Override
     public Map<String, Integer> getRecoveredItems(List<String> ids){
-        Map<String, Integer> listOfRecoveredItem = new HashMap<String, Integer>();
+        Map<String, Integer> listOfRecoveredItem = new HashMap<>();
         for(String id : ids) {
             Request request = requestRepository.findById(id).get();
             listOfRecoveredItem.put(request.getItemId(), request.getQty());

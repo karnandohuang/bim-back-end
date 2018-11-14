@@ -18,5 +18,7 @@ public interface RequestService {
 
     List<String> deleteRequests(List<String> ids);
 
+    List<String> changeStatusRequests(List<String> ids, String status, String notes);
+
     Map<String, Integer> getRecoveredItems(List<String> ids);
 }

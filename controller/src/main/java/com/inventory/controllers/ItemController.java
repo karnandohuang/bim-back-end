@@ -31,8 +31,7 @@ public class ItemController {
     @Autowired
     ResponseMapper responseMapper;
 
-    @GetMapping(value = API_PATH_ITEMS, produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = API_PATH_ITEMS, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<ListOfItemResponse> getItemList(
             @RequestParam(required = false) String name,
             @RequestParam int pageNumber,
@@ -49,8 +48,7 @@ public class ItemController {
         return response;
     }
 
-    @GetMapping(value = API_PATH_GET_ITEM, consumes = MediaType.APPLICATION_JSON_VALUE,
-    produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = API_PATH_GET_ITEM, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<ItemResponse> ItemData(@PathVariable String id) throws IOException{
         ItemResponse itemResponse = new ItemResponse(itemService.getItem(id));
         BaseResponse<ItemResponse> response = responseMapper.getBaseResponse(true, "", new Paging());
@@ -69,8 +67,11 @@ public class ItemController {
 
     @PostMapping(value = API_PATH_UPLOAD_IMAGE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<UploadFileResponse> uploadFile(@RequestParam("file") MultipartFile file) {
-        String imagePath = itemService.uploadFile(file);
+    public BaseResponse<UploadFileResponse> uploadFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("sku") String itemSku
+    ) {
+        String imagePath = itemService.uploadFile(file, itemSku);
         UploadFileResponse value = new UploadFileResponse(imagePath);
         BaseResponse<UploadFileResponse> response = null;
         if (imagePath == null)

@@ -17,6 +17,6 @@ public interface ItemService {
 
     List<String> deleteItem(List<String> ids);
 
-    String uploadFile(MultipartFile file);
+    String uploadFile(MultipartFile file, String itemSku);
 
 }

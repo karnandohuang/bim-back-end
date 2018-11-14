@@ -78,8 +78,11 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public String uploadFile(MultipartFile file) {
-        File convertFile = new File("C:\\Users\\olive\\Desktop\\bim-back-end\\resources\\" +
+    public String uploadFile(MultipartFile file, String itemSku) {
+        File createdDir = new File("C:\\Users\\olive\\Desktop\\bim-back-end\\resources\\" + itemSku);
+        if (!createdDir.exists())
+            createdDir.mkdir();
+        File convertFile = new File(createdDir.getAbsolutePath() + "\\" +
                 file.getOriginalFilename());
         try {
             convertFile.createNewFile();

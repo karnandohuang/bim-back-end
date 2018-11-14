@@ -18,10 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.inventory.controllers.API_PATH.*;
 
@@ -44,8 +41,7 @@ public class RequestController {
     @Autowired
     RequestMapper requestMapper;
 
-    @GetMapping(value = API_PATH_REQUESTS, produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = API_PATH_REQUESTS, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<ListOfRequestResponse> listOfRequest(
             @RequestParam int pageNumber,
             @RequestParam int pageSize,
@@ -69,9 +65,8 @@ public class RequestController {
         return response;
     }
 
-    @GetMapping(value = API_PATH_EMPLOYEE_REQUESTS, produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<ListOfItemResponse> listOfEmployeeRequest(
+    @GetMapping(value = API_PATH_EMPLOYEE_REQUESTS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public BaseResponse<List<EmployeeRequestResponse>> listOfEmployeeRequest(
             @RequestParam String employeeId,
             @RequestParam int pageNumber,
             @RequestParam int pageSize,
@@ -80,19 +75,24 @@ public class RequestController {
     ) throws IOException {
         Paging paging = responseMapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         List<Request> listOfRequest = requestService.getEmployeeRequestList(employeeId, paging);
-        List<Item> listOfItem = new ArrayList<>();
+        List<EmployeeRequestResponse> listOfEmployeeRequest = new ArrayList<>();
+        List<RequestResponse> list = new ArrayList<>();
         for (Request request : listOfRequest) {
+            EmployeeRequestResponse employeeRequestResponse = new EmployeeRequestResponse();
             Item item = itemService.getItem(request.getItemId());
-            listOfItem.add(item);
+            item.setQty(request.getQty());
+            employeeRequestResponse.setItem(item);
+            employeeRequestResponse.setStatus(request.getStatus());
+            employeeRequestResponse.setRequestId(request.getId());
+            listOfEmployeeRequest.add(employeeRequestResponse);
         }
-        BaseResponse<ListOfItemResponse> response = responseMapper.getBaseResponse(true, "", paging);
-        ListOfItemResponse list = new ListOfItemResponse(listOfItem);
-        response.setValue(list);
+        BaseResponse<List<EmployeeRequestResponse>> response = responseMapper.getBaseResponse(
+                true, "", paging);
+        response.setValue(listOfEmployeeRequest);
         return response;
     }
 
-    @GetMapping(value = API_PATH_GET_REQUEST, produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = API_PATH_GET_REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<RequestResponse> getRequest(@PathVariable String id) throws IOException {
         RequestResponse requestResponse = new RequestResponse();
         requestResponse.setRequest(requestService.getRequest(id));
@@ -125,16 +125,41 @@ public class RequestController {
 
     @PutMapping(value = API_PATH_CHANGE_STATUS_REQUEST, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<String> changeStatus(@RequestBody ChangeRequestStatusRequest requestBody) {
+    @Transactional
+    public BaseResponse<ChangeRequestStatusResponse> changeStatus(@RequestBody ChangeRequestStatusRequest requestBody) {
         Request rb = requestMapper.getMappedRequest(requestBody);
-        Request request = requestService.getRequest(rb.getId());
-        request.setStatus(rb.getStatus());
-        request = requestService.saveRequest(request);
-        if (request == null) {
-            return responseMapper.getStandardBaseResponse(false, "save failed");
-        } else {
-            return responseMapper.getStandardBaseResponse(true, "");
+        BaseResponse<ChangeRequestStatusResponse> response = null;
+        ChangeRequestStatusResponse changeRequestStatusResponse = new ChangeRequestStatusResponse();
+        Map<String, Integer> listOfRecoveredItems = new HashMap<>();
+        List<String> errorOfItem = new ArrayList<>();
+        List<String> errors = requestService.changeStatusRequests(requestBody.getIds(),
+                requestBody.getStatus(), requestBody.getNotes());
+        if (requestBody.getStatus().matches("Rejected")) {
+            listOfRecoveredItems = requestService.getRecoveredItems(requestBody.getIds());
+            errorOfItem = new ArrayList<>();
+            for (Map.Entry<String, Integer> entry : listOfRecoveredItems.entrySet()) {
+                Item item = itemService.getItem(entry.getKey());
+                item.setQty(item.getQty() + entry.getValue());
+                item = itemService.saveItem(item);
+                if (item == null) {
+                    errorOfItem.add("Failed saving item");
+                }
+            }
         }
+        if (errors.size() <= 0 && errorOfItem.size() <= 0) {
+            response = responseMapper.getBaseResponse(true, "", new Paging());
+        } else {
+            response = responseMapper.getBaseResponse(false, "There is an error", new Paging());
+            if (errors.size() > 0)
+                changeRequestStatusResponse.setErrors(errors);
+            else if (errors.size() > 0 && errorOfItem.size() > 0) {
+                changeRequestStatusResponse.setErrorOfItem(errorOfItem);
+                changeRequestStatusResponse.setErrors(errors);
+            } else
+                changeRequestStatusResponse.setErrorOfItem(errorOfItem);
+            response.setValue(changeRequestStatusResponse);
+        }
+        return response;
     }
 
     @DeleteMapping(value = API_PATH_REQUESTS, produces = MediaType.APPLICATION_JSON_VALUE,
