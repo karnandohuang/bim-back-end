@@ -53,11 +53,11 @@ public class RequestServiceImpl implements RequestService {
     public List<Request> getRequestList(Paging paging) {
         List<Request> listOfSortedRequest = new ArrayList<>();
         List<Request> listOfRequest = getRequestListFromRepository(paging);
-        int totalRecords = listOfRequest.size();
-        paging.setTotalRecords(totalRecords);
+        float totalRecords = listOfRequest.size();
+        paging.setTotalRecords((int) totalRecords);
         int offset = (paging.getPageSize() * (paging.getPageNumber()-1));
-        int totalPage = (totalRecords / paging.getPageSize());
-        paging.setTotalPage(totalPage);
+        double totalPage = (int) Math.ceil((totalRecords / paging.getPageSize()));
+        paging.setTotalPage((int) totalPage);
         for(int i = 0; i < paging.getPageSize(); i++){
             if ((offset + i) >= totalRecords) {
                 break;
@@ -71,11 +71,11 @@ public class RequestServiceImpl implements RequestService {
     public List<Request> getEmployeeRequestList(String employeeId, Paging paging) {
         List<Request> listOfSortedRequest = new ArrayList<>();
         List<Request> listOfRequest = getEmployeeRequestListFromRepository(employeeId, paging);
-        int totalRecords = listOfRequest.size();
-        paging.setTotalRecords(totalRecords);
+        float totalRecords = listOfRequest.size();
+        paging.setTotalRecords((int) totalRecords);
         int offset = (paging.getPageSize() * (paging.getPageNumber() - 1));
-        int totalPage = (int) Math.ceil((float) (totalRecords / paging.getPageSize()));
-        paging.setTotalPage(totalPage);
+        double totalPage = (int) Math.ceil((totalRecords / paging.getPageSize()));
+        paging.setTotalPage((int) totalPage);
         for (int i = 0; i < paging.getPageSize(); i++) {
             if ((offset + i) >= totalRecords) {
                 break;

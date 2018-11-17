@@ -44,11 +44,11 @@ public class ItemServiceImpl implements ItemService {
     public List<Item> getItemList(String name, Paging paging) {
         List<Item> listOfSortedItem = new ArrayList<>();
         List<Item> listOfItem = getItemListFromRepository(name, paging);
-        int totalRecords = listOfItem.size();
-        paging.setTotalRecords(totalRecords);
+        float totalRecords = listOfItem.size();
+        paging.setTotalRecords((int) totalRecords);
         int offset = (paging.getPageSize() * (paging.getPageNumber()-1));
-        int totalPage = (int) Math.ceil((float) (totalRecords / paging.getPageSize()));
-        paging.setTotalPage(totalPage);
+        double totalPage = (int) Math.ceil((totalRecords / paging.getPageSize()));
+        paging.setTotalPage((int) totalPage);
         for(int i = 0; i < paging.getPageSize(); i++){
             if ((offset + i) >= totalRecords) {
                 break;

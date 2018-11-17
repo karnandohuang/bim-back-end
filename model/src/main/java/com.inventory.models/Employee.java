@@ -4,12 +4,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-
-import java.util.Collection;
 
 import static com.inventory.models.Constant.*;
 
@@ -39,4 +35,6 @@ public class Employee extends BaseEntity{
     private String position;
     @Column(name = EMPLOYEE_COLUMN_NAME_DIVISION)
     private String division;
+    @Column(name = EMPLOYEE_COLUMN_NAME_ROLE)
+    private String role;
 }

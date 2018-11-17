@@ -21,6 +21,7 @@ public class Constant {
     public static final String EMPLOYEE_COLUMN_NAME_DOB = "dob";
     public static final String EMPLOYEE_COLUMN_NAME_POSITION = "position";
     public static final String EMPLOYEE_COLUMN_NAME_DIVISION = "division";
+    public static final String EMPLOYEE_COLUMN_NAME_ROLE = "role";
 
     public static final String ITEM_COLUMN_NAME_SKU = "sku";
     public static final String ITEM_COLUMN_NAME_NAME = "name";

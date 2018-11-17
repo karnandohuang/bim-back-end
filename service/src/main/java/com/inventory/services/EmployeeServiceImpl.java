@@ -58,10 +58,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     private List<Employee> setSortedDataWithPaging(Paging paging, List<Employee> listOfEmployee) {
         List<Employee> listOfSortedEmployee = new ArrayList<>();
         int offset = paging.getPageSize() * (paging.getPageNumber() - 1);
-        int totalRecords = listOfEmployee.size();
-        paging.setTotalRecords(totalRecords);
-        int totalPage = (int) Math.ceil((float) totalRecords / paging.getPageSize());
-        paging.setTotalPage(totalPage);
+        float totalRecords = listOfEmployee.size();
+        paging.setTotalRecords((int) totalRecords);
+        double totalPage = (int) Math.ceil((totalRecords / paging.getPageSize()));
+        paging.setTotalPage((int) totalPage);
         for (int i = 0; i < paging.getPageSize(); i++) {
             if ((offset + i) >= listOfEmployee.size())
                 break;
@@ -91,6 +91,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public Employee saveEmployee(Employee employee) {
         employee.setPassword(encoder.encode(employee.getPassword()));
+        if (employee.getSuperiorId().equals("null"))
+            employee.setRole("SUPERIOR");
+        else
+            employee.setRole("EMPLOYEE");
         return employeeRepository.save(employee);
     }
 
