@@ -12,4 +12,6 @@ public interface ItemRepository extends JpaRepository<Item, String> {
 
     List<Item> findAllByNameContainingIgnoreCase(String name, Sort sort);
 
+    Item findBySku(String sku);
+
 }

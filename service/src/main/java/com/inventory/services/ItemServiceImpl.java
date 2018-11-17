@@ -14,6 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 @Service
@@ -79,14 +80,17 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public String uploadFile(MultipartFile file, String itemSku) {
-        File createdDir = new File("C:\\Users\\olive\\Desktop\\bim-back-end\\resources\\" + itemSku);
-        if (!createdDir.exists())
-            createdDir.mkdir();
+        Calendar cal = Calendar.getInstance();
+        File createdDir = new File("C:\\Users\\olive\\Desktop\\bim-back-end\\resources\\" +
+                cal.get(cal.YEAR) + "\\" + cal.get(cal.MONTH) + "\\" + itemSku);
         File convertFile = new File(createdDir.getAbsolutePath() + "\\" +
                 file.getOriginalFilename());
         try {
-            convertFile.createNewFile();
-        } catch (IOException e) {
+//            if(!convertFile.exists())
+            convertFile.getParentFile().mkdirs();
+//            else
+//                convertFile.createNewFile();
+        } catch (Exception e) {
             //throw custom exception;
             e.printStackTrace();
         }
