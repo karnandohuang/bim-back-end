@@ -1,14 +1,17 @@
 package com.inventory.controllers;
 
-import com.inventory.mappers.EmployeeMapper;
-import com.inventory.mappers.ResponseMapper;
+import com.inventory.mappers.GeneralMapper;
 import com.inventory.models.Employee;
 import com.inventory.models.Paging;
-import com.inventory.services.EmployeeService;
-import com.inventory.webmodels.requests.DeleteRequest;
-import com.inventory.webmodels.requests.EmployeeRequest;
-import com.inventory.webmodels.requests.LoginRequest;
-import com.inventory.webmodels.responses.*;
+import com.inventory.services.employee.EmployeeService;
+import com.inventory.webmodels.requests.employee.EmployeeRequest;
+import com.inventory.webmodels.requests.employee.LoginRequest;
+import com.inventory.webmodels.requests.request.DeleteRequest;
+import com.inventory.webmodels.responses.BaseResponse;
+import com.inventory.webmodels.responses.DeleteResponse;
+import com.inventory.webmodels.responses.employee.EmployeeResponse;
+import com.inventory.webmodels.responses.employee.ListOfEmployeeResponse;
+import com.inventory.webmodels.responses.employee.ListOfSuperiorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -16,20 +19,18 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 
-import static com.inventory.controllers.API_PATH.*;
+import static com.inventory.constants.API_PATH.*;
+import static com.inventory.constants.ErrorConstant.*;
 
 @CrossOrigin
 @RestController
 public class EmployeeController {
 
     @Autowired
-    ResponseMapper responseMapper;
+    private GeneralMapper generalMapper;
 
     @Autowired
     private EmployeeService employeeService;
-
-    @Autowired
-    EmployeeMapper employeeMapper;
 
     @GetMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<ListOfEmployeeResponse> listOfEmployee(
@@ -39,12 +40,12 @@ public class EmployeeController {
             @RequestParam(required = false) String sortedBy,
             @RequestParam(required = false) String sortedType
     ) throws IOException {
-        Paging paging = responseMapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
+        Paging paging = generalMapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         if (name == null)
             name = "";
         ListOfEmployeeResponse list =
                 new ListOfEmployeeResponse(employeeService.getEmployeeList(name, paging));
-        BaseResponse<ListOfEmployeeResponse> response = responseMapper.getBaseResponse(true, "", paging);
+        BaseResponse<ListOfEmployeeResponse> response = generalMapper.getBaseResponse(true, "", paging);
         response.setValue(list);
         return response;
     }
@@ -54,8 +55,8 @@ public class EmployeeController {
     public BaseResponse<String> login(@RequestBody LoginRequest request) throws IOException {
         Employee employee = employeeService.login(request.getEmail(), request.getPassword());
         if (employee == null)
-            return responseMapper.getStandardBaseResponse(false, "Email or Password is wrong!");
-        return responseMapper.getStandardBaseResponse(true, "");
+            return generalMapper.getStandardBaseResponse(false, LOGIN_ERROR);
+        return generalMapper.getStandardBaseResponse(true, "");
     }
 
     @GetMapping(value = API_PATH_GET_SUPERIORS, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -66,12 +67,12 @@ public class EmployeeController {
             @RequestParam(required = false) String sortedBy,
             @RequestParam(required = false) String sortedType
     ) throws IOException {
-        Paging paging = responseMapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
+        Paging paging = generalMapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         if (name == null)
             name = "";
         ListOfSuperiorResponse list =
                 new ListOfSuperiorResponse(employeeService.getSuperiorList(name, paging));
-        BaseResponse<ListOfSuperiorResponse> response = responseMapper.getBaseResponse(true, "", paging);
+        BaseResponse<ListOfSuperiorResponse> response = generalMapper.getBaseResponse(true, "", paging);
         response.setValue(list);
         return response;
     }
@@ -79,7 +80,7 @@ public class EmployeeController {
     @GetMapping(value = API_PATH_GET_EMPLOYEE, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<EmployeeResponse> getEmployee(@PathVariable String id) throws IOException {
         EmployeeResponse employeeResponse = new EmployeeResponse(employeeService.getEmployee(id));
-        BaseResponse<EmployeeResponse> response = responseMapper.getBaseResponse(true, "", new Paging());
+        BaseResponse<EmployeeResponse> response = generalMapper.getBaseResponse(true, "", new Paging());
         response.setValue(employeeResponse);
         return response;
     }
@@ -87,12 +88,12 @@ public class EmployeeController {
     @RequestMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE, method = {RequestMethod.POST, RequestMethod.PUT})
     public BaseResponse<String> insertEmployee(@RequestBody EmployeeRequest request) {
-        Employee employee = employeeMapper.getMappedEmployee(request);
+        Employee employee = generalMapper.getMappedEmployee(request);
 
         if (employeeService.saveEmployee(employee) == (null)) {
-            return responseMapper.getStandardBaseResponse(false, "save failed");
+            return generalMapper.getStandardBaseResponse(false, SAVE_ERROR);
         } else {
-            return responseMapper.getStandardBaseResponse(true, "");
+            return generalMapper.getStandardBaseResponse(true, "");
         }
     }
 
@@ -103,9 +104,9 @@ public class EmployeeController {
         BaseResponse<DeleteResponse> response = null;
         List<String> error = employeeService.deleteEmployee(request.getIds());
         if (error.size() <= 0) {
-            response = responseMapper.getBaseResponse(true, "", new Paging());
+            response = generalMapper.getBaseResponse(true, "", new Paging());
         } else {
-            response = responseMapper.getBaseResponse(false, "There is an error", new Paging());
+            response = generalMapper.getBaseResponse(false, NORMAL_ERROR, new Paging());
             deleteResponse.setValue(error);
             response.setValue(deleteResponse);
         }

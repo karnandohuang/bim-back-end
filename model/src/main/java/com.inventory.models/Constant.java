@@ -30,7 +30,6 @@ public class Constant {
     public static final String ITEM_COLUMN_NAME_LOCATION = "location";
     public static final String ITEM_COLUMN_NAME_IMAGE_URL = "imageurl";
 
-
     public static final String REQUEST_COLUMN_NAME_EMPLOYEE_ID = "employeeId";
     public static final String REQUEST_COLUMN_NAME_ITEM_ID = "itemId";
     public static final String REQUEST_COLUMN_NAME_QTY = "qty";
