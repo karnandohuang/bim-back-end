@@ -1,4 +1,4 @@
-package com.inventory.webmodels.responses;
+package com.inventory.webmodels.responses.employee;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.inventory.models.Employee;

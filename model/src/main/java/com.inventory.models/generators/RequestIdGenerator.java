@@ -7,21 +7,20 @@ import org.hibernate.id.IdentifierGenerator;
 import java.io.Serializable;
 import java.sql.*;
 
-public class EmployeeIdGenerator implements IdentifierGenerator {
+public class RequestIdGenerator implements IdentifierGenerator {
 
-    private final String DEFAULT_SEQUENCE_NAME = "employee_sequence";
+    private final String DEFAULT_SEQUENCE_NAME = "request_sequence";
     private final String DATABASE_URL = "jdbc:postgresql://localhost:5432/inventory";
 
     @Override
     public Serializable generate(SharedSessionContractImplementor sharedSessionContractImplementor
             , Object o) throws HibernateException {
-
         Serializable result = null;
         Connection connection = null;
         Statement statement = null;
         ResultSet rs = null;
 
-        String prefix = "EM";
+        String prefix = "RQ";
 
         try {
             connection = DriverManager.getConnection(DATABASE_URL, "bim", "bim");

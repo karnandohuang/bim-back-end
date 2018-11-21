@@ -15,10 +15,10 @@ import static com.inventory.models.Constant.*;
 @Table(name = EMPLOYEE_TABLE_NAME, schema = SCHEMA_NAME, catalog = DATABASE_NAME)
 @JsonPropertyOrder({"id", "name", "superiorId", "dob", "email", "password", "position", "division", "createdDate",
         "updatedDate", "createdBy", "updatedBy"})
-public class Employee extends BaseEntity {
+public class Employee extends BaseEntity{
     @Id
     @GenericGenerator(name = "employee_sequence", strategy = "com.inventory.models.generators.EmployeeIdGenerator")
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "employee_sequence")
+    @GeneratedValue(generator = "employee_sequence")
     @Column(name = COLUMN_NAME_ID)
     private String id;
     @Column(name = EMPLOYEE_COLUMN_NAME_NAME)
@@ -35,4 +35,6 @@ public class Employee extends BaseEntity {
     private String position;
     @Column(name = EMPLOYEE_COLUMN_NAME_DIVISION)
     private String division;
+    @Column(name = EMPLOYEE_COLUMN_NAME_ROLE)
+    private String role;
 }

@@ -1,12 +1,13 @@
 package com.inventory.models;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Setter
-@Getter
+@Data
 public class Paging {
-    private long pageSize;
-    private long pageNumber;
-    private long totalRecords;
+    private int pageSize;
+    private int pageNumber;
+    private int totalRecords;
+    private String sortedBy;
+    private String sortedType;
+    private int totalPage;
 }

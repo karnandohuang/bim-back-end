@@ -1,70 +1,86 @@
 package com.inventory.controllers;
 
+import com.inventory.mappers.GeneralMapper;
 import com.inventory.models.Employee;
 import com.inventory.models.Paging;
-import com.inventory.services.EmployeeService;
-import com.inventory.webmodels.requests.DeleteRequest;
-import com.inventory.webmodels.requests.EmployeeRequest;
-import com.inventory.webmodels.requests.LoginRequest;
-import com.inventory.webmodels.responses.*;
+import com.inventory.services.employee.EmployeeService;
+import com.inventory.webmodels.requests.employee.EmployeeRequest;
+import com.inventory.webmodels.requests.employee.LoginRequest;
+import com.inventory.webmodels.requests.request.DeleteRequest;
+import com.inventory.webmodels.responses.BaseResponse;
+import com.inventory.webmodels.responses.DeleteResponse;
+import com.inventory.webmodels.responses.employee.EmployeeResponse;
+import com.inventory.webmodels.responses.employee.ListOfEmployeeResponse;
+import com.inventory.webmodels.responses.employee.ListOfSuperiorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
 
-import static com.inventory.controllers.API_PATH.*;
+import static com.inventory.constants.API_PATH.*;
+import static com.inventory.constants.ErrorConstant.*;
 
+@CrossOrigin
 @RestController
-@CrossOrigin(origins = "localhost")
 public class EmployeeController {
 
     @Autowired
-    DataMapper mapper;
+    private GeneralMapper generalMapper;
+
     @Autowired
     private EmployeeService employeeService;
 
-    @GetMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<ListOfEmployeeResponse> listOfEmployee() throws IOException {
-        Paging paging = new Paging();
-        ListOfEmployeeResponse list = new ListOfEmployeeResponse(employeeService.getEmployeeList(paging));
-        BaseResponse<ListOfEmployeeResponse> response = new BaseResponse<>();
-        response.setCode(HttpStatus.OK.toString());
+    @GetMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE)
+    public BaseResponse<ListOfEmployeeResponse> listOfEmployee(
+            @RequestParam(required = false) String name,
+            @RequestParam int pageNumber,
+            @RequestParam int pageSize,
+            @RequestParam(required = false) String sortedBy,
+            @RequestParam(required = false) String sortedType
+    ) throws IOException {
+        Paging paging = generalMapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
+        if (name == null)
+            name = "";
+        ListOfEmployeeResponse list =
+                new ListOfEmployeeResponse(employeeService.getEmployeeList(name, paging));
+        BaseResponse<ListOfEmployeeResponse> response = generalMapper.getBaseResponse(true, "", paging);
         response.setValue(list);
-        response.setErrorMessage("");
-        response.setSuccess(true);
-        response.setPaging(paging);
         return response;
     }
 
     @PostMapping(value = API_PATH_LOGIN, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<String> login(@RequestBody LoginRequest request) throws IOException {
-        Paging paging = new Paging();
         Employee employee = employeeService.login(request.getEmail(), request.getPassword());
         if (employee == null)
-            return mapper.getStandardBaseResponse(false, "Email or Password is wrong!");
-        return mapper.getStandardBaseResponse(true, "");
+            return generalMapper.getStandardBaseResponse(false, LOGIN_ERROR);
+        return generalMapper.getStandardBaseResponse(true, "");
     }
 
-    @GetMapping(value = API_PATH_GET_SUPERIORS, produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<ListOfSuperiorResponse> listOfSuperior() throws IOException {
-        Paging paging = new Paging();
-        ListOfSuperiorResponse list = new ListOfSuperiorResponse(employeeService.getSuperiorList(paging));
-        BaseResponse<ListOfSuperiorResponse> response = mapper.getBaseResponse(true, "");
+    @GetMapping(value = API_PATH_GET_SUPERIORS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public BaseResponse<ListOfSuperiorResponse> listOfSuperior(
+            @RequestParam(required = false) String name,
+            @RequestParam int pageNumber,
+            @RequestParam int pageSize,
+            @RequestParam(required = false) String sortedBy,
+            @RequestParam(required = false) String sortedType
+    ) throws IOException {
+        Paging paging = generalMapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
+        if (name == null)
+            name = "";
+        ListOfSuperiorResponse list =
+                new ListOfSuperiorResponse(employeeService.getSuperiorList(name, paging));
+        BaseResponse<ListOfSuperiorResponse> response = generalMapper.getBaseResponse(true, "", paging);
         response.setValue(list);
         return response;
     }
 
-    @GetMapping(value = API_PATH_GET_EMPLOYEE, produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = API_PATH_GET_EMPLOYEE, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<EmployeeResponse> getEmployee(@PathVariable String id) throws IOException {
         EmployeeResponse employeeResponse = new EmployeeResponse(employeeService.getEmployee(id));
-        BaseResponse<EmployeeResponse> response = mapper.getBaseResponse(true, "");
+        BaseResponse<EmployeeResponse> response = generalMapper.getBaseResponse(true, "", new Paging());
         response.setValue(employeeResponse);
         return response;
     }
@@ -72,12 +88,12 @@ public class EmployeeController {
     @RequestMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE, method = {RequestMethod.POST, RequestMethod.PUT})
     public BaseResponse<String> insertEmployee(@RequestBody EmployeeRequest request) {
-        Employee employee = mapper.mapEmployee(request);
+        Employee employee = generalMapper.getMappedEmployee(request);
 
         if (employeeService.saveEmployee(employee) == (null)) {
-            return mapper.getStandardBaseResponse(false, "save failed");
+            return generalMapper.getStandardBaseResponse(false, SAVE_ERROR);
         } else {
-            return mapper.getStandardBaseResponse(true, "");
+            return generalMapper.getStandardBaseResponse(true, "");
         }
     }
 
@@ -88,9 +104,9 @@ public class EmployeeController {
         BaseResponse<DeleteResponse> response = null;
         List<String> error = employeeService.deleteEmployee(request.getIds());
         if (error.size() <= 0) {
-            response = mapper.getBaseResponse(true, "");
+            response = generalMapper.getBaseResponse(true, "", new Paging());
         } else {
-            response = mapper.getBaseResponse(false, "There is an error");
+            response = generalMapper.getBaseResponse(false, NORMAL_ERROR, new Paging());
             deleteResponse.setValue(error);
             response.setValue(deleteResponse);
         }

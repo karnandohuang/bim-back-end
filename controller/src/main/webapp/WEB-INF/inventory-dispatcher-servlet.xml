@@ -14,12 +14,12 @@ http://www.springframework.org/schema/mvc ">
     <mvc:annotation-driven/>
     <bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor"/>
     <bean id="dataSource" class="org.apache.tomcat.jdbc.pool.DataSource"
-          destroy-method="close">
+          destroy-method="close" name="source">
         <property name="driverClassName" value="org.postgresql.Driver"/>
         <property name="url"
                   value="jdbc:postgresql://localhost:5432/inventory"/>
-        <property name="username" value="postgres"/>
-        <property name="password" value="power7500"/>
+        <property name="username" value="bim"/>
+        <property name="password" value="bim"/>
     </bean>
     <bean id="emf"
           class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
