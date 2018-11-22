@@ -10,7 +10,7 @@ public class API_PATH {
     public static final String API_PATH_API_REQUEST_BY_ID = "api/requests/{id}";
     public static final String API_PATH_CHANGE_STATUS_REQUEST = "api/requests/changeStatus";
     public static final String API_PATH_EMPLOYEE_REQUESTS = "api/requests/employee";
-    public static final String API_PATH_PENDING_REQUEST_BY_ID = "api/requests/{id}/{status}";
+    public static final String API_PATH_GET_REQUEST_COUNT_BY_EMPLOYEE_ID_AND_STATUS = "api/requests/count";
 
     public static final String API_PATH_ITEMS = "api/items";
     public static final String API_PATH_GET_ITEM = "api/items/{id}";

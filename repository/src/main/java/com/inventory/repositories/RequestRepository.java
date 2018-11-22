@@ -11,5 +11,5 @@ public interface RequestRepository extends JpaRepository<Request, String> {
 
     Float countAllByEmployeeId(String employeeId);
 
-    Float countALlByEmployeeIdAndStatus(String employeeId, String status);
+    Float countAllByEmployeeIdAndStatus(String employeeId, String status);
 }

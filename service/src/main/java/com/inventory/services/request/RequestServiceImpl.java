@@ -73,9 +73,9 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public Double getPendingRequestCountByIdAndStatus(String employeeId, String status) {
-        Double PendingRequestCount = Math.ceil(requestRepository.countALlByEmployeeIdAndStatus(employeeId, status));
-        return PendingRequestCount;
+    public Double getRequestCountByEmployeeIdAndStatus(String employeeId, String status) {
+        Double count = Math.ceil(requestRepository.countAllByEmployeeIdAndStatus(employeeId, status));
+        return count;
     }
 
     @Override

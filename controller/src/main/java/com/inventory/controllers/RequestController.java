@@ -17,6 +17,7 @@ import com.inventory.webmodels.responses.request.ChangeRequestStatusResponse;
 import com.inventory.webmodels.responses.request.EmployeeRequestResponse;
 import com.inventory.webmodels.responses.request.ListOfRequestResponse;
 import com.inventory.webmodels.responses.request.RequestResponse;
+import com.inventory.webmodels.responses.request.RequestCountResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
@@ -93,10 +94,13 @@ public class RequestController {
         return response;
     }
 
-    @GetMapping(value = API_PATH_PENDING_REQUEST_BY_ID, produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<Double> getRequestCountByIdAndStatus(@PathVariable String id, @PathVariable String status) throws IOException{
-        BaseResponse<Double> response = generalMapper.getBaseResponse(true, "", new Paging());
-        response.setValue(requestService.getPendingRequestCountByIdAndStatus(id, status));
+    @GetMapping(value = API_PATH_GET_REQUEST_COUNT_BY_EMPLOYEE_ID_AND_STATUS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public BaseResponse<RequestCountResponse> getRequestCount(@RequestParam String id,
+                                                              @RequestParam String status) throws IOException{
+        RequestCountResponse requestCountResponse = new RequestCountResponse();
+        requestCountResponse.setRequestCount(requestService.getRequestCountByEmployeeIdAndStatus(id, status));
+        BaseResponse<RequestCountResponse> response = generalMapper.getBaseResponse(true, "", new Paging());
+        response.setValue(requestCountResponse);
         return response;
     }
 
