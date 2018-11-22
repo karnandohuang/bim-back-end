@@ -93,6 +93,13 @@ public class RequestController {
         return response;
     }
 
+    @GetMapping(value = API_PATH_PENDING_REQUEST_BY_ID, produces = MediaType.APPLICATION_JSON_VALUE)
+    public BaseResponse<Double> getRequestCountByIdAndStatus(@PathVariable String id, @PathVariable String status) throws IOException{
+        BaseResponse<Double> response = generalMapper.getBaseResponse(true, "", new Paging());
+        response.setValue(requestService.getPendingRequestCountByIdAndStatus(id, status));
+        return response;
+    }
+
     @GetMapping(value = API_PATH_API_REQUEST_BY_ID, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<RequestResponse> getRequest(@PathVariable String id) throws IOException {
         RequestResponse requestResponse = new RequestResponse();

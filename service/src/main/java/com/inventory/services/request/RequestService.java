@@ -14,6 +14,8 @@ public interface RequestService {
 
     List<Request> getEmployeeRequestList(String employeeId, Paging paging);
 
+    Double getPendingRequestCountByIdAndStatus(String employeeId, String status);
+
     Request saveRequest(Request request);
 
     List<String> deleteRequests(List<String> ids);

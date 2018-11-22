@@ -10,4 +10,6 @@ public interface RequestRepository extends JpaRepository<Request, String> {
     Page<Request> findAllByEmployeeId(String employeeId, Pageable pageable);
 
     Float countAllByEmployeeId(String employeeId);
+
+    Float countALlByEmployeeIdAndStatus(String employeeId, String status);
 }
