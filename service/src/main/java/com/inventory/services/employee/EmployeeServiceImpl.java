@@ -73,7 +73,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (name == null)
             name = "";
         if (superiorId == null)
-            name = "null";
+            superiorId = "null";
         List<Employee> listOfEmployee;
         if (paging.getSortedType().matches("desc")) {
             listOfEmployee = employeeRepository.findAllBySuperiorIdAndNameContainingIgnoreCase(
