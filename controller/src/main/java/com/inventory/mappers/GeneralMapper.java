@@ -100,7 +100,7 @@ public class GeneralMapper {
         if (sortedType != null)
             paging.setSortedType(sortedType);
         else
-            paging.setSortedType("asc");
+            paging.setSortedType("desc");
         return paging;
     }
 

@@ -8,16 +8,12 @@ import com.inventory.models.Request;
 import com.inventory.services.employee.EmployeeService;
 import com.inventory.services.item.ItemService;
 import com.inventory.services.request.RequestService;
+import com.inventory.webmodels.requests.DeleteRequest;
 import com.inventory.webmodels.requests.request.ChangeRequestStatusRequest;
-import com.inventory.webmodels.requests.request.DeleteRequest;
 import com.inventory.webmodels.requests.request.RequestHTTPRequest;
 import com.inventory.webmodels.responses.BaseResponse;
 import com.inventory.webmodels.responses.DeleteResponse;
-import com.inventory.webmodels.responses.request.ChangeRequestStatusResponse;
-import com.inventory.webmodels.responses.request.EmployeeRequestResponse;
-import com.inventory.webmodels.responses.request.ListOfRequestResponse;
-import com.inventory.webmodels.responses.request.RequestResponse;
-import com.inventory.webmodels.responses.request.RequestCountResponse;
+import com.inventory.webmodels.responses.request.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
@@ -177,9 +173,9 @@ public class RequestController {
         } else {
             response = generalMapper.getBaseResponse(false, NORMAL_ERROR, new Paging());
             if(error.size() > 0)
-                deleteResponse.setValue(error);
+                deleteResponse.setError(error);
             else
-                deleteResponse.setValue(errorOfItem);
+                deleteResponse.setError(errorOfItem);
             response.setValue(deleteResponse);
         }
         return response;

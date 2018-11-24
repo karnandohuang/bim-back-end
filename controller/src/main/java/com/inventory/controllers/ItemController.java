@@ -4,8 +4,8 @@ import com.inventory.mappers.GeneralMapper;
 import com.inventory.models.Item;
 import com.inventory.models.Paging;
 import com.inventory.services.item.ItemService;
+import com.inventory.webmodels.requests.DeleteRequest;
 import com.inventory.webmodels.requests.item.ItemRequest;
-import com.inventory.webmodels.requests.request.DeleteRequest;
 import com.inventory.webmodels.responses.BaseResponse;
 import com.inventory.webmodels.responses.DeleteResponse;
 import com.inventory.webmodels.responses.item.ItemResponse;
@@ -96,7 +96,7 @@ public class ItemController {
             response = generalMapper.getBaseResponse(true, "", new Paging());
         }else {
             response = generalMapper.getBaseResponse(false, NORMAL_ERROR, new Paging());
-            deleteResponse.setValue(error);
+            deleteResponse.setError(error);
             response.setValue(deleteResponse);
         }
 

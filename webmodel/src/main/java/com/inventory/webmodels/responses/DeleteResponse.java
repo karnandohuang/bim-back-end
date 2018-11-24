@@ -11,5 +11,5 @@ public class DeleteResponse{
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @JsonProperty("list")
-    private List<String> value;
+    private List<String> error;
 }

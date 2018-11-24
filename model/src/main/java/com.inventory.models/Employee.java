@@ -1,7 +1,6 @@
 package com.inventory.models;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonRootName;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -9,7 +8,6 @@ import javax.persistence.*;
 
 import static com.inventory.models.Constant.*;
 
-@JsonRootName(value = "employee")
 @Data
 @Entity
 @Table(name = EMPLOYEE_TABLE_NAME, schema = SCHEMA_NAME, catalog = DATABASE_NAME)

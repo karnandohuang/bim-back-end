@@ -13,7 +13,7 @@ public interface EmployeeService {
     Employee login(String email, String password);
 
     @Transactional
-    List<Employee> getSuperiorList(String name, Paging paging);
+    List<Employee> getSuperiorList(String superiorId, String name, Paging paging);
 
     @Transactional
     List<Employee> getEmployeeList(String name, Paging paging);

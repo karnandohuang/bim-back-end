@@ -4,9 +4,9 @@ import com.inventory.mappers.GeneralMapper;
 import com.inventory.models.Employee;
 import com.inventory.models.Paging;
 import com.inventory.services.employee.EmployeeService;
+import com.inventory.webmodels.requests.DeleteRequest;
 import com.inventory.webmodels.requests.employee.EmployeeRequest;
 import com.inventory.webmodels.requests.employee.LoginRequest;
-import com.inventory.webmodels.requests.request.DeleteRequest;
 import com.inventory.webmodels.responses.BaseResponse;
 import com.inventory.webmodels.responses.DeleteResponse;
 import com.inventory.webmodels.responses.employee.EmployeeResponse;
@@ -61,6 +61,7 @@ public class EmployeeController {
 
     @GetMapping(value = API_PATH_GET_SUPERIORS, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<ListOfSuperiorResponse> listOfSuperior(
+            @RequestParam(required = false) String superiorId,
             @RequestParam(required = false) String name,
             @RequestParam int pageNumber,
             @RequestParam int pageSize,
@@ -68,10 +69,8 @@ public class EmployeeController {
             @RequestParam(required = false) String sortedType
     ) throws IOException {
         Paging paging = generalMapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
-        if (name == null)
-            name = "";
         ListOfSuperiorResponse list =
-                new ListOfSuperiorResponse(employeeService.getSuperiorList(name, paging));
+                new ListOfSuperiorResponse(employeeService.getSuperiorList(superiorId, name, paging));
         BaseResponse<ListOfSuperiorResponse> response = generalMapper.getBaseResponse(true, "", paging);
         response.setValue(list);
         return response;
@@ -87,9 +86,8 @@ public class EmployeeController {
 
     @RequestMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE, method = {RequestMethod.POST, RequestMethod.PUT})
-    public BaseResponse<String> insertEmployee(@RequestBody EmployeeRequest request) {
+    public BaseResponse<String> saveEmployee(@RequestBody EmployeeRequest request) {
         Employee employee = generalMapper.getMappedEmployee(request);
-
         if (employeeService.saveEmployee(employee) == (null)) {
             return generalMapper.getStandardBaseResponse(false, SAVE_ERROR);
         } else {
@@ -107,7 +105,7 @@ public class EmployeeController {
             response = generalMapper.getBaseResponse(true, "", new Paging());
         } else {
             response = generalMapper.getBaseResponse(false, NORMAL_ERROR, new Paging());
-            deleteResponse.setValue(error);
+            deleteResponse.setError(error);
             response.setValue(deleteResponse);
         }
         return response;

@@ -69,23 +69,27 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional
-    public List<Employee> getSuperiorList(String name, Paging paging) {
+    public List<Employee> getSuperiorList(String superiorId, String name, Paging paging) {
+        if (name == null)
+            name = "";
+        if (superiorId == null)
+            name = "null";
         List<Employee> listOfEmployee;
         if (paging.getSortedType().matches("desc")) {
             listOfEmployee = employeeRepository.findAllBySuperiorIdAndNameContainingIgnoreCase(
-                    "null", name, PageRequest.of(paging.getPageNumber() - 1,
+                    superiorId, name, PageRequest.of(paging.getPageNumber() - 1,
                             paging.getPageSize(),
                             Sort.Direction.DESC,
                             paging.getSortedBy())).getContent();
         } else {
             listOfEmployee = employeeRepository.findAllBySuperiorIdAndNameContainingIgnoreCase(
-                    "null", name, PageRequest.of(paging.getPageNumber() - 1,
+                    superiorId, name, PageRequest.of(paging.getPageNumber() - 1,
                             paging.getPageSize(),
                             Sort.Direction.ASC,
                             paging.getSortedBy())).getContent();
         }
         float totalRecords = employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(
-                "null", name);
+                superiorId, name);
         paging.setTotalRecords((int) totalRecords);
         double totalPage = (int) Math.ceil((totalRecords / paging.getPageSize()));
         paging.setTotalPage((int) totalPage);
@@ -95,7 +99,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional
     public Employee saveEmployee(Employee employee) {
-        employee.setPassword(encoder.encode(employee.getPassword()));
+        if (employee.getId() == null)
+            employee.setPassword(encoder.encode(employee.getPassword()));
         if (employee.getSuperiorId().equals("null"))
             employee.setRole("SUPERIOR");
         else

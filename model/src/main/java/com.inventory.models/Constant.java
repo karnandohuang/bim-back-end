@@ -5,13 +5,9 @@ public class Constant {
     public static final String EMPLOYEE_TABLE_NAME = "employees";
     public static final String REQUEST_TABLE_NAME = "requests";
     public static final String ITEM_TABLE_NAME = "items";
-    public static final String ADMIN_TABLE_NAME = "admins";
 
     public static final String DATABASE_NAME = "inventory";
     public static final String SCHEMA_NAME = "public";
-
-    public static final String ADMIN_COLUMN_NAME_EMAIL = "email";
-    public static final String ADMIN_COLUMN_NAME_PASSWORD = "password";
 
     public static final String COLUMN_NAME_ID = "id";
     public static final String EMPLOYEE_COLUMN_NAME_SUPERIOR_ID = "superiorId";

@@ -1,4 +1,4 @@
-package com.inventory.webmodels.requests.request;
+package com.inventory.webmodels.requests;
 
 import lombok.Data;
 
