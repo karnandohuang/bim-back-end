@@ -10,6 +10,6 @@ public class RequestResponse {
 
     private Request request;
     private String employeeName;
-    private String itemSKU;
+    private String itemSku;
     private String itemName;
 }

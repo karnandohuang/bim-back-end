@@ -73,6 +73,7 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
+    @Transactional
     public Double getRequestCountByEmployeeIdAndStatus(String employeeId, String status) {
         Double count = Math.ceil(requestRepository.countAllByEmployeeIdAndStatus(employeeId, status));
         return count;
@@ -99,6 +100,7 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
+    @Transactional
     public List<String> changeStatusRequests(List<String> ids, String status, String notes) {
         List<String> listOfErrors = new ArrayList<>();
         for (String id : ids) {
@@ -119,6 +121,7 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
+    @Transactional
     public Map<String, Integer> getRecoveredItems(List<String> ids){
         Map<String, Integer> listOfRecoveredItems = new HashMap<>();
         int qty = 0;

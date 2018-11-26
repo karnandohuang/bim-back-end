@@ -16,6 +16,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebMvc
 @EnableJpaAuditing(auditorAwareRef = "myAuditorProvider")
 @ComponentScan(basePackages = "com.inventory.models")
+@ComponentScan(basePackages = "com.inventory.models")
 @EnableJpaRepositories(basePackages = "com.inventory.repositories", entityManagerFactoryRef = "emf")
 public class WebConfiguration implements WebMvcConfigurer {
 

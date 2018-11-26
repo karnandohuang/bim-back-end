@@ -1,5 +1,6 @@
 package com.inventory.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
@@ -35,4 +36,15 @@ public class Request extends BaseEntity {
 
     @Column(name = REQUEST_COLUMN_NAME_NOTES)
     private String notes;
+
+    @ManyToOne
+    @JoinColumn(name = "EMPLOYEEID")
+    @JsonIgnore
+    private Employee employee;
+
+    @ManyToOne
+    @JoinColumn(name = "ITEMID")
+    @JsonIgnore
+    private Item item;
+
 }

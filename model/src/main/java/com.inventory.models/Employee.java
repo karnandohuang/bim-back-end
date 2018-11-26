@@ -1,10 +1,12 @@
 package com.inventory.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.Set;
 
 import static com.inventory.models.Constant.*;
 
@@ -35,4 +37,8 @@ public class Employee extends BaseEntity{
     private String division;
     @Column(name = EMPLOYEE_COLUMN_NAME_ROLE)
     private String role;
+
+    @OneToMany(mappedBy = "employee")
+    @JsonIgnore
+    private Set<Request> requestList;
 }

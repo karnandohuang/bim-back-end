@@ -1,11 +1,10 @@
 package com.inventory.controllers;
 
 import com.inventory.mappers.GeneralMapper;
-import com.inventory.models.Employee;
+import com.inventory.mappers.ModelHelper;
 import com.inventory.models.Item;
 import com.inventory.models.Paging;
 import com.inventory.models.Request;
-import com.inventory.services.employee.EmployeeService;
 import com.inventory.services.item.ItemService;
 import com.inventory.services.request.RequestService;
 import com.inventory.webmodels.requests.DeleteRequest;
@@ -40,7 +39,7 @@ public class RequestController {
     private ItemService itemService;
 
     @Autowired
-    private EmployeeService employeeService;
+    private ModelHelper helper;
 
     @Autowired
     private GeneralMapper generalMapper;
@@ -52,17 +51,15 @@ public class RequestController {
             @RequestParam(required = false) String sortedBy,
             @RequestParam(required = false) String sortedType
     ) throws IOException {
-        Paging paging = generalMapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
+        Paging paging = helper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         List<Request> listOfRequest = requestService.getRequestList(paging);
         List<RequestResponse> listOfRequestResponse = new ArrayList<>();
         for (Request request : listOfRequest) {
-            Employee employee = employeeService.getEmployee(request.getEmployeeId());
-            Item item = itemService.getItem(request.getItemId());
-            RequestResponse requestResponse = generalMapper.getMappedRequestResponse(request, employee, item);
+            RequestResponse requestResponse = helper.getMappedRequestResponse(request);
             listOfRequestResponse.add(requestResponse);
         }
         ListOfRequestResponse list = new ListOfRequestResponse(listOfRequestResponse);
-        BaseResponse<ListOfRequestResponse> response = generalMapper.getBaseResponse(true, "", paging);
+        BaseResponse<ListOfRequestResponse> response = helper.getBaseResponse(true, "", paging);
         response.setValue(list);
         return response;
     }
@@ -75,16 +72,16 @@ public class RequestController {
             @RequestParam(required = false) String sortedBy,
             @RequestParam(required = false) String sortedType
     ) throws IOException {
-        Paging paging = generalMapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
+        Paging paging = helper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         List<Request> listOfRequest = requestService.getEmployeeRequestList(employeeId, paging);
         List<EmployeeRequestResponse> listOfEmployeeRequest = new ArrayList<>();
         List<RequestResponse> list = new ArrayList<>();
         for (Request request : listOfRequest) {
             Item item = itemService.getItem(request.getItemId());
-            EmployeeRequestResponse employeeRequestResponse = generalMapper.getMappedEmployeeRequestResponse(request, item);
+            EmployeeRequestResponse employeeRequestResponse = helper.getMappedEmployeeRequestResponse(request, item);
             listOfEmployeeRequest.add(employeeRequestResponse);
         }
-        BaseResponse<List<EmployeeRequestResponse>> response = generalMapper.getBaseResponse(
+        BaseResponse<List<EmployeeRequestResponse>> response = helper.getBaseResponse(
                 true, "", paging);
         response.setValue(listOfEmployeeRequest);
         return response;
@@ -95,7 +92,7 @@ public class RequestController {
                                                               @RequestParam String status) throws IOException{
         RequestCountResponse requestCountResponse = new RequestCountResponse();
         requestCountResponse.setRequestCount(requestService.getRequestCountByEmployeeIdAndStatus(id, status));
-        BaseResponse<RequestCountResponse> response = generalMapper.getBaseResponse(true, "", new Paging());
+        BaseResponse<RequestCountResponse> response = helper.getBaseResponse(true, "", new Paging());
         response.setValue(requestCountResponse);
         return response;
     }
@@ -104,7 +101,7 @@ public class RequestController {
     public BaseResponse<RequestResponse> getRequest(@PathVariable String id) throws IOException {
         RequestResponse requestResponse = new RequestResponse();
         requestResponse.setRequest(requestService.getRequest(id));
-        BaseResponse<RequestResponse> response = generalMapper.getBaseResponse(true, "", new Paging());
+        BaseResponse<RequestResponse> response = helper.getBaseResponse(true, "", new Paging());
         response.setValue(requestResponse);
         return response;
     }
@@ -122,9 +119,9 @@ public class RequestController {
         }
 
         if (request == null || item == null) {
-            return generalMapper.getStandardBaseResponse(false, SAVE_ERROR);
+            return helper.getStandardBaseResponse(false, SAVE_ERROR);
         } else {
-            return generalMapper.getStandardBaseResponse(true, "");
+            return helper.getStandardBaseResponse(true, "");
         }
     }
 
@@ -144,9 +141,9 @@ public class RequestController {
             errorOfItem = itemService.recoverItemQty(listOfRecoveredItems);
         }
         if (errors.size() <= 0 && errorOfItem.size() <= 0) {
-            response = generalMapper.getBaseResponse(true, "", new Paging());
+            response = helper.getBaseResponse(true, "", new Paging());
         } else {
-            response = generalMapper.getBaseResponse(false, NORMAL_ERROR, new Paging());
+            response = helper.getBaseResponse(false, NORMAL_ERROR, new Paging());
             if (errors.size() > 0)
                 changeRequestStatusResponse.setErrors(errors);
             else if (errors.size() > 0 && errorOfItem.size() > 0) {
@@ -169,9 +166,9 @@ public class RequestController {
         List<String> error = requestService.deleteRequests(request.getIds());
         List<String> errorOfItem = itemService.recoverItemQty(listOfRecoveredItems);
         if (error.size() <= 0 && errorOfItem.size() <= 0) {
-            response = generalMapper.getBaseResponse(true, "", new Paging());
+            response = helper.getBaseResponse(true, "", new Paging());
         } else {
-            response = generalMapper.getBaseResponse(false, NORMAL_ERROR, new Paging());
+            response = helper.getBaseResponse(false, NORMAL_ERROR, new Paging());
             if(error.size() > 0)
                 deleteResponse.setError(error);
             else
