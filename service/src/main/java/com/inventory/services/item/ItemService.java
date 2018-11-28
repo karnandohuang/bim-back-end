@@ -1,8 +1,8 @@
 package com.inventory.services.item;
 
+import com.inventory.models.Assignment;
 import com.inventory.models.Item;
 import com.inventory.models.Paging;
-import com.inventory.models.Request;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -21,7 +21,7 @@ public interface ItemService {
 
     String uploadFile(MultipartFile file, String itemSku);
 
-    Item changeItemQty(Request request);
+    Item changeItemQty(Assignment assignment);
 
     List<String> recoverItemQty(Map<String, Integer> listOfRecoveredItems);
 

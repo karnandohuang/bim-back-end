@@ -18,11 +18,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.inventory.constants.API_PATH.*;
-import static com.inventory.constants.ErrorConstant.NORMAL_ERROR;
-import static com.inventory.constants.ErrorConstant.SAVE_ERROR;
 
 @CrossOrigin
 @RestController
@@ -38,7 +37,7 @@ public class ItemController {
     private ModelHelper helper;
 
     @GetMapping(value = API_PATH_ITEMS, produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<ListOfItemResponse> getItemList(
+    public BaseResponse<ListOfItemResponse> ListOfItem(
             @RequestParam(required = false) String name,
             @RequestParam int pageNumber,
             @RequestParam int pageSize,
@@ -55,20 +54,32 @@ public class ItemController {
     }
 
     @GetMapping(value = API_PATH_GET_ITEM, produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<ItemResponse> ItemData(@PathVariable String id) throws IOException{
-        ItemResponse itemResponse = new ItemResponse(itemService.getItem(id));
-        BaseResponse<ItemResponse> response = helper.getBaseResponse(true, "", new Paging());
+    public BaseResponse<ItemResponse> getItem(@PathVariable String id) throws IOException {
+        Item item;
+        BaseResponse<ItemResponse> response;
+        ItemResponse itemResponse;
+        try {
+            item = itemService.getItem(id);
+            itemResponse = new ItemResponse(item);
+            response = helper.getBaseResponse(true, "", new Paging());
+        } catch (RuntimeException e) {
+            itemResponse = new ItemResponse(null);
+            response = helper.getBaseResponse(false, e.getMessage(), new Paging());
+        }
         response.setValue(itemResponse);
         return response;
     }
 
     @RequestMapping(value = API_PATH_ITEMS, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE, method = {RequestMethod.POST, RequestMethod.PUT})
-    public BaseResponse<String> insertItem(@RequestBody ItemRequest request) {
+    public BaseResponse<String> saveItem(@RequestBody ItemRequest request) {
         Item item = generalMapper.getMappedItem(request);
-        if (itemService.saveItem(item) == null)
-            return helper.getStandardBaseResponse(false, SAVE_ERROR);
-        return helper.getStandardBaseResponse(true, "");
+        try {
+            itemService.saveItem(item);
+            return helper.getStandardBaseResponse(true, "");
+        } catch (RuntimeException e) {
+            return helper.getStandardBaseResponse(false, e.getMessage());
+        }
     }
 
     @PostMapping(value = API_PATH_UPLOAD_IMAGE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -77,13 +88,16 @@ public class ItemController {
             @RequestParam("file") MultipartFile file,
             @RequestParam("sku") String itemSku
     ) {
-        String imagePath = itemService.uploadFile(file, itemSku);
-        UploadFileResponse value = new UploadFileResponse(imagePath);
-        BaseResponse<UploadFileResponse> response = null;
-        if (imagePath == null)
-            response = helper.getUploadBaseResponse(false, SAVE_ERROR);
-        else
+        String imagePath;
+        BaseResponse<UploadFileResponse> response;
+        try {
+            imagePath = itemService.uploadFile(file, itemSku);
             response = helper.getUploadBaseResponse(true, "");
+        } catch (RuntimeException e) {
+            imagePath = null;
+            response = helper.getUploadBaseResponse(false, e.getMessage());
+        }
+        UploadFileResponse value = new UploadFileResponse(imagePath);
         response.setValue(value);
         return response;
     }
@@ -91,20 +105,19 @@ public class ItemController {
     @DeleteMapping(value = API_PATH_ITEMS, consumes = MediaType.APPLICATION_JSON_VALUE,
     produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<DeleteResponse> deleteItem(@RequestBody DeleteRequest request){
-        DeleteResponse deleteResponse = null;
-        BaseResponse<DeleteResponse> response = null;
-
-        List<String> error = itemService.deleteItem(request.getIds());
-
-        if(error.size() <= 0){
+        DeleteResponse deleteResponse = new DeleteResponse();
+        BaseResponse<DeleteResponse> response;
+        List<String> error = new ArrayList<>();
+        try {
+            error = itemService.deleteItem(request.getIds());
             response = helper.getBaseResponse(true, "", new Paging());
-        }else {
-            response = helper.getBaseResponse(false, NORMAL_ERROR, new Paging());
+        } catch (RuntimeException e) {
+            response = helper.getBaseResponse(false, e.getMessage(), new Paging());
+        }
+        if (error.size() > 0) {
             deleteResponse.setError(error);
             response.setValue(deleteResponse);
         }
-
         return response;
     }
-
 }

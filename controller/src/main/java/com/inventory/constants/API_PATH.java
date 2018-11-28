@@ -6,11 +6,11 @@ public class API_PATH {
     public static final String API_PATH_GET_SUPERIORS = "api/superiors";
     public static final String API_PATH_GET_EMPLOYEE = "api/employees/{id}";
 
-    public static final String API_PATH_REQUESTS = "api/requests";
-    public static final String API_PATH_API_REQUEST_BY_ID = "api/requests/{id}";
-    public static final String API_PATH_CHANGE_STATUS_REQUEST = "api/requests/changeStatus";
-    public static final String API_PATH_EMPLOYEE_REQUESTS = "api/requests/employee";
-    public static final String API_PATH_GET_REQUEST_COUNT_BY_EMPLOYEE_ID_AND_STATUS = "api/requests/count";
+    public static final String API_PATH_ASSIGNMENT = "api/requests";
+    public static final String API_PATH_API_ASSIGNMENT_BY_ID = "api/requests/{id}";
+    public static final String API_PATH_CHANGE_STATUS_ASSIGNMENT = "api/requests/changeStatus";
+    public static final String API_PATH_EMPLOYEE_ASSIGNMENT = "api/requests/employee";
+    public static final String API_PATH_GET_ASSIGNMENT_COUNT_BY_EMPLOYEE_ID_AND_STATUS = "api/requests/count";
 
     public static final String API_PATH_ITEMS = "api/items";
     public static final String API_PATH_GET_ITEM = "api/items/{id}";

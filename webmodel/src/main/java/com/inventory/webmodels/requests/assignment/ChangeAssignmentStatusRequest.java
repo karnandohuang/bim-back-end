@@ -1,4 +1,4 @@
-package com.inventory.webmodels.requests.request;
+package com.inventory.webmodels.requests.assignment;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class ChangeRequestStatusRequest {
+public class ChangeAssignmentStatusRequest {
     private List<String> ids;
     private String status;
 

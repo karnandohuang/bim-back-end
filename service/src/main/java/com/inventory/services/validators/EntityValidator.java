@@ -1,16 +1,23 @@
 package com.inventory.services.validators;
 
 import com.inventory.models.BaseEntity;
-import com.inventory.models.Employee;
 
-public interface EntityValidator {
-    String validateNullFieldEmployee(Employee employee);
+public class EntityValidator {
 
-    String assumeRoleEmployee(String superiorId);
+    public boolean validateIdFormatEntity(String id, String prefix) {
+        if (id == null)
+            return true;
+        else {
+            if (!id.startsWith(prefix)) {
+                return false;
+            }
+            return true;
+        }
+    }
 
-    boolean validateEmailFormatEmployee(String email);
-
-    boolean validateIdFormatEntity(String id, String prefix);
-
-    boolean validateNullEntity(BaseEntity entity);
+    public boolean validateNullEntity(BaseEntity entity) {
+        if (entity == null)
+            return true;
+        return false;
+    }
 }

@@ -3,10 +3,10 @@ package com.inventory.services.employee;
 import com.inventory.models.Employee;
 import com.inventory.models.Paging;
 import com.inventory.repositories.EmployeeRepository;
-import com.inventory.services.exceptions.EmployeeFieldWrongFormatException;
-import com.inventory.services.exceptions.EmployeeNotFoundException;
 import com.inventory.services.exceptions.EntityNullFieldException;
-import com.inventory.services.validators.EntityValidator;
+import com.inventory.services.exceptions.employee.EmployeeFieldWrongFormatException;
+import com.inventory.services.exceptions.employee.EmployeeNotFoundException;
+import com.inventory.services.validators.EmployeeValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -27,7 +27,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private PasswordEncoder encoder;
 
     @Autowired
-    private EntityValidator validator;
+    private EmployeeValidator validator;
 
     @Override
     @Transactional
@@ -77,9 +77,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                             paging.getSortedBy())).getContent();
         }
         float totalRecords = employeeRepository.countAllByNameContainingIgnoreCase(name);
-        paging.setTotalRecords((int) totalRecords);
-        double totalPage = (int) Math.ceil((totalRecords / paging.getPageSize()));
-        paging.setTotalPage((int) totalPage);
+        setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfEmployee;
     }
 
@@ -109,10 +107,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         float totalRecords = employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(
                 superiorId, name);
+        setPagingTotalRecordsAndTotalPage(paging, totalRecords);
+        return listOfEmployee;
+    }
+
+    private void setPagingTotalRecordsAndTotalPage(Paging paging, float totalRecords) {
         paging.setTotalRecords((int) totalRecords);
         double totalPage = (int) Math.ceil((totalRecords / paging.getPageSize()));
         paging.setTotalPage((int) totalPage);
-        return listOfEmployee;
     }
 
     @Override
@@ -121,12 +123,17 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setPassword(encoder.encode(employee.getPassword()));
         employee.setRole(validator.assumeRoleEmployee(employee.getSuperiorId()));
         String nullFieldEmployee = validator.validateNullFieldEmployee(employee);
-        boolean isSuperiorIdValid = validator.validateIdFormatEntity(employee.getSuperiorId(), "EM");
+        boolean isSuperiorIdValid = true;
+        boolean isDobValid = validator.isDobValid(employee.getDob());
+        if (!employee.getSuperiorId().equals("null"))
+            isSuperiorIdValid = validator.validateIdFormatEntity(employee.getSuperiorId(), "EM");
         boolean isEmailValid = validator.validateEmailFormatEmployee(employee.getEmail());
         if (nullFieldEmployee != null)
             throw new EntityNullFieldException(nullFieldEmployee);
         else if (!isEmailValid)
             throw new EmployeeFieldWrongFormatException("Email is not in the right format");
+        else if (!isDobValid)
+            throw new EmployeeFieldWrongFormatException("Date Of Birth is not in the right format");
         else if (!isSuperiorIdValid)
             throw new EmployeeFieldWrongFormatException("Superior Id is not in the right format");
         else
@@ -144,7 +151,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                     throw new EmployeeFieldWrongFormatException("Id is not in the right format");
                 employeeRepository.deleteById(id);
             } catch (RuntimeException e) {
-                throw new EmployeeNotFoundException("id : " + id + " is not found");
+                throw new EmployeeNotFoundException("id : " + id + " is not exist");
             }
         }
         return listOfNotFoundIds;

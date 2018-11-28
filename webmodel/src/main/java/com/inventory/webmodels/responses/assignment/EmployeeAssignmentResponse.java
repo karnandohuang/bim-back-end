@@ -1,4 +1,4 @@
-package com.inventory.webmodels.responses.request;
+package com.inventory.webmodels.responses.assignment;
 
 import com.inventory.models.Item;
 import lombok.AllArgsConstructor;
@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class EmployeeRequestResponse {
-    private String requestId;
+public class EmployeeAssignmentResponse {
+    private String assignmentId;
     private Item item;
     private String status;
 }

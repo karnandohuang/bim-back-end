@@ -1,14 +1,14 @@
-package com.inventory.webmodels.responses.request;
+package com.inventory.webmodels.responses.assignment;
 
-import com.inventory.models.Request;
+import com.inventory.models.Assignment;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class RequestResponse {
+public class AssignmentResponse {
 
-    private Request request;
+    private Assignment assignment;
     private String employeeName;
     private String itemSku;
     private String itemName;

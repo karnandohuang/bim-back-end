@@ -3,7 +3,7 @@ package com.inventory.models;
 public class Constant {
 
     public static final String EMPLOYEE_TABLE_NAME = "employees";
-    public static final String REQUEST_TABLE_NAME = "requests";
+    public static final String ASSIGNMENT_TABLE_NAME = "assignments";
     public static final String ITEM_TABLE_NAME = "items";
 
     public static final String DATABASE_NAME = "inventory";
@@ -26,11 +26,11 @@ public class Constant {
     public static final String ITEM_COLUMN_NAME_LOCATION = "location";
     public static final String ITEM_COLUMN_NAME_IMAGE_URL = "imageurl";
 
-    public static final String REQUEST_COLUMN_NAME_EMPLOYEE_ID = "employeeId";
-    public static final String REQUEST_COLUMN_NAME_ITEM_ID = "itemId";
-    public static final String REQUEST_COLUMN_NAME_QTY = "qty";
-    public static final String REQUEST_COLUMN_NAME_STATUS = "status";
-    public static final String REQUEST_COLUMN_NAME_NOTES = "notes";
+    public static final String ASSIGNMENT_COLUMN_NAME_EMPLOYEE_ID = "employeeId";
+    public static final String ASSIGNMENT_COLUMN_NAME_ITEM_ID = "itemId";
+    public static final String ASSIGNMENT_COLUMN_NAME_QTY = "qty";
+    public static final String ASSIGNMENT_COLUMN_NAME_STATUS = "status";
+    public static final String ASSIGNMENT_COLUMN_NAME_NOTES = "notes";
 
     public static final String COLUMN_NAME_CREATED_DATE = "createddate";
     public static final String COLUMN_NAME_UPDATED_DATE = "updateddate";

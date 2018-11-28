@@ -1,12 +1,12 @@
 package com.inventory.mappers;
 
+import com.inventory.models.Assignment;
 import com.inventory.models.Item;
 import com.inventory.models.Paging;
-import com.inventory.models.Request;
 import com.inventory.webmodels.responses.BaseResponse;
+import com.inventory.webmodels.responses.assignment.AssignmentResponse;
+import com.inventory.webmodels.responses.assignment.EmployeeAssignmentResponse;
 import com.inventory.webmodels.responses.item.UploadFileResponse;
-import com.inventory.webmodels.responses.request.EmployeeRequestResponse;
-import com.inventory.webmodels.responses.request.RequestResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -54,18 +54,18 @@ public class ModelHelper {
         return paging;
     }
 
-    public RequestResponse getMappedRequestResponse(Request request) {
-        RequestResponse requestResponse = new RequestResponse();
-        requestResponse.setRequest(request);
-        return requestResponse;
+    public AssignmentResponse getMappedAssignmentResponse(Assignment assignment) {
+        AssignmentResponse assignmentResponse = new AssignmentResponse();
+        assignmentResponse.setAssignment(assignment);
+        return assignmentResponse;
     }
 
-    public EmployeeRequestResponse getMappedEmployeeRequestResponse(Request request, Item item) {
-        EmployeeRequestResponse employeeRequestResponse = new EmployeeRequestResponse();
-        item.setQty(request.getQty());
-        employeeRequestResponse.setItem(item);
-        employeeRequestResponse.setStatus(request.getStatus());
-        employeeRequestResponse.setRequestId(request.getId());
-        return employeeRequestResponse;
+    public EmployeeAssignmentResponse getMappedEmployeeAssignmentResponse(Assignment assignment, Item item) {
+        EmployeeAssignmentResponse employeeAssignmentResponse = new EmployeeAssignmentResponse();
+        item.setQty(assignment.getQty());
+        employeeAssignmentResponse.setItem(item);
+        employeeAssignmentResponse.setStatus(assignment.getStatus());
+        employeeAssignmentResponse.setAssignmentId(assignment.getId());
+        return employeeAssignmentResponse;
     }
 }

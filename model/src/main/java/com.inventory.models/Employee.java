@@ -6,7 +6,7 @@ import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.util.Set;
+import java.util.List;
 
 import static com.inventory.models.Constant.*;
 
@@ -40,5 +40,5 @@ public class Employee extends BaseEntity{
 
     @OneToMany(mappedBy = "employee")
     @JsonIgnore
-    private Set<Request> requestList;
+    private List<Assignment> assignmentList;
 }

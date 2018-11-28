@@ -1,8 +1,8 @@
-package com.inventory.services.request;
+package com.inventory.services.assignment;
 
+import com.inventory.models.Assignment;
 import com.inventory.models.Paging;
-import com.inventory.models.Request;
-import com.inventory.repositories.RequestRepository;
+import com.inventory.repositories.AssignmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -15,83 +15,85 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class RequestServiceImpl implements RequestService {
+public class AssignmentServiceImpl implements AssignmentService {
 
     @Autowired
-    RequestRepository requestRepository;
+    AssignmentRepository AssignmentRepository;
 
 
     @Override
-    public Request getRequest(String id) {
-        return requestRepository.findById(id).get();
+    public Assignment getAssignment(String id) {
+        return AssignmentRepository.findById(id).get();
     }
 
     @Override
     @Transactional
-    public List<Request> getRequestList(Paging paging) {
-        List<Request> listOfRequest;
+    public List<Assignment> getAssignmentList(Paging paging) {
+        List<Assignment> listOfAssignment;
         if (paging.getSortedType().matches("desc")) {
-            listOfRequest = requestRepository.findAll(PageRequest.of(paging.getPageNumber() - 1,
+            listOfAssignment = AssignmentRepository.findAll(PageRequest.of(paging.getPageNumber() - 1,
                     paging.getPageSize(),
                     Sort.Direction.DESC,
                     paging.getSortedBy())).getContent();
         } else {
-            listOfRequest = requestRepository.findAll(PageRequest.of(paging.getPageNumber() - 1,
+            listOfAssignment = AssignmentRepository.findAll(PageRequest.of(paging.getPageNumber() - 1,
                     paging.getPageSize(),
                     Sort.Direction.ASC,
                     paging.getSortedBy())).getContent();
         }
-        float totalRecords = (float) requestRepository.count();
-        paging.setTotalRecords((int) totalRecords);
-        double totalPage = (int) Math.ceil((totalRecords / paging.getPageSize()));
-        paging.setTotalPage((int) totalPage);
-        return listOfRequest;
+        float totalRecords = (float) AssignmentRepository.count();
+        setPagingTotalRecordsAndTotalPage(paging, totalRecords);
+        return listOfAssignment;
     }
 
     @Override
     @Transactional
-    public List<Request> getEmployeeRequestList(String employeeId, Paging paging) {
-        List<Request> listOfRequest;
+    public List<Assignment> getEmployeeAssignmentList(String employeeId, Paging paging) {
+        List<Assignment> listOfAssignment;
         if (paging.getSortedType().matches("desc")) {
-            listOfRequest = requestRepository.findAllByEmployeeId(employeeId,
+            listOfAssignment = AssignmentRepository.findAllByEmployeeId(employeeId,
                     PageRequest.of(paging.getPageNumber() - 1,
                             paging.getPageSize(),
                             Sort.Direction.DESC,
                             paging.getSortedBy())).getContent();
         } else {
-            listOfRequest = requestRepository.findAllByEmployeeId(employeeId,
+            listOfAssignment = AssignmentRepository.findAllByEmployeeId(employeeId,
                     PageRequest.of(paging.getPageNumber() - 1,
                             paging.getPageSize(),
                             Sort.Direction.ASC,
                             paging.getSortedBy())).getContent();
         }
-        float totalRecords = requestRepository.countAllByEmployeeId(employeeId);
+        float totalRecords = AssignmentRepository.countAllByEmployeeId(employeeId);
+        setPagingTotalRecordsAndTotalPage(paging, totalRecords);
+        return listOfAssignment;
+    }
+
+    private void setPagingTotalRecordsAndTotalPage(Paging paging, float totalRecords) {
         paging.setTotalRecords((int) totalRecords);
         double totalPage = (int) Math.ceil((totalRecords / paging.getPageSize()));
         paging.setTotalPage((int) totalPage);
-        return listOfRequest;
     }
 
     @Override
     @Transactional
-    public Double getRequestCountByEmployeeIdAndStatus(String employeeId, String status) {
-        Double count = Math.ceil(requestRepository.countAllByEmployeeIdAndStatus(employeeId, status));
+    public Double getAssignmentCountByEmployeeIdAndStatus(String employeeId, String status) {
+        Double count = Math.ceil(AssignmentRepository.countAllByEmployeeIdAndStatus(employeeId, status));
         return count;
     }
 
     @Override
     @Transactional
-    public Request saveRequest(Request request) {
-        return requestRepository.save(request);
+    public Assignment saveAssignment(Assignment Assignment) {
+        return AssignmentRepository.save(Assignment);
     }
 
     @Override
     @Transactional
-    public List<String> deleteRequests(List<String> ids) {
+    public List<String> deleteAssignments(List<String> ids) {
         List<String> listOfNotFoundIds = new ArrayList<>();
         for (String id : ids) {
             try {
-                requestRepository.deleteById(id);
+                AssignmentRepository.deleteById(id);
             } catch (NullPointerException e) {
                 listOfNotFoundIds.add("id " + id + " not found");
             }
@@ -101,17 +103,17 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     @Transactional
-    public List<String> changeStatusRequests(List<String> ids, String status, String notes) {
+    public List<String> changeStatusAssignments(List<String> ids, String status, String notes) {
         List<String> listOfErrors = new ArrayList<>();
         for (String id : ids) {
             try {
-                Request request = requestRepository.findById(id).get();
-                if (request.getStatus().equals(status))
+                Assignment Assignment = AssignmentRepository.findById(id).get();
+                if (Assignment.getStatus().equals(status))
                     listOfErrors.add("failed because status is already" + status);
                 else {
-                    request.setStatus(status);
-                    request.setNotes(notes);
-                    requestRepository.save(request);
+                    Assignment.setStatus(status);
+                    Assignment.setNotes(notes);
+                    AssignmentRepository.save(Assignment);
                 }
             } catch (NullPointerException e) {
                 listOfErrors.add("id " + id + " not found");
@@ -127,10 +129,10 @@ public class RequestServiceImpl implements RequestService {
         int qty = 0;
         for(String id : ids) {
             qty = 0;
-            Request request = requestRepository.findById(id).get();
-            if (listOfRecoveredItems.get(request.getItemId()) != null)
-                qty = listOfRecoveredItems.get(request.getItemId());
-            listOfRecoveredItems.put(request.getItemId(), qty + request.getQty());
+            Assignment Assignment = AssignmentRepository.findById(id).get();
+            if (listOfRecoveredItems.get(Assignment.getItemId()) != null)
+                qty = listOfRecoveredItems.get(Assignment.getItemId());
+            listOfRecoveredItems.put(Assignment.getItemId(), qty + Assignment.getQty());
         }
         return listOfRecoveredItems;
     }

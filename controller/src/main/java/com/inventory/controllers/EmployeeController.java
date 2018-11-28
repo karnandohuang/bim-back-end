@@ -5,7 +5,7 @@ import com.inventory.mappers.ModelHelper;
 import com.inventory.models.Employee;
 import com.inventory.models.Paging;
 import com.inventory.services.employee.EmployeeService;
-import com.inventory.services.exceptions.EmployeeNotFoundException;
+import com.inventory.services.exceptions.employee.EmployeeNotFoundException;
 import com.inventory.webmodels.requests.DeleteRequest;
 import com.inventory.webmodels.requests.employee.EmployeeRequest;
 import com.inventory.webmodels.requests.employee.LoginRequest;

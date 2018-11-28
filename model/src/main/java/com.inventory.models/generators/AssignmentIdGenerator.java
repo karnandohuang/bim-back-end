@@ -7,7 +7,7 @@ import org.hibernate.id.IdentifierGenerator;
 import java.io.Serializable;
 import java.sql.*;
 
-public class RequestIdGenerator implements IdentifierGenerator {
+public class AssignmentIdGenerator implements IdentifierGenerator {
 
     private final String DEFAULT_SEQUENCE_NAME = "request_sequence";
     private final String DATABASE_URL = "jdbc:postgresql://localhost:5432/inventory";
@@ -20,7 +20,7 @@ public class RequestIdGenerator implements IdentifierGenerator {
         Statement statement = null;
         ResultSet rs = null;
 
-        String prefix = "RQ";
+        String prefix = "AT";
 
         try {
             connection = DriverManager.getConnection(DATABASE_URL, "bim", "bim");

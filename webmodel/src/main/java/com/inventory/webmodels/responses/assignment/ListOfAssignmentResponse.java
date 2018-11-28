@@ -1,4 +1,4 @@
-package com.inventory.webmodels.responses.request;
+package com.inventory.webmodels.responses.assignment;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -8,8 +8,8 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class ListOfRequestResponse {
+public class ListOfAssignmentResponse {
 
     @JsonProperty("list")
-    private List<RequestResponse> value;
+    private List<AssignmentResponse> value;
 }
