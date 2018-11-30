@@ -139,15 +139,11 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public String uploadFile(MultipartFile file, String itemId) throws RuntimeException {
-        try {
-            itemRepository.findById(itemId).get();
-        } catch (RuntimeException e) {
-            throw new ItemNotFoundException("item for sku : " + itemId + " is not exist");
-        }
+    public String uploadFile(MultipartFile file, String itemSku) throws RuntimeException {
+
         Calendar cal = Calendar.getInstance();
         File createdDir = new File("C:\\Users\\olive\\Desktop\\bim-back-end\\resources\\" +
-                cal.get(cal.YEAR) + "\\" + (cal.get(cal.MONTH) + 1) + "\\" + itemId);
+                cal.get(cal.YEAR) + "\\" + (cal.get(cal.MONTH) + 1) + "\\" + itemSku);
         File convertFile = new File(createdDir.getAbsolutePath() + "\\" +
                 file.getOriginalFilename());
         try {

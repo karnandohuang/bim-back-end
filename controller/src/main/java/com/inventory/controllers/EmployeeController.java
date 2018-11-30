@@ -10,16 +10,12 @@ import com.inventory.webmodels.requests.DeleteRequest;
 import com.inventory.webmodels.requests.employee.EmployeeRequest;
 import com.inventory.webmodels.requests.employee.LoginRequest;
 import com.inventory.webmodels.responses.BaseResponse;
-import com.inventory.webmodels.responses.DeleteResponse;
 import com.inventory.webmodels.responses.employee.EmployeeResponse;
 import com.inventory.webmodels.responses.employee.ListOfEmployeeResponse;
 import com.inventory.webmodels.responses.employee.ListOfSuperiorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.inventory.constants.API_PATH.*;
 import static com.inventory.constants.ErrorConstant.LOGIN_ERROR;
@@ -120,20 +116,13 @@ public class EmployeeController {
 
     @DeleteMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<DeleteResponse> deleteEmployee(@RequestBody DeleteRequest request) {
-        DeleteResponse deleteResponse = new DeleteResponse();
-        BaseResponse<DeleteResponse> response;
-        List<String> error = new ArrayList<>();
+    public BaseResponse<String> deleteEmployee(@RequestBody DeleteRequest request) {
+        BaseResponse<String> response;
         try {
-            error = employeeService.deleteEmployee(request.getIds());
-            response = helper.getBaseResponse(true, "", new Paging());
+            String success = employeeService.deleteEmployee(request.getIds());
+            response = helper.getStandardBaseResponse(true, success);
         } catch (RuntimeException e) {
-            response = helper.getBaseResponse(false, e.getMessage(), new Paging());
-        }
-
-        if (error.size() > 0) {
-            deleteResponse.setError(error);
-            response.setValue(deleteResponse);
+            response = helper.getStandardBaseResponse(false, e.getMessage());
         }
         return response;
     }

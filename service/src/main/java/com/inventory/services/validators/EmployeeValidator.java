@@ -13,7 +13,7 @@ public class EmployeeValidator extends EntityValidator {
             return EMPLOYEE_NAME_EMPTY;
         if (employee.getEmail() == null)
             return EMPLOYEE_EMAIL_EMPTY;
-        if (employee.getPassword() == null)
+        if (employee.getPassword() == null && employee.getId() == null)
             return EMPLOYEE_PASSWORD_EMPTY;
         if (employee.getDob() == null)
             return EMPLOYEE_DOB_EMPTY;

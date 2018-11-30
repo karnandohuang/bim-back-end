@@ -3,9 +3,12 @@ package com.inventory.services.employee;
 import com.inventory.models.Employee;
 import com.inventory.models.Paging;
 import com.inventory.repositories.EmployeeRepository;
+import com.inventory.services.assignment.AssignmentService;
 import com.inventory.services.exceptions.EntityNullFieldException;
+import com.inventory.services.exceptions.employee.EmployeeAlreadyExistException;
 import com.inventory.services.exceptions.employee.EmployeeFieldWrongFormatException;
 import com.inventory.services.exceptions.employee.EmployeeNotFoundException;
+import com.inventory.services.exceptions.employee.EmployeeStillHavePendingAssignmentException;
 import com.inventory.services.validators.EmployeeValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -14,7 +17,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,6 +26,9 @@ public class EmployeeServiceImpl implements EmployeeService {
     private EmployeeRepository employeeRepository;
 
     @Autowired
+    private AssignmentService assignmentService;
+
+    @Autowired
     private PasswordEncoder encoder;
 
     @Autowired
@@ -31,6 +36,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional
+
     public Employee getEmployee(String id) throws EmployeeNotFoundException {
         if (!validator.validateIdFormatEntity(id, "EM"))
             throw new EmployeeNotFoundException("id not valid");
@@ -117,43 +123,105 @@ public class EmployeeServiceImpl implements EmployeeService {
         paging.setTotalPage((int) totalPage);
     }
 
+    private Employee editEmployee(Employee employee) {
+        Employee newEmployee;
+        try {
+            newEmployee = employeeRepository.findById(employee.getId()).get();
+        } catch (RuntimeException e) {
+            throw new EmployeeNotFoundException("id : " + employee.getId() + " is not exist");
+        }
+        newEmployee.setName(employee.getName());
+        newEmployee.setEmail(employee.getEmail());
+        newEmployee.setDob(employee.getDob());
+        newEmployee.setPosition(employee.getPosition());
+        newEmployee.setDivision(employee.getDivision());
+        newEmployee.setSuperiorId(employee.getSuperiorId());
+        return newEmployee;
+    }
+
     @Override
     @Transactional
-    public Employee saveEmployee(Employee employee) throws RuntimeException {
-        employee.setPassword(encoder.encode(employee.getPassword()));
-        employee.setRole(validator.assumeRoleEmployee(employee.getSuperiorId()));
-        String nullFieldEmployee = validator.validateNullFieldEmployee(employee);
+    public Employee saveEmployee(Employee request) throws RuntimeException {
+
+        String nullFieldEmployee = validator.validateNullFieldEmployee(request);
+
+        Employee employee;
+
+        if (request.getId() != null)
+
+            employee = editEmployee(request);
+
+        else {
+            employee = request;
+
+            employee.setPassword(encoder.encode(request.getPassword()));
+        }
+
+        Employee superior;
+
+        if (employee.getSuperiorId().equals("null"))
+            superior = new Employee();
+        else
+            superior = null;
+
         boolean isSuperiorIdValid = true;
+
         boolean isDobValid = validator.isDobValid(employee.getDob());
-        if (!employee.getSuperiorId().equals("null"))
-            isSuperiorIdValid = validator.validateIdFormatEntity(employee.getSuperiorId(), "EM");
+
         boolean isEmailValid = validator.validateEmailFormatEmployee(employee.getEmail());
+
+        try {
+            superior = employeeRepository.findById(employee.getSuperiorId()).get();
+        } catch (RuntimeException e) {
+            //do nothing
+        }
+
+        employee.setRole(validator.assumeRoleEmployee(employee.getSuperiorId()));
+
+        if (!employee.getSuperiorId().equals("null"))
+
+            isSuperiorIdValid = validator.validateIdFormatEntity(employee.getSuperiorId(), "EM");
+
+
         if (nullFieldEmployee != null)
             throw new EntityNullFieldException(nullFieldEmployee);
+
         else if (!isEmailValid)
             throw new EmployeeFieldWrongFormatException("Email is not in the right format");
+
         else if (!isDobValid)
             throw new EmployeeFieldWrongFormatException("Date Of Birth is not in the right format");
+
         else if (!isSuperiorIdValid)
             throw new EmployeeFieldWrongFormatException("Superior Id is not in the right format");
+
+        else if (employeeRepository.findByEmail(employee.getEmail()) != null)
+            throw new EmployeeAlreadyExistException(employee.getEmail());
+
+        else if (superior == null)
+            throw new EmployeeNotFoundException("Superior of id : " + employee.getSuperiorId() + " is not exist");
+
         else
             return employeeRepository.save(employee);
     }
 
     @Override
     @Transactional
-    public List<String> deleteEmployee(List<String> ids) throws RuntimeException {
-        List<String> listOfNotFoundIds = new ArrayList<>();
+    public String deleteEmployee(List<String> ids) throws RuntimeException {
         for (String id : ids) {
-            try {
                 boolean isIdValid = validator.validateIdFormatEntity(id, "EM");
                 if (!isIdValid)
                     throw new EmployeeFieldWrongFormatException("Id is not in the right format");
-                employeeRepository.deleteById(id);
-            } catch (RuntimeException e) {
-                throw new EmployeeNotFoundException("id : " + id + " is not exist");
-            }
+                else if (assignmentService.getAssignmentCountByEmployeeIdAndStatus(id, "Pending") > 0)
+                    throw new EmployeeStillHavePendingAssignmentException();
+                else
+                    try {
+                        employeeRepository.findById(id).get();
+                    } catch (RuntimeException e) {
+                        throw new EmployeeNotFoundException("id : " + id + " is not exist");
+                    }
+            employeeRepository.deleteById(id);
         }
-        return listOfNotFoundIds;
+        return "Delete success!";
     }
 }

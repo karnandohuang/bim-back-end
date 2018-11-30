@@ -21,5 +21,5 @@ public interface EmployeeService {
 
     Employee saveEmployee(Employee employee) throws RuntimeException;
 
-    List<String> deleteEmployee(List<String> ids) throws RuntimeException;
+    String deleteEmployee(List<String> ids) throws RuntimeException;
 }
