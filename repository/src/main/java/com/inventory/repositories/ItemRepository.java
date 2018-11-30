@@ -13,6 +13,4 @@ public interface ItemRepository extends JpaRepository<Item, String> {
 
     Float countAllByNameContainingIgnoreCase(String name);
 
-    Item findBySku(String sku);
-
 }

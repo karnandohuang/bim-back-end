@@ -214,12 +214,13 @@ public class EmployeeServiceImpl implements EmployeeService {
                     throw new EmployeeFieldWrongFormatException("Id is not in the right format");
                 else if (assignmentService.getAssignmentCountByEmployeeIdAndStatus(id, "Pending") > 0)
                     throw new EmployeeStillHavePendingAssignmentException();
-                else
+                else {
                     try {
                         employeeRepository.findById(id).get();
                     } catch (RuntimeException e) {
                         throw new EmployeeNotFoundException("id : " + id + " is not exist");
                     }
+                }
             employeeRepository.deleteById(id);
         }
         return "Delete success!";

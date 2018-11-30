@@ -3,7 +3,6 @@ package com.inventory.mappers;
 import com.inventory.models.Assignment;
 import com.inventory.models.Employee;
 import com.inventory.models.Item;
-import com.inventory.webmodels.requests.assignment.AssignmentRequest;
 import com.inventory.webmodels.requests.assignment.ChangeAssignmentStatusRequest;
 import com.inventory.webmodels.requests.employee.EmployeeRequest;
 import com.inventory.webmodels.requests.item.ItemRequest;
@@ -25,10 +24,6 @@ public class GeneralMapper {
                 .byDefault()
                 .mapNulls(true)
                 .register();
-        factory.classMap(AssignmentRequest.class, Assignment.class)
-                .byDefault()
-                .mapNulls(true)
-                .register();
         factory.classMap(ChangeAssignmentStatusRequest.class, Assignment.class)
                 .byDefault()
                 .mapNulls(true)
@@ -43,12 +38,6 @@ public class GeneralMapper {
         return factory.getMapperFacade().map(request, Item.class);
     }
 
-    public Assignment getMappedAssignment(AssignmentRequest request) {
-        Assignment requestObj = factory.getMapperFacade().map(request, Assignment.class);
-        requestObj.setNotes("");
-        requestObj.setStatus("Pending");
-        return requestObj;
-    }
 
     public Assignment getMappedAssignment(ChangeAssignmentStatusRequest request) {
         Assignment requestObj = factory.getMapperFacade().map(request, Assignment.class);

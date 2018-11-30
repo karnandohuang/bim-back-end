@@ -16,6 +16,8 @@ public interface AssignmentService {
 
     Double getAssignmentCountByEmployeeIdAndStatus(String employeeId, String status);
 
+    Double getAssignmentCountByItemIdAndStatus(String itemId, String status);
+
     Assignment saveAssignment(Assignment Assignment);
 
     List<String> deleteAssignments(List<String> ids);

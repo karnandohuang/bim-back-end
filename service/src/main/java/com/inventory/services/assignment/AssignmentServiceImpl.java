@@ -83,7 +83,15 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     @Transactional
+    public Double getAssignmentCountByItemIdAndStatus(String itemId, String status) {
+        Double count = Math.ceil(AssignmentRepository.countAllByItemIdAndStatus(itemId, status));
+        return count;
+    }
+
+    @Override
+    @Transactional
     public Assignment saveAssignment(Assignment Assignment) {
+
         return AssignmentRepository.save(Assignment);
     }
 
@@ -130,9 +138,9 @@ public class AssignmentServiceImpl implements AssignmentService {
         for(String id : ids) {
             qty = 0;
             Assignment Assignment = AssignmentRepository.findById(id).get();
-            if (listOfRecoveredItems.get(Assignment.getItemId()) != null)
-                qty = listOfRecoveredItems.get(Assignment.getItemId());
-            listOfRecoveredItems.put(Assignment.getItemId(), qty + Assignment.getQty());
+            if (listOfRecoveredItems.get(Assignment.getItem().getId()) != null)
+                qty = listOfRecoveredItems.get(Assignment.getItem().getId());
+            listOfRecoveredItems.put(Assignment.getItem().getId(), qty + Assignment.getQty());
         }
         return listOfRecoveredItems;
     }

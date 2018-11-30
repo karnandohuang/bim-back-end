@@ -21,12 +21,6 @@ public class Assignment extends BaseEntity {
     @Column(name = COLUMN_NAME_ID)
     private String id;
 
-    @Column(name = ASSIGNMENT_COLUMN_NAME_EMPLOYEE_ID)
-    private String employeeId;
-
-    @Column(name = ASSIGNMENT_COLUMN_NAME_ITEM_ID)
-    private String itemId;
-
     @Column(name = ASSIGNMENT_COLUMN_NAME_QTY)
     private Integer qty;
 
@@ -35,5 +29,15 @@ public class Assignment extends BaseEntity {
 
     @Column(name = ASSIGNMENT_COLUMN_NAME_NOTES)
     private String notes;
+
+    @ManyToOne
+    @JoinColumn(foreignKey = @ForeignKey(name = "employee_pkey_fk"), name = ASSIGNMENT_COLUMN_NAME_EMPLOYEE_ID,
+            referencedColumnName = COLUMN_NAME_ID)
+    private Employee employee;
+
+    @ManyToOne
+    @JoinColumn(foreignKey = @ForeignKey(name = "item_pkey_fk"), name = ASSIGNMENT_COLUMN_NAME_ITEM_ID,
+            referencedColumnName = COLUMN_NAME_ID)
+    private Item item;
 
 }

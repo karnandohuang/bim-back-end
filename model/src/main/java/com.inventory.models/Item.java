@@ -22,8 +22,6 @@ public class Item extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "item_sequence")
     @Column(name = COLUMN_NAME_ID)
     private String id;
-    @Column(name = ITEM_COLUMN_NAME_SKU)
-    private String sku;
     @Column(name = ITEM_COLUMN_NAME_NAME)
     private String name;
     @Column(name = ITEM_COLUMN_NAME_PRICE)

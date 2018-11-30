@@ -1,8 +1,10 @@
 package com.inventory.mappers;
 
 import com.inventory.models.Assignment;
+import com.inventory.models.Employee;
 import com.inventory.models.Item;
 import com.inventory.models.Paging;
+import com.inventory.webmodels.requests.assignment.AssignmentRequest;
 import com.inventory.webmodels.responses.BaseResponse;
 import com.inventory.webmodels.responses.assignment.AssignmentResponse;
 import com.inventory.webmodels.responses.assignment.EmployeeAssignmentResponse;
@@ -67,5 +69,15 @@ public class ModelHelper {
         employeeAssignmentResponse.setStatus(assignment.getStatus());
         employeeAssignmentResponse.setAssignmentId(assignment.getId());
         return employeeAssignmentResponse;
+    }
+
+    public Assignment getMappedAssignment(AssignmentRequest request, Employee employee, Item item) {
+        Assignment assignment = new Assignment();
+        assignment.setEmployee(employee);
+        assignment.setItem(item);
+        assignment.setQty(request.getQty());
+        assignment.setNotes("");
+        assignment.setStatus("Pending");
+        return assignment;
     }
 }

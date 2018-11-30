@@ -3,9 +3,11 @@ package com.inventory.controllers;
 import com.inventory.mappers.GeneralMapper;
 import com.inventory.mappers.ModelHelper;
 import com.inventory.models.Assignment;
+import com.inventory.models.Employee;
 import com.inventory.models.Item;
 import com.inventory.models.Paging;
 import com.inventory.services.assignment.AssignmentService;
+import com.inventory.services.employee.EmployeeService;
 import com.inventory.services.item.ItemService;
 import com.inventory.webmodels.requests.DeleteRequest;
 import com.inventory.webmodels.requests.assignment.AssignmentRequest;
@@ -26,7 +28,6 @@ import java.util.Map;
 
 import static com.inventory.constants.API_PATH.*;
 import static com.inventory.constants.ErrorConstant.NORMAL_ERROR;
-import static com.inventory.constants.ErrorConstant.SAVE_ERROR;
 
 @RestController
 @CrossOrigin
@@ -37,6 +38,9 @@ public class AssignmentController {
 
     @Autowired
     private ItemService itemService;
+
+    @Autowired
+    private EmployeeService employeeService;
 
     @Autowired
     private ModelHelper helper;
@@ -76,9 +80,10 @@ public class AssignmentController {
         List<Assignment> listOfAssignment = assignmentService.getEmployeeAssignmentList(employeeId, paging);
         List<EmployeeAssignmentResponse> listOfEmployeeAssignment = new ArrayList<>();
         List<AssignmentResponse> list = new ArrayList<>();
-        for (Assignment Assignment : listOfAssignment) {
-            Item item = itemService.getItem(Assignment.getItemId());
-            EmployeeAssignmentResponse employeeAssignmentResponse = helper.getMappedEmployeeAssignmentResponse(Assignment, item);
+        for (Assignment assignment : listOfAssignment) {
+            Item item = itemService.getItem(assignment.getItem().getId());
+            EmployeeAssignmentResponse employeeAssignmentResponse =
+                    helper.getMappedEmployeeAssignmentResponse(assignment, item);
             listOfEmployeeAssignment.add(employeeAssignmentResponse);
         }
         BaseResponse<List<EmployeeAssignmentResponse>> response = helper.getBaseResponse(
@@ -109,20 +114,22 @@ public class AssignmentController {
     @RequestMapping(value = API_PATH_ASSIGNMENT, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE, method = {RequestMethod.POST, RequestMethod.PUT})
     public BaseResponse<String> saveAssignment(@RequestBody AssignmentRequest requestBody) {
-        Assignment rb = generalMapper.getMappedAssignment(requestBody);
-        Assignment Assignment;
-        Item item = itemService.changeItemQty(rb);
-        if (item == null)
-            Assignment = null;
-        else {
-            Assignment = assignmentService.saveAssignment(rb);
+        Employee employee;
+        Item item;
+        try {
+            employee = employeeService.getEmployee(requestBody.getEmployeeId());
+            item = itemService.getItem(requestBody.getItemId());
+        } catch (RuntimeException e) {
+            return helper.getStandardBaseResponse(false, e.getMessage());
         }
-
-        if (Assignment == null || item == null) {
-            return helper.getStandardBaseResponse(false, SAVE_ERROR);
-        } else {
+        Assignment rb = helper.getMappedAssignment(requestBody, employee, item);
+        try {
+            itemService.changeItemQty(rb);
+            assignmentService.saveAssignment(rb);
+        } catch (RuntimeException e) {
+            return helper.getStandardBaseResponse(false, e.getMessage());
+        }
             return helper.getStandardBaseResponse(true, "");
-        }
     }
 
     @PutMapping(value = API_PATH_CHANGE_STATUS_ASSIGNMENT, produces = MediaType.APPLICATION_JSON_VALUE,

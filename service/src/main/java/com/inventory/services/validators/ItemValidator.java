@@ -13,6 +13,8 @@ public class ItemValidator extends EntityValidator {
     public boolean validateImageUrlItem(String url) {
         if (url == null)
             return false;
+        else if (url.equals("null"))
+            return true;
         else {
             File dir = new File(url);
             if (!dir.exists())
@@ -21,11 +23,9 @@ public class ItemValidator extends EntityValidator {
         }
     }
 
-    public String validateNullFieldEmployee(Item item) {
+    public String validateNullFieldItem(Item item) {
         if (item.getName() == null)
             return ITEM_NAME_EMPTY;
-        if (item.getSku() == null)
-            return ITEM_SKU_EMPTY;
         if (item.getQty() == 0)
             return ITEM_QTY_EMPTY;
         if (item.getPrice() == 0)

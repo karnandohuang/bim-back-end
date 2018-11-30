@@ -4,6 +4,7 @@ import com.inventory.models.Assignment;
 import com.inventory.models.Item;
 import com.inventory.models.Paging;
 import com.inventory.repositories.ItemRepository;
+import com.inventory.services.assignment.AssignmentService;
 import com.inventory.services.exceptions.EntityNullFieldException;
 import com.inventory.services.exceptions.item.*;
 import com.inventory.services.validators.ItemValidator;
@@ -31,6 +32,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Autowired
     private ItemValidator validator;
+
+    @Autowired
+    private AssignmentService assignmentService;
 
     @Override
     @Transactional
@@ -72,20 +76,51 @@ public class ItemServiceImpl implements ItemService {
         paging.setTotalPage((int) totalPage);
     }
 
+    private Item editItem(Item item) {
+        Item newItem;
+        try {
+            newItem = itemRepository.findById(item.getId()).get();
+        } catch (RuntimeException e) {
+            throw new ItemNotFoundException("id : " + item.getId() + " is not exist");
+        }
+        newItem.setName(item.getName());
+        newItem.setPrice(item.getPrice());
+        newItem.setQty(item.getQty());
+        newItem.setLocation(item.getLocation());
+        newItem.setImageUrl(item.getImageUrl());
+        return newItem;
+    }
+
     @Override
     @Transactional
-    public Item saveItem(Item item) throws RuntimeException {
-        String nullFieldItem = validator.validateNullFieldEmployee(item);
+    public Item saveItem(Item request) throws RuntimeException {
+
+        String nullFieldItem = validator.validateNullFieldItem(request);
+
+        Item item;
+
+        if (request.getId() != null) {
+            item = editItem(request);
+        } else {
+            item = request;
+        }
+
         boolean isIdValid = true;
+
         boolean isImageUrlValid = validator.validateImageUrlItem(item.getImageUrl());
+
         if (item.getId() != null)
             isIdValid = validator.validateIdFormatEntity(item.getId(), "IM");
+
         if (nullFieldItem != null)
             throw new EntityNullFieldException(nullFieldItem);
+
         else if (!isIdValid)
             throw new ItemFieldWrongFormatException("id is not in the right format");
+
         else if (!isImageUrlValid)
             throw new ImagePathWrongException();
+
         else
             return itemRepository.save(item);
     }
@@ -93,7 +128,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public Item changeItemQty(Assignment assignment) throws RuntimeException {
-        Item item = itemRepository.findById(assignment.getItemId()).get();
+        Item item = itemRepository.findById(assignment.getItem().getId()).get();
         int qty = item.getQty() - assignment.getQty();
         if (item.getQty() <= 0)
             throw new ItemOutOfQtyException(item.getName());
@@ -123,27 +158,36 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
-    public List<String> deleteItem(List<String> ids) throws RuntimeException {
-        List<String> listOfNotFoundIds = new ArrayList<>();
+    public String deleteItem(List<String> ids) throws RuntimeException {
         for (String id: ids){
-            try {
                 boolean isIdValid = validator.validateIdFormatEntity(id, "IM");
                 if (!isIdValid)
                     throw new ItemFieldWrongFormatException("Id is not in the right format");
-                itemRepository.deleteById(id);
-            } catch (RuntimeException e) {
-                throw new ItemNotFoundException("id : " + id + " is not exist");
-            }
+                else if (assignmentService.getAssignmentCountByItemIdAndStatus(id, "Pending") > 0)
+                    throw new ItemStillHavePendingAssignmentException();
+                else {
+                    try {
+                        itemRepository.findById(id).get();
+                    } catch (RuntimeException e) {
+                        throw new ItemNotFoundException("Id : " + id + " is not exist");
+                    }
+                }
+            itemRepository.deleteById(id);
         }
-        return listOfNotFoundIds;
+        return "Delete Success";
     }
 
     @Override
-    public String uploadFile(MultipartFile file, String itemSku) throws RuntimeException {
-
+    public String uploadFile(MultipartFile file, String itemId) throws RuntimeException {
+        Item item;
+        try {
+            item = itemRepository.findById(itemId).get();
+        } catch (RuntimeException e) {
+            throw new ItemNotFoundException("id : " + itemId + " is not exist");
+        }
         Calendar cal = Calendar.getInstance();
         File createdDir = new File("C:\\Users\\olive\\Desktop\\bim-back-end\\resources\\" +
-                cal.get(cal.YEAR) + "\\" + (cal.get(cal.MONTH) + 1) + "\\" + itemSku);
+                cal.get(cal.YEAR) + "\\" + (cal.get(cal.MONTH) + 1) + "\\" + itemId);
         File convertFile = new File(createdDir.getAbsolutePath() + "\\" +
                 file.getOriginalFilename());
         try {
@@ -171,6 +215,8 @@ public class ItemServiceImpl implements ItemService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return convertFile.getAbsolutePath();
+        item.setImageUrl(convertFile.getAbsolutePath());
+        this.saveItem(item);
+        return "Upload image success";
     }
 }

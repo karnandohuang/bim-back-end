@@ -8,18 +8,14 @@ import com.inventory.services.item.ItemService;
 import com.inventory.webmodels.requests.DeleteRequest;
 import com.inventory.webmodels.requests.item.ItemRequest;
 import com.inventory.webmodels.responses.BaseResponse;
-import com.inventory.webmodels.responses.DeleteResponse;
 import com.inventory.webmodels.responses.item.ItemResponse;
 import com.inventory.webmodels.responses.item.ListOfItemResponse;
-import com.inventory.webmodels.responses.item.UploadFileResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.inventory.constants.API_PATH.*;
 
@@ -84,39 +80,29 @@ public class ItemController {
 
     @PostMapping(value = API_PATH_UPLOAD_IMAGE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<UploadFileResponse> uploadFile(
+    public BaseResponse<String> uploadFile(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("sku") String itemSku
+            @RequestParam("itemId") String itemId
     ) {
-        String imagePath;
-        BaseResponse<UploadFileResponse> response;
+        BaseResponse<String> response;
         try {
-            imagePath = itemService.uploadFile(file, itemSku);
-            response = helper.getUploadBaseResponse(true, "");
+            String success = itemService.uploadFile(file, itemId);
+            response = helper.getStandardBaseResponse(true, success);
         } catch (RuntimeException e) {
-            imagePath = null;
-            response = helper.getUploadBaseResponse(false, e.getMessage());
+            response = helper.getStandardBaseResponse(false, e.getMessage());
         }
-        UploadFileResponse value = new UploadFileResponse(imagePath);
-        response.setValue(value);
         return response;
     }
 
     @DeleteMapping(value = API_PATH_ITEMS, consumes = MediaType.APPLICATION_JSON_VALUE,
     produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<DeleteResponse> deleteItem(@RequestBody DeleteRequest request){
-        DeleteResponse deleteResponse = new DeleteResponse();
-        BaseResponse<DeleteResponse> response;
-        List<String> error = new ArrayList<>();
+    public BaseResponse<String> deleteItem(@RequestBody DeleteRequest request) {
+        BaseResponse<String> response;
         try {
-            error = itemService.deleteItem(request.getIds());
-            response = helper.getBaseResponse(true, "", new Paging());
+            String success = itemService.deleteItem(request.getIds());
+            response = helper.getBaseResponse(true, success, new Paging());
         } catch (RuntimeException e) {
             response = helper.getBaseResponse(false, e.getMessage(), new Paging());
-        }
-        if (error.size() > 0) {
-            deleteResponse.setError(error);
-            response.setValue(deleteResponse);
         }
         return response;
     }
