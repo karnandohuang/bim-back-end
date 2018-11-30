@@ -16,7 +16,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +37,14 @@ public class AssignmentServiceImpl implements AssignmentService {
 
 
     @Override
-    public Assignment getAssignment(String id) {
-        return AssignmentRepository.findById(id).get();
+    public Assignment getAssignment(String id) throws RuntimeException {
+        try {
+            if (!validator.validateIdFormatEntity(id, "AT"))
+                throw new AssignmentFieldWrongFormatException("id is not in the right format");
+            return AssignmentRepository.findById(id).get();
+        } catch (RuntimeException e) {
+            throw new AssignmentNotFoundException("id : " + id + " is not exist");
+        }
     }
 
     @Override
@@ -135,7 +140,6 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Override
     @Transactional
     public String changeStatusAssignments(List<String> ids, String status, String notes) throws RuntimeException {
-        List<String> listOfErrors = new ArrayList<>();
         for (String id : ids) {
             Assignment assignment;
             try {

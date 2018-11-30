@@ -1,7 +1,9 @@
 package com.inventory.services.validators;
 
 import com.inventory.models.Assignment;
+import org.springframework.stereotype.Component;
 
+@Component
 public class AssignmentValidator extends EntityValidator {
 
     public boolean validateStatus(String status) {

@@ -163,8 +163,11 @@ public class ItemServiceImpl implements ItemService {
                 boolean isIdValid = validator.validateIdFormatEntity(id, "IM");
                 if (!isIdValid)
                     throw new ItemFieldWrongFormatException("Id is not in the right format");
-                else if (assignmentService.getAssignmentCountByItemIdAndStatus(id, "Pending") > 0)
-                    throw new ItemStillHavePendingAssignmentException();
+                else if (assignmentService.getAssignmentCountByItemIdAndStatus(id, "Pending") > 0 ||
+                        assignmentService.getAssignmentCountByItemIdAndStatus(id, "Approved") > 0 ||
+                        assignmentService.getAssignmentCountByItemIdAndStatus(id, "Handover") > 0 ||
+                        assignmentService.getAssignmentCountByItemIdAndStatus(id, "Rejected") > 0)
+                    throw new ItemStillHaveAssignmentException();
                 else {
                     try {
                         itemRepository.findById(id).get();

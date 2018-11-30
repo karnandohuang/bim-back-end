@@ -9,7 +9,4 @@ import lombok.NoArgsConstructor;
 public class AssignmentResponse {
 
     private Assignment assignment;
-    private String employeeName;
-    private String itemSku;
-    private String itemName;
 }
