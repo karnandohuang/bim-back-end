@@ -3,6 +3,13 @@ package com.inventory.services.assignment;
 import com.inventory.models.Assignment;
 import com.inventory.models.Paging;
 import com.inventory.repositories.AssignmentRepository;
+import com.inventory.services.employee.EmployeeService;
+import com.inventory.services.exceptions.EntityNullFieldException;
+import com.inventory.services.exceptions.assignment.AssignmentFieldWrongFormatException;
+import com.inventory.services.exceptions.assignment.AssignmentNotFoundException;
+import com.inventory.services.exceptions.assignment.AssignmentStatusIsSameException;
+import com.inventory.services.item.ItemService;
+import com.inventory.services.validators.AssignmentValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -19,6 +26,15 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Autowired
     AssignmentRepository AssignmentRepository;
+
+    @Autowired
+    ItemService itemService;
+
+    @Autowired
+    EmployeeService employeeService;
+
+    @Autowired
+    private AssignmentValidator validator;
 
 
     @Override
@@ -48,7 +64,12 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     @Transactional
-    public List<Assignment> getEmployeeAssignmentList(String employeeId, Paging paging) {
+    public List<Assignment> getEmployeeAssignmentList(String employeeId, Paging paging) throws RuntimeException {
+        try {
+            employeeService.getEmployee(employeeId);
+        } catch (RuntimeException e) {
+            throw e;
+        }
         List<Assignment> listOfAssignment;
         if (paging.getSortedType().matches("desc")) {
             listOfAssignment = AssignmentRepository.findAllByEmployeeId(employeeId,
@@ -76,71 +97,81 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     @Transactional
-    public Double getAssignmentCountByEmployeeIdAndStatus(String employeeId, String status) {
+    public Double getAssignmentCountByEmployeeIdAndStatus(String employeeId, String status) throws RuntimeException {
+        try {
+            employeeService.getEmployee(employeeId);
+        } catch (RuntimeException e) {
+            throw e;
+        }
+        if (!validator.validateStatus(status))
+            throw new AssignmentFieldWrongFormatException("Status is not in the right format");
         Double count = Math.ceil(AssignmentRepository.countAllByEmployeeIdAndStatus(employeeId, status));
         return count;
     }
 
     @Override
     @Transactional
-    public Double getAssignmentCountByItemIdAndStatus(String itemId, String status) {
+    public Double getAssignmentCountByItemIdAndStatus(String itemId, String status) throws RuntimeException {
+        try {
+            itemService.getItem(itemId);
+        } catch (RuntimeException e) {
+            throw e;
+        }
+        if (!validator.validateStatus(status))
+            throw new AssignmentFieldWrongFormatException("Status is not in the right format");
         Double count = Math.ceil(AssignmentRepository.countAllByItemIdAndStatus(itemId, status));
         return count;
     }
 
     @Override
     @Transactional
-    public Assignment saveAssignment(Assignment Assignment) {
-
-        return AssignmentRepository.save(Assignment);
+    public Assignment saveAssignment(Assignment assignment) throws RuntimeException {
+        String nullFieldAssignment = validator.validateNullFieldAssignment(assignment);
+        if (nullFieldAssignment != null)
+            throw new EntityNullFieldException(nullFieldAssignment);
+        return AssignmentRepository.save(assignment);
     }
 
     @Override
     @Transactional
-    public List<String> deleteAssignments(List<String> ids) {
-        List<String> listOfNotFoundIds = new ArrayList<>();
-        for (String id : ids) {
-            try {
-                AssignmentRepository.deleteById(id);
-            } catch (NullPointerException e) {
-                listOfNotFoundIds.add("id " + id + " not found");
-            }
-        }
-        return listOfNotFoundIds;
-    }
-
-    @Override
-    @Transactional
-    public List<String> changeStatusAssignments(List<String> ids, String status, String notes) {
+    public String changeStatusAssignments(List<String> ids, String status, String notes) throws RuntimeException {
         List<String> listOfErrors = new ArrayList<>();
         for (String id : ids) {
+            Assignment assignment;
             try {
-                Assignment Assignment = AssignmentRepository.findById(id).get();
-                if (Assignment.getStatus().equals(status))
-                    listOfErrors.add("failed because status is already" + status);
+                assignment = AssignmentRepository.findById(id).get();
+            } catch (RuntimeException e) {
+                throw new AssignmentNotFoundException("id : " + id + " is not exist");
+            }
+            if (!validator.validateStatus(status))
+                throw new AssignmentFieldWrongFormatException("Status is not in the right format");
+            else if (assignment.getStatus().equals(status))
+                throw new AssignmentStatusIsSameException("Status is already " + status);
                 else {
-                    Assignment.setStatus(status);
-                    Assignment.setNotes(notes);
-                    AssignmentRepository.save(Assignment);
-                }
-            } catch (NullPointerException e) {
-                listOfErrors.add("id " + id + " not found");
+                assignment.setStatus(status);
+                assignment.setNotes(notes);
+                AssignmentRepository.save(assignment);
             }
         }
-        return listOfErrors;
+        return "Change status success";
     }
 
     @Override
     @Transactional
-    public Map<String, Integer> getRecoveredItems(List<String> ids){
+    public Map<String, Integer> getRecoveredItems(List<String> ids) throws RuntimeException {
         Map<String, Integer> listOfRecoveredItems = new HashMap<>();
         int qty = 0;
         for(String id : ids) {
             qty = 0;
-            Assignment Assignment = AssignmentRepository.findById(id).get();
-            if (listOfRecoveredItems.get(Assignment.getItem().getId()) != null)
-                qty = listOfRecoveredItems.get(Assignment.getItem().getId());
-            listOfRecoveredItems.put(Assignment.getItem().getId(), qty + Assignment.getQty());
+            Assignment assignment;
+            try {
+                assignment = AssignmentRepository.findById(id).get();
+            } catch (RuntimeException e) {
+                throw new AssignmentNotFoundException("id : " + id + " is not exist");
+            }
+            if (listOfRecoveredItems.get(assignment.getItem().getId()) != null)
+                qty = listOfRecoveredItems.get(assignment.getItem().getId());
+            listOfRecoveredItems.put(assignment.getItem().getId(), qty + assignment.getQty());
         }
         return listOfRecoveredItems;
     }

@@ -69,7 +69,7 @@ public class ItemController {
     @RequestMapping(value = API_PATH_ITEMS, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE, method = {RequestMethod.POST, RequestMethod.PUT})
     public BaseResponse<String> saveItem(@RequestBody ItemRequest request) {
-        Item item = generalMapper.getMappedItem(request);
+        Item item = generalMapper.map(request, Item.class);
         try {
             itemService.saveItem(item);
             return helper.getStandardBaseResponse(true, "");

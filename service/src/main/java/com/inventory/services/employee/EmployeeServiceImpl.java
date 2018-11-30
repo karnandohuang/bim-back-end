@@ -39,11 +39,11 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     public Employee getEmployee(String id) throws EmployeeNotFoundException {
         if (!validator.validateIdFormatEntity(id, "EM"))
-            throw new EmployeeNotFoundException("id not valid");
+            throw new EmployeeFieldWrongFormatException("id is not in the right format");
         try {
             return employeeRepository.findById(id).get();
         } catch (RuntimeException e) {
-            throw new EmployeeNotFoundException("id not valid");
+            throw new EmployeeNotFoundException("id : " + id + " is not exist");
         }
     }
 

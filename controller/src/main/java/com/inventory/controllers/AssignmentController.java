@@ -9,11 +9,9 @@ import com.inventory.models.Paging;
 import com.inventory.services.assignment.AssignmentService;
 import com.inventory.services.employee.EmployeeService;
 import com.inventory.services.item.ItemService;
-import com.inventory.webmodels.requests.DeleteRequest;
 import com.inventory.webmodels.requests.assignment.AssignmentRequest;
 import com.inventory.webmodels.requests.assignment.ChangeAssignmentStatusRequest;
 import com.inventory.webmodels.responses.BaseResponse;
-import com.inventory.webmodels.responses.DeleteResponse;
 import com.inventory.webmodels.responses.assignment.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -22,12 +20,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static com.inventory.constants.API_PATH.*;
-import static com.inventory.constants.ErrorConstant.NORMAL_ERROR;
 
 @RestController
 @CrossOrigin
@@ -77,18 +73,25 @@ public class AssignmentController {
             @RequestParam(required = false) String sortedType
     ) throws IOException {
         Paging paging = helper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
-        List<Assignment> listOfAssignment = assignmentService.getEmployeeAssignmentList(employeeId, paging);
-        List<EmployeeAssignmentResponse> listOfEmployeeAssignment = new ArrayList<>();
-        List<AssignmentResponse> list = new ArrayList<>();
-        for (Assignment assignment : listOfAssignment) {
-            Item item = itemService.getItem(assignment.getItem().getId());
-            EmployeeAssignmentResponse employeeAssignmentResponse =
-                    helper.getMappedEmployeeAssignmentResponse(assignment, item);
-            listOfEmployeeAssignment.add(employeeAssignmentResponse);
+        BaseResponse response;
+        try {
+            List<Assignment> listOfAssignment = assignmentService.getEmployeeAssignmentList(employeeId, paging);
+            List<EmployeeAssignmentResponse> listOfEmployeeAssignment = new ArrayList<>();
+            for (Assignment assignment : listOfAssignment) {
+                Item item = itemService.getItem(assignment.getItem().getId());
+                EmployeeAssignmentResponse employeeAssignmentResponse =
+                        helper.getMappedEmployeeAssignmentResponse(assignment, item);
+                listOfEmployeeAssignment.add(employeeAssignmentResponse);
+            }
+            response = helper.getBaseResponse(
+                    true, "", paging);
+            response.setValue(listOfEmployeeAssignment);
+        } catch (RuntimeException e) {
+            response = helper.getBaseResponse(
+                    false, e.getMessage(), new Paging());
+            response.setValue(null);
         }
-        BaseResponse<List<EmployeeAssignmentResponse>> response = helper.getBaseResponse(
-                true, "", paging);
-        response.setValue(listOfEmployeeAssignment);
+
         return response;
     }
 
@@ -96,18 +99,31 @@ public class AssignmentController {
     public BaseResponse<AssignmentCountResponse> getAssignmentCount(@RequestParam String id,
                                                               @RequestParam String status) throws IOException{
         AssignmentCountResponse AssignmentCountResponse = new AssignmentCountResponse();
-        AssignmentCountResponse.setAssignmentCount(assignmentService.getAssignmentCountByEmployeeIdAndStatus(id, status));
-        BaseResponse<AssignmentCountResponse> response = helper.getBaseResponse(true, "", new Paging());
-        response.setValue(AssignmentCountResponse);
+        BaseResponse response;
+        try {
+            Double count = assignmentService.getAssignmentCountByEmployeeIdAndStatus(id, status);
+            AssignmentCountResponse.setAssignmentCount(count);
+            response = helper.getBaseResponse(true, "", new Paging());
+            response.setValue(AssignmentCountResponse);
+        } catch (RuntimeException e) {
+            response = helper.getBaseResponse(false, e.getMessage(), new Paging());
+            response.setValue(null);
+        }
         return response;
     }
 
     @GetMapping(value = API_PATH_API_ASSIGNMENT_BY_ID, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<AssignmentResponse> getAssignment(@PathVariable String id) throws IOException {
         AssignmentResponse AssignmentResponse = new AssignmentResponse();
-        AssignmentResponse.setAssignment(assignmentService.getAssignment(id));
-        BaseResponse<AssignmentResponse> response = helper.getBaseResponse(true, "", new Paging());
-        response.setValue(AssignmentResponse);
+        BaseResponse response;
+        try {
+            AssignmentResponse.setAssignment(assignmentService.getAssignment(id));
+            response = helper.getBaseResponse(true, "", new Paging());
+            response.setValue(AssignmentResponse);
+        } catch (RuntimeException e) {
+            response = helper.getBaseResponse(false, e.getMessage(), new Paging());
+            response.setValue(null);
+        }
         return response;
     }
 
@@ -137,50 +153,20 @@ public class AssignmentController {
     @Transactional
     public BaseResponse<ChangeAssignmentStatusResponse> changeStatus(@RequestBody ChangeAssignmentStatusRequest AssignmentBody) {
         BaseResponse<ChangeAssignmentStatusResponse> response;
-        Assignment Assignment = generalMapper.getMappedAssignment(AssignmentBody);
+        Assignment Assignment = generalMapper.map(AssignmentBody, Assignment.class);
         ChangeAssignmentStatusResponse changeAssignmentStatusResponse = new ChangeAssignmentStatusResponse();
-        Map<String, Integer> listOfRecoveredItems = new HashMap<>();
-        List<String> errorOfItem = new ArrayList<>();
-        List<String> errors = assignmentService.changeStatusAssignments(AssignmentBody.getIds(),
-                Assignment.getStatus(), Assignment.getNotes());
-        if (Assignment.getStatus().equals("Rejected")) {
-            listOfRecoveredItems = assignmentService.getRecoveredItems(AssignmentBody.getIds());
-            errorOfItem = itemService.recoverItemQty(listOfRecoveredItems);
-        }
-        if (errors.size() <= 0 && errorOfItem.size() <= 0) {
+        Map<String, Integer> listOfRecoveredItems;
+        try {
+            String success = assignmentService.changeStatusAssignments(AssignmentBody.getIds(),
+                    Assignment.getStatus(), Assignment.getNotes());
+            if (Assignment.getStatus().equals("Rejected")) {
+                listOfRecoveredItems = assignmentService.getRecoveredItems(AssignmentBody.getIds());
+                String successItem = itemService.recoverItemQty(listOfRecoveredItems);
+            }
             response = helper.getBaseResponse(true, "", new Paging());
-        } else {
-            response = helper.getBaseResponse(false, NORMAL_ERROR, new Paging());
-            if (errors.size() > 0)
-                changeAssignmentStatusResponse.setErrors(errors);
-            else if (errors.size() > 0 && errorOfItem.size() > 0) {
-                changeAssignmentStatusResponse.setErrorOfItem(errorOfItem);
-                changeAssignmentStatusResponse.setErrors(errors);
-            } else
-                changeAssignmentStatusResponse.setErrorOfItem(errorOfItem);
-        }
-        response.setValue(changeAssignmentStatusResponse);
-        return response;
-    }
-
-    @DeleteMapping(value = API_PATH_ASSIGNMENT, produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Transactional
-    public BaseResponse<DeleteResponse> deleteAssignment(@RequestBody DeleteRequest request) {
-        DeleteResponse deleteResponse = null;
-        BaseResponse<DeleteResponse> response = null;
-        Map<String, Integer> listOfRecoveredItems = assignmentService.getRecoveredItems(request.getIds());
-        List<String> error = assignmentService.deleteAssignments(request.getIds());
-        List<String> errorOfItem = itemService.recoverItemQty(listOfRecoveredItems);
-        if (error.size() <= 0 && errorOfItem.size() <= 0) {
-            response = helper.getBaseResponse(true, "", new Paging());
-        } else {
-            response = helper.getBaseResponse(false, NORMAL_ERROR, new Paging());
-            if(error.size() > 0)
-                deleteResponse.setError(error);
-            else
-                deleteResponse.setError(errorOfItem);
-            response.setValue(deleteResponse);
+            response.setValue(changeAssignmentStatusResponse);
+        } catch (RuntimeException e) {
+            response = helper.getBaseResponse(false, e.getMessage(), new Paging());
         }
         return response;
     }

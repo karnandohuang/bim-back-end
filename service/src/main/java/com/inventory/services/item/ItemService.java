@@ -23,6 +23,6 @@ public interface ItemService {
 
     Item changeItemQty(Assignment assignment);
 
-    List<String> recoverItemQty(Map<String, Integer> listOfRecoveredItems);
+    String recoverItemQty(Map<String, Integer> listOfRecoveredItems);
 
 }

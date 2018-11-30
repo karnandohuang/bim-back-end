@@ -20,9 +20,7 @@ public interface AssignmentService {
 
     Assignment saveAssignment(Assignment Assignment);
 
-    List<String> deleteAssignments(List<String> ids);
-
-    List<String> changeStatusAssignments(List<String> ids, String status, String notes);
+    String changeStatusAssignments(List<String> ids, String status, String notes);
 
     Map<String, Integer> getRecoveredItems(List<String> ids);
 }

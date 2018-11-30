@@ -105,7 +105,7 @@ public class EmployeeController {
     @RequestMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE, method = {RequestMethod.POST, RequestMethod.PUT})
     public BaseResponse<String> saveEmployee(@RequestBody EmployeeRequest request) {
-        Employee employee = generalMapper.getMappedEmployee(request);
+        Employee employee = generalMapper.map(request, Employee.class);
         try {
             employee = employeeService.saveEmployee(employee);
             return helper.getStandardBaseResponse(true, "");

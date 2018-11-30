@@ -40,11 +40,11 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public Item getItem(String id) throws RuntimeException {
         if (!validator.validateIdFormatEntity(id, "IM"))
-            throw new ItemNotFoundException("id not valid");
+            throw new ItemFieldWrongFormatException("id is not in the right format");
         try {
             return itemRepository.findById(id).get();
         } catch (RuntimeException e) {
-            throw new ItemNotFoundException("id not valid");
+            throw new ItemNotFoundException("id : " + id + " is not exist");
         }
     }
 
@@ -141,7 +141,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
-    public List<String> recoverItemQty(Map<String, Integer> listOfRecoveredItems) throws RuntimeException {
+    public String recoverItemQty(Map<String, Integer> listOfRecoveredItems) throws RuntimeException {
         List<String> errorOfItem = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : listOfRecoveredItems.entrySet()) {
             Item item;
@@ -153,7 +153,7 @@ public class ItemServiceImpl implements ItemService {
             item.setQty(item.getQty() + entry.getValue());
             itemRepository.save(item);
         }
-        return errorOfItem;
+        return "Recover success";
     }
 
     @Override
