@@ -159,15 +159,19 @@ public class AssignmentController {
         try {
             String success = assignmentService.changeStatusAssignments(AssignmentBody.getIds(),
                     Assignment.getStatus(), Assignment.getNotes());
+            String successItem;
             if (Assignment.getStatus().equals("Rejected")) {
                 listOfRecoveredItems = assignmentService.getRecoveredItems(AssignmentBody.getIds());
-                String successItem = itemService.recoverItemQty(listOfRecoveredItems);
-            }
+                successItem = itemService.recoverItemQty(listOfRecoveredItems);
+            } else
+                successItem = "";
+            changeAssignmentStatusResponse.setSuccess(success);
+            changeAssignmentStatusResponse.setSuccessItem(successItem);
             response = helper.getBaseResponse(true, "", new Paging());
-            response.setValue(changeAssignmentStatusResponse);
         } catch (RuntimeException e) {
             response = helper.getBaseResponse(false, e.getMessage(), new Paging());
         }
+        response.setValue(changeAssignmentStatusResponse);
         return response;
     }
 }

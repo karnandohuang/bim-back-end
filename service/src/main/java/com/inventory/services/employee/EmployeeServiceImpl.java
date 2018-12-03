@@ -194,8 +194,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         else if (!isSuperiorIdValid)
             throw new EmployeeFieldWrongFormatException("Superior Id is not in the right format");
-
-        else if (employeeRepository.findByEmail(employee.getEmail()) != null)
+        else if (!employeeRepository.findByEmail(employee.getEmail()).getId().equals(employee.getId()))
             throw new EmployeeAlreadyExistException(employee.getEmail());
 
         else if (superior == null)

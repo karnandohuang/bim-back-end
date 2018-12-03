@@ -7,10 +7,12 @@ import lombok.Data;
 public class ItemRequest {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String id;
-    private String sku;
+
     private String name;
     private int price;
     private String location;
     private int qty;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String imageUrl;
 }

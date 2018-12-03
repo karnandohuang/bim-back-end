@@ -68,14 +68,19 @@ public class ItemController {
 
     @RequestMapping(value = API_PATH_ITEMS, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE, method = {RequestMethod.POST, RequestMethod.PUT})
-    public BaseResponse<String> saveItem(@RequestBody ItemRequest request) {
+    public BaseResponse<ItemResponse> saveItem(@RequestBody ItemRequest request) {
         Item item = generalMapper.map(request, Item.class);
+        BaseResponse<ItemResponse> response;
         try {
-            itemService.saveItem(item);
-            return helper.getStandardBaseResponse(true, "");
+            item = itemService.saveItem(item);
+            ItemResponse itemResponse = new ItemResponse(item);
+            response = helper.getBaseResponse(true, "", new Paging());
+            response.setValue(itemResponse);
         } catch (RuntimeException e) {
-            return helper.getStandardBaseResponse(false, e.getMessage());
+            response = helper.getBaseResponse(false, e.getMessage(), new Paging());
+            response.setValue(null);
         }
+        return response;
     }
 
     @PostMapping(value = API_PATH_UPLOAD_IMAGE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
