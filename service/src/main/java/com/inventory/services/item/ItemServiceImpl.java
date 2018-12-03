@@ -121,8 +121,11 @@ public class ItemServiceImpl implements ItemService {
         else if (!isImageUrlValid)
             throw new ImagePathWrongException();
 
-        else
-            return itemRepository.save(item);
+        else {
+            item = itemRepository.save(item);
+            itemRepository.flush();
+            return item;
+        }
     }
 
     @Override

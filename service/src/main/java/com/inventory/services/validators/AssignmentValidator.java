@@ -8,8 +8,9 @@ public class AssignmentValidator extends EntityValidator {
 
     public boolean validateStatus(String status) {
         if (!status.equals("Pending") && !status.equals("Approved") &&
-                !status.equals("Rejected") && !status.equals("Handover"))
+                !status.equals("Rejected") && !status.equals("Received"))
             return false;
+//        else if(status.equals("Rejected") && actualStatus.equals("Approved"))
         return true;
     }
 
