@@ -102,16 +102,27 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     @Transactional
-    public Double getAssignmentCountByEmployeeIdAndStatus(String employeeId, String status) throws RuntimeException {
+    public Map<String, Double> getAssignmentCountByEmployeeId(String employeeId) {
         try {
             employeeService.getEmployee(employeeId);
         } catch (RuntimeException e) {
             throw e;
         }
-        if (!validator.validateStatus(status))
-            throw new AssignmentFieldWrongFormatException("Status is not in the right format");
-        Double count = Math.ceil(AssignmentRepository.countAllByEmployeeIdAndStatus(employeeId, status));
-        return count;
+
+        Double pendingAssignmentCount = Math.ceil(AssignmentRepository.
+                countAllByEmployeeIdAndStatus(employeeId, "Pending"));
+        Double pendingHandoverCount = Math.ceil(AssignmentRepository.
+                countAllByEmployeeIdAndStatus(employeeId, "Approved"));
+        Double receivedCount = Math.ceil(AssignmentRepository.
+                countAllByEmployeeIdAndStatus(employeeId, "Received"));
+
+        Map<String, Double> listOfCount = new HashMap<>();
+
+        listOfCount.put("pendingAssignmentCount", pendingAssignmentCount);
+        listOfCount.put("pendingHandoverCount", pendingHandoverCount);
+        listOfCount.put("receivedCount", receivedCount);
+
+        return listOfCount;
     }
 
     @Override
