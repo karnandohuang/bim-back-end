@@ -11,6 +11,7 @@ import com.inventory.services.employee.EmployeeService;
 import com.inventory.services.item.ItemService;
 import com.inventory.webmodels.requests.assignment.AssignmentRequest;
 import com.inventory.webmodels.requests.assignment.ChangeAssignmentStatusRequest;
+import com.inventory.webmodels.requests.item.ItemRequest;
 import com.inventory.webmodels.responses.BaseResponse;
 import com.inventory.webmodels.responses.assignment.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,16 +136,24 @@ public class AssignmentController {
         Item item;
         try {
             employee = employeeService.getEmployee(requestBody.getEmployeeId());
-            item = itemService.getItem(requestBody.getItemId());
         } catch (RuntimeException e) {
             return helper.getStandardBaseResponse(false, e.getMessage());
         }
-        Assignment rb = helper.getMappedAssignment(requestBody, employee, item);
-        try {
-            itemService.changeItemQty(rb);
-            assignmentService.saveAssignment(rb);
-        } catch (RuntimeException e) {
-            return helper.getStandardBaseResponse(false, e.getMessage());
+        for (ItemRequest itemRequest : requestBody.getItems()) {
+            item = generalMapper.map(itemRequest, Item.class);
+            int qty = item.getQty();
+            try {
+                item = itemService.getItem(item.getId());
+            } catch (RuntimeException e) {
+                return helper.getStandardBaseResponse(false, e.getMessage());
+            }
+            Assignment rb = helper.getMappedAssignment(requestBody, employee, item, qty);
+            try {
+                itemService.changeItemQty(rb);
+                assignmentService.saveAssignment(rb);
+            } catch (RuntimeException e) {
+                return helper.getStandardBaseResponse(false, e.getMessage());
+            }
         }
             return helper.getStandardBaseResponse(true, "");
     }

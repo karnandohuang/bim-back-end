@@ -71,11 +71,11 @@ public class ModelHelper {
         return employeeAssignmentResponse;
     }
 
-    public Assignment getMappedAssignment(AssignmentRequest request, Employee employee, Item item) {
+    public Assignment getMappedAssignment(AssignmentRequest request, Employee employee, Item item, int qty) {
         Assignment assignment = new Assignment();
         assignment.setEmployee(employee);
         assignment.setItem(item);
-        assignment.setQty(request.getQty());
+        assignment.setQty(qty);
         assignment.setNotes("");
         assignment.setStatus("Pending");
         return assignment;
