@@ -168,7 +168,7 @@ public class ItemServiceImpl implements ItemService {
                     throw new ItemFieldWrongFormatException("Id is not in the right format");
                 else if (assignmentService.getAssignmentCountByItemIdAndStatus(id, "Pending") > 0 ||
                         assignmentService.getAssignmentCountByItemIdAndStatus(id, "Approved") > 0 ||
-                        assignmentService.getAssignmentCountByItemIdAndStatus(id, "Handover") > 0 ||
+                        assignmentService.getAssignmentCountByItemIdAndStatus(id, "Received") > 0 ||
                         assignmentService.getAssignmentCountByItemIdAndStatus(id, "Rejected") > 0)
                     throw new ItemStillHaveAssignmentException();
                 else {
@@ -177,8 +177,8 @@ public class ItemServiceImpl implements ItemService {
                     } catch (RuntimeException e) {
                         throw new ItemNotFoundException("Id : " + id + " is not exist");
                     }
+                    itemRepository.deleteById(id);
                 }
-            itemRepository.deleteById(id);
         }
         return "Delete Success";
     }
