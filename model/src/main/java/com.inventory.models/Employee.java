@@ -1,10 +1,12 @@
 package com.inventory.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.List;
 
 import static com.inventory.models.Constant.*;
 
@@ -13,7 +15,7 @@ import static com.inventory.models.Constant.*;
 @Table(name = EMPLOYEE_TABLE_NAME, schema = SCHEMA_NAME, catalog = DATABASE_NAME)
 @JsonPropertyOrder({"id", "name", "superiorId", "dob", "email", "password", "position", "division", "createdDate",
         "updatedDate", "createdBy", "updatedBy"})
-public class Employee extends BaseEntity{
+public class Employee extends Member {
     @Id
     @GenericGenerator(name = "employee_sequence", strategy = "com.inventory.models.generators.EmployeeIdGenerator")
     @GeneratedValue(generator = "employee_sequence")
@@ -23,10 +25,6 @@ public class Employee extends BaseEntity{
     private String name;
     @Column(name = EMPLOYEE_COLUMN_NAME_SUPERIOR_ID)
     private String superiorId;
-    @Column(name = EMPLOYEE_COLUMN_NAME_EMAIL)
-    private String email;
-    @Column(name = EMPLOYEE_COLUMN_NAME_PASSWORD)
-    private String password;
     @Column(name = EMPLOYEE_COLUMN_NAME_DOB)
     private String dob;
     @Column(name = EMPLOYEE_COLUMN_NAME_POSITION)
@@ -35,4 +33,8 @@ public class Employee extends BaseEntity{
     private String division;
     @Column(name = EMPLOYEE_COLUMN_NAME_ROLE)
     private String role;
+
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.REMOVE)
+    @JsonIgnore
+    private List<Assignment> assignmentList;
 }

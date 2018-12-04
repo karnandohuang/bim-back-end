@@ -5,21 +5,22 @@ public class Constant {
     public static final String EMPLOYEE_TABLE_NAME = "employees";
     public static final String ASSIGNMENT_TABLE_NAME = "assignments";
     public static final String ITEM_TABLE_NAME = "items";
+    public static final String ADMIN_TABLE_NAME = "admins";
 
     public static final String DATABASE_NAME = "inventory";
     public static final String SCHEMA_NAME = "public";
 
+    public static final String MEMBER_COLUMN_NAME_EMAIL = "email";
+    public static final String MEMBER_COLUMN_NAME_PASSWORD = "password";
+
     public static final String COLUMN_NAME_ID = "id";
     public static final String EMPLOYEE_COLUMN_NAME_SUPERIOR_ID = "superiorId";
     public static final String EMPLOYEE_COLUMN_NAME_NAME = "name";
-    public static final String EMPLOYEE_COLUMN_NAME_EMAIL = "email";
-    public static final String EMPLOYEE_COLUMN_NAME_PASSWORD = "password";
     public static final String EMPLOYEE_COLUMN_NAME_DOB = "dob";
     public static final String EMPLOYEE_COLUMN_NAME_POSITION = "position";
     public static final String EMPLOYEE_COLUMN_NAME_DIVISION = "division";
     public static final String EMPLOYEE_COLUMN_NAME_ROLE = "role";
 
-    public static final String ITEM_COLUMN_NAME_SKU = "sku";
     public static final String ITEM_COLUMN_NAME_NAME = "name";
     public static final String ITEM_COLUMN_NAME_PRICE = "price";
     public static final String ITEM_COLUMN_NAME_QTY = "qty";
