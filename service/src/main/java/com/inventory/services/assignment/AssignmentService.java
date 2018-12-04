@@ -14,7 +14,7 @@ public interface AssignmentService {
 
     List<Assignment> getEmployeeAssignmentList(String employeeId, Paging paging);
 
-    Double getAssignmentCountByEmployeeIdAndStatus(String employeeId, String status);
+    Map<String, Double> getAssignmentCountByEmployeeId(String employeeId);
 
     Double getAssignmentCountByItemIdAndStatus(String itemId, String status);
 

@@ -96,13 +96,13 @@ public class AssignmentController {
     }
 
     @GetMapping(value = API_PATH_GET_ASSIGNMENT_COUNT_BY_EMPLOYEE_ID_AND_STATUS, produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<AssignmentCountResponse> getAssignmentCount(@RequestParam String employeeId,
-                                                                    @RequestParam String status) throws IOException{
+    public BaseResponse<AssignmentCountResponse> getAssignmentCount(@RequestParam String employeeId) throws IOException{
         AssignmentCountResponse AssignmentCountResponse = new AssignmentCountResponse();
         BaseResponse response;
         try {
-            Double count = assignmentService.getAssignmentCountByEmployeeIdAndStatus(employeeId, status);
-            AssignmentCountResponse.setAssignmentCount(count);
+            Map<String, Double> listOfCount = assignmentService.getAssignmentCountByEmployeeId(employeeId);
+            AssignmentCountResponse.setListOfCount(listOfCount);
+
             response = helper.getBaseResponse(true, "", new Paging());
             response.setValue(AssignmentCountResponse);
         } catch (RuntimeException e) {
