@@ -22,4 +22,6 @@ public interface EmployeeService {
     Employee saveEmployee(Employee employee) throws RuntimeException;
 
     String deleteEmployee(List<String> ids) throws RuntimeException;
+
+    Employee getEmployeeByEmail(String email) throws EmployeeNotFoundException;
 }

@@ -15,6 +15,7 @@ import com.inventory.webmodels.responses.employee.ListOfEmployeeResponse;
 import com.inventory.webmodels.responses.employee.ListOfSuperiorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import static com.inventory.constants.API_PATH.*;
@@ -53,6 +54,7 @@ public class EmployeeController {
 
     @PostMapping(value = API_PATH_LOGIN, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
     public BaseResponse<String> login(@RequestBody LoginRequest request) {
         Employee employee = employeeService.login(request.getEmail(), request.getPassword());
         if (employee == null)
@@ -104,6 +106,7 @@ public class EmployeeController {
 
     @RequestMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE, method = {RequestMethod.POST, RequestMethod.PUT})
+    @Transactional
     public BaseResponse<String> saveEmployee(@RequestBody EmployeeRequest request) {
         Employee employee = generalMapper.map(request, Employee.class);
         try {
@@ -116,6 +119,7 @@ public class EmployeeController {
 
     @DeleteMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
     public BaseResponse<String> deleteEmployee(@RequestBody DeleteRequest request) {
         BaseResponse<String> response;
         try {

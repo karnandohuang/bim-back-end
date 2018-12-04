@@ -129,6 +129,7 @@ public class AssignmentController {
 
     @RequestMapping(value = API_PATH_ASSIGNMENT, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE, method = {RequestMethod.POST, RequestMethod.PUT})
+    @Transactional
     public BaseResponse<String> saveAssignment(@RequestBody AssignmentRequest requestBody) {
         Employee employee;
         Item item;

@@ -36,7 +36,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional
-
     public Employee getEmployee(String id) throws EmployeeNotFoundException {
         if (!validator.validateIdFormatEntity(id, "EM"))
             throw new EmployeeFieldWrongFormatException("id is not in the right format");
@@ -44,6 +43,18 @@ public class EmployeeServiceImpl implements EmployeeService {
             return employeeRepository.findById(id).get();
         } catch (RuntimeException e) {
             throw new EmployeeNotFoundException("id : " + id + " is not exist");
+        }
+    }
+
+    @Override
+    @Transactional
+    public Employee getEmployeeByEmail(String email) throws EmployeeNotFoundException {
+        if (!validator.validateEmailFormatEmployee(email))
+            throw new EmployeeFieldWrongFormatException("email is not in the right format");
+        try {
+            return employeeRepository.findByEmail(email);
+        } catch (RuntimeException e) {
+            throw new EmployeeNotFoundException("employee of email : " + email + " is not exist");
         }
     }
 
