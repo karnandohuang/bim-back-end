@@ -193,7 +193,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
             isSuperiorIdValid = validator.validateIdFormatEntity(employee.getSuperiorId(), "EM");
 
-
         if (nullFieldEmployee != null)
             throw new EntityNullFieldException(nullFieldEmployee);
 
@@ -205,7 +204,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         else if (!isSuperiorIdValid)
             throw new EmployeeFieldWrongFormatException("Superior Id is not in the right format");
-        else if (!employeeRepository.findByEmail(employee.getEmail()).getId().equals(employee.getId()))
+        else if (employeeRepository.findByEmail(employee.getEmail()) != null)
             throw new EmployeeAlreadyExistException(employee.getEmail());
 
         else if (superior == null)
