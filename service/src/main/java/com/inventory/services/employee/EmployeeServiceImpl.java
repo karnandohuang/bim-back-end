@@ -204,7 +204,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         else if (!isSuperiorIdValid)
             throw new EmployeeFieldWrongFormatException("Superior Id is not in the right format");
-        else if (employeeRepository.findByEmail(employee.getEmail()) != null)
+        else if (!employeeRepository.findByEmail(employee.getEmail()).getId().equals(employee.getId()))
             throw new EmployeeAlreadyExistException(employee.getEmail());
 
         else if (superior == null)
@@ -221,7 +221,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 boolean isIdValid = validator.validateIdFormatEntity(id, "EM");
                 if (!isIdValid)
                     throw new EmployeeFieldWrongFormatException("Id is not in the right format");
-                else if (assignmentService.getAssignmentCountByEmployeeIdAndStatus(id, "Pending") > 0)
+                else if (assignmentService.getAssignmentCountByEmployeeId(id).get("pendingAssignmentCount") > 0)
                     throw new EmployeeStillHavePendingAssignmentException();
                 else {
                     try {

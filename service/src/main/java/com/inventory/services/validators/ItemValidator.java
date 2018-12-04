@@ -32,8 +32,6 @@ public class ItemValidator extends EntityValidator {
             return ITEM_PRICE_EMPTY;
         if (item.getLocation() == null)
             return ITEM_LOCATION_EMPTY;
-        if (item.getImageUrl() == null)
-            return ITEM_IMAGE_EMPTY;
         return null;
     }
 }

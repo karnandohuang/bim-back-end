@@ -14,9 +14,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
     private MemberDetailsService memberDetailsService;
 
-    @Autowired
-    private MyBasicAuthenticationEntryPoint authenticationEntryPoint;
-
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(memberDetailsService);
@@ -33,8 +30,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 //                .antMatchers("/api/items/**").hasRole("SUPERIOR")
 //                .antMatchers("api/requests/**").hasRole("SUPERIOR")
                 .antMatchers("/api/**").hasRole("ADMIN")
-                .anyRequest().authenticated()
-                .and().httpBasic().authenticationEntryPoint(authenticationEntryPoint);
+                .anyRequest().authenticated();
         http.csrf().disable();
     }
 

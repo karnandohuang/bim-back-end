@@ -122,6 +122,8 @@ public class ItemServiceImpl implements ItemService {
             throw new ImagePathWrongException();
 
         else {
+            if (item.getImageUrl() == null)
+                item.setImageUrl("null");
             item = itemRepository.save(item);
             itemRepository.flush();
             return item;

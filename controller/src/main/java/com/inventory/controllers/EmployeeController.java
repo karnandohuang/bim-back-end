@@ -107,17 +107,14 @@ public class EmployeeController {
     @RequestMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE, method = {RequestMethod.POST, RequestMethod.PUT})
     @Transactional
-    public BaseResponse<Employee> saveEmployee(@RequestBody EmployeeRequest request) {
+    public BaseResponse<String> saveEmployee(@RequestBody EmployeeRequest request) {
         Employee employee = generalMapper.map(request, Employee.class);
-        BaseResponse<Employee> response;
-//        try {
-            employee = employeeService.saveEmployee(employee);
-        response = helper.getBaseResponse(true, "", new Paging());
-        response.setValue(employee);
-        return response;
-//        } catch (RuntimeException e) {
-//            return helper.getStandardBaseResponse(false, e.getMessage());
-//        }
+        try {
+            employeeService.saveEmployee(employee);
+            return helper.getStandardBaseResponse(true, "");
+        } catch (RuntimeException e) {
+            return helper.getStandardBaseResponse(false, e.getMessage());
+        }
     }
 
     @DeleteMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE,
