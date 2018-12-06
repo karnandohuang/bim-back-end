@@ -32,11 +32,15 @@ public class EmployeeValidator extends EntityValidator {
         return true;
     }
 
-    public String assumeRoleEmployee(String superiorId) {
-        if (superiorId.equals("null"))
-            return "SUPERIOR";
-        else
+    public String assumeRoleEmployee(Employee employee, boolean isHavingSubordinate) {
+        if (employee.getId() == null)
             return "EMPLOYEE";
+        else {
+            if (!isHavingSubordinate)
+                return "EMPLOYEE";
+            else
+                return "SUPERIOR";
+        }
     }
 
     public boolean validateEmailFormatEmployee(String email) {

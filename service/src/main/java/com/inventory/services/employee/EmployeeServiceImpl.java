@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.List;
 
+import static com.inventory.services.ExceptionConstant.*;
+
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 
@@ -34,15 +36,17 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Autowired
     private EmployeeValidator validator;
 
+    private final static String EMPLOYEE_ID_PREFIX = "EM";
+
     @Override
     @Transactional
     public Employee getEmployee(String id) throws EmployeeNotFoundException {
-        if (!validator.validateIdFormatEntity(id, "EM"))
-            throw new EmployeeFieldWrongFormatException("id is not in the right format");
+        if (!validator.validateIdFormatEntity(id, EMPLOYEE_ID_PREFIX))
+            throw new EmployeeFieldWrongFormatException(ID_WRONG_FORMAT_ERROR);
         try {
             return employeeRepository.findById(id).get();
         } catch (RuntimeException e) {
-            throw new EmployeeNotFoundException("id : " + id + " is not exist");
+            throw new EmployeeNotFoundException(id, "Id");
         }
     }
 
@@ -50,11 +54,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public Employee getEmployeeByEmail(String email) throws EmployeeNotFoundException {
         if (!validator.validateEmailFormatEmployee(email))
-            throw new EmployeeFieldWrongFormatException("email is not in the right format");
+            throw new EmployeeFieldWrongFormatException(EMPLOYEE_EMAIL_WRONG_FORMAT_ERROR);
         try {
             return employeeRepository.findByEmail(email);
         } catch (RuntimeException e) {
-            throw new EmployeeNotFoundException("employee of email : " + email + " is not exist");
+            throw new EmployeeNotFoundException(email, "Email");
         }
     }
 
@@ -106,8 +110,8 @@ public class EmployeeServiceImpl implements EmployeeService {
             name = "";
         if (superiorId == null)
             superiorId = "null";
-        if (!validator.validateIdFormatEntity(superiorId, "EM"))
-            throw new EmployeeFieldWrongFormatException("Superior Id is not in the right format");
+        if (!validator.validateIdFormatEntity(superiorId, EMPLOYEE_ID_PREFIX))
+            throw new EmployeeFieldWrongFormatException(EMPLOYEE_SUPERIOR_ID_WRONG_FORMAT_ERROR);
         List<Employee> listOfEmployee;
         if (paging.getSortedType().matches("desc")) {
             listOfEmployee = employeeRepository.findAllBySuperiorIdAndNameContainingIgnoreCase(
@@ -139,7 +143,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         try {
             newEmployee = employeeRepository.findById(employee.getId()).get();
         } catch (RuntimeException e) {
-            throw new EmployeeNotFoundException("id : " + employee.getId() + " is not exist");
+            throw new EmployeeNotFoundException(employee.getId(), "Id");
         }
         newEmployee.setName(employee.getName());
         newEmployee.setEmail(employee.getEmail());
@@ -168,66 +172,81 @@ public class EmployeeServiceImpl implements EmployeeService {
             employee.setPassword(encoder.encode(request.getPassword()));
         }
 
+        Employee isEmployeeExist = employeeRepository.findByEmail(employee.getEmail());
+
         Employee superior;
 
         if (employee.getSuperiorId().equals("null"))
             superior = new Employee();
-        else
-            superior = null;
-
+        else {
+            try {
+                superior = employeeRepository.findById(employee.getSuperiorId()).get();
+                superior.setRole(validator.assumeRoleEmployee(superior, true));
+                employeeRepository.save(superior);
+            } catch (RuntimeException e) {
+                throw new EmployeeNotFoundException(employee.getSuperiorId(), "SuperiorId");
+            }
+        }
         boolean isSuperiorIdValid = true;
 
         boolean isDobValid = validator.isDobValid(employee.getDob());
 
         boolean isEmailValid = validator.validateEmailFormatEmployee(employee.getEmail());
 
-        try {
-            superior = employeeRepository.findById(employee.getSuperiorId()).get();
-        } catch (RuntimeException e) {
-            //do nothing
-        }
-
-        employee.setRole(validator.assumeRoleEmployee(employee.getSuperiorId()));
+        employee.setRole(validator.assumeRoleEmployee(employee, false));
 
         if (!employee.getSuperiorId().equals("null"))
 
-            isSuperiorIdValid = validator.validateIdFormatEntity(employee.getSuperiorId(), "EM");
+            isSuperiorIdValid = validator.validateIdFormatEntity(employee.getSuperiorId(), EMPLOYEE_ID_PREFIX);
 
         if (nullFieldEmployee != null)
             throw new EntityNullFieldException(nullFieldEmployee);
 
         else if (!isEmailValid)
-            throw new EmployeeFieldWrongFormatException("Email is not in the right format");
+            throw new EmployeeFieldWrongFormatException(EMPLOYEE_EMAIL_WRONG_FORMAT_ERROR);
 
         else if (!isDobValid)
-            throw new EmployeeFieldWrongFormatException("Date Of Birth is not in the right format");
+            throw new EmployeeFieldWrongFormatException(EMPLOYEE_DOB_WRONG_FORMAT_ERROR);
 
         else if (!isSuperiorIdValid)
-            throw new EmployeeFieldWrongFormatException("Superior Id is not in the right format");
-        else if (!employeeRepository.findByEmail(employee.getEmail()).getId().equals(employee.getId()))
+            throw new EmployeeFieldWrongFormatException(EMPLOYEE_SUPERIOR_ID_WRONG_FORMAT_ERROR);
+        else if (isEmployeeExist != null && !isEmployeeExist.getId().equals(employee.getId()))
             throw new EmployeeAlreadyExistException(employee.getEmail());
-
         else if (superior == null)
-            throw new EmployeeNotFoundException("Superior of id : " + employee.getSuperiorId() + " is not exist");
-
+            throw new EmployeeNotFoundException(employee.getSuperiorId(), "SuperiorId");
         else
             return employeeRepository.save(employee);
+    }
+
+    private boolean isEmployeeHavingSubordinate(String id) {
+        this.getEmployee(id);
+        Float count = employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(id, "");
+        if (count > 1)
+            return true;
+        else
+            return false;
     }
 
     @Override
     @Transactional
     public String deleteEmployee(List<String> ids) throws RuntimeException {
         for (String id : ids) {
-                boolean isIdValid = validator.validateIdFormatEntity(id, "EM");
+            Employee employee;
+            boolean isIdValid = validator.validateIdFormatEntity(id, EMPLOYEE_ID_PREFIX);
                 if (!isIdValid)
-                    throw new EmployeeFieldWrongFormatException("Id is not in the right format");
+                    throw new EmployeeFieldWrongFormatException(ID_WRONG_FORMAT_ERROR);
                 else if (assignmentService.getAssignmentCountByEmployeeId(id).get("pendingAssignmentCount") > 0)
                     throw new EmployeeStillHavePendingAssignmentException();
                 else {
                     try {
-                        employeeRepository.findById(id).get();
+                        employee = employeeRepository.findById(id).get();
+                        if (!this.isEmployeeHavingSubordinate(employee.getSuperiorId())) {
+                            Employee superior = employeeRepository.findById(employee.getSuperiorId()).get();
+                            superior.setRole(validator.assumeRoleEmployee(superior, false));
+                            employeeRepository.save(superior);
+                        }
                     } catch (RuntimeException e) {
-                        throw new EmployeeNotFoundException("id : " + id + " is not exist");
+                        throw new EmployeeNotFoundException(id, "Id");
                     }
                 }
             employeeRepository.deleteById(id);

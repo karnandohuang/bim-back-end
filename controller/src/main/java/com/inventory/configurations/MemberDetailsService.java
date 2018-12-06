@@ -55,8 +55,7 @@ public class MemberDetailsService implements UserDetailsService {
             authorities = asList(() -> "ROLE_ADMIN");
         } else {
             Employee employee = (Employee) member;
-            if (employeeService.getSuperiorList(employee.getId(), "",
-                    helper.getPaging(1, 3, "", "")).size() > 0)
+            if (employee.getRole().equals("SUPERIOR"))
                 authorities = asList(() -> "ROLE_SUPERIOR");
             else
                 authorities = asList(() -> "ROLE_EMPLOYEE");

@@ -20,6 +20,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.inventory.services.ExceptionConstant.ASSIGNMENT_STATUS_WRONG_FORMAT_ERROR;
+import static com.inventory.services.ExceptionConstant.ID_WRONG_FORMAT_ERROR;
+
 @Service
 public class AssignmentServiceImpl implements AssignmentService {
 
@@ -35,15 +38,17 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Autowired
     private AssignmentValidator validator;
 
+    private final static String ASSIGNMENT_ID_PREFIX = "AT";
+
 
     @Override
     public Assignment getAssignment(String id) throws RuntimeException {
         try {
-            if (!validator.validateIdFormatEntity(id, "AT"))
-                throw new AssignmentFieldWrongFormatException("id is not in the right format");
+            if (!validator.validateIdFormatEntity(id, ASSIGNMENT_ID_PREFIX))
+                throw new AssignmentFieldWrongFormatException(ID_WRONG_FORMAT_ERROR);
             return AssignmentRepository.findById(id).get();
         } catch (RuntimeException e) {
-            throw new AssignmentNotFoundException("id : " + id + " is not exist");
+            throw new AssignmentNotFoundException(id, "Id");
         }
     }
 
@@ -134,7 +139,7 @@ public class AssignmentServiceImpl implements AssignmentService {
             throw e;
         }
         if (!validator.validateStatus(status))
-            throw new AssignmentFieldWrongFormatException("Status is not in the right format");
+            throw new AssignmentFieldWrongFormatException(ASSIGNMENT_STATUS_WRONG_FORMAT_ERROR);
         Double count = Math.ceil(AssignmentRepository.countAllByItemIdAndStatus(itemId, status));
         return count;
     }
@@ -156,12 +161,12 @@ public class AssignmentServiceImpl implements AssignmentService {
             try {
                 assignment = AssignmentRepository.findById(id).get();
             } catch (RuntimeException e) {
-                throw new AssignmentNotFoundException("id : " + id + " is not exist");
+                throw new AssignmentNotFoundException(id, "Id");
             }
             if (!validator.validateStatus(status))
-                throw new AssignmentFieldWrongFormatException("Status is not in the right format");
+                throw new AssignmentFieldWrongFormatException(ASSIGNMENT_STATUS_WRONG_FORMAT_ERROR);
             else if (assignment.getStatus().equals(status))
-                throw new AssignmentStatusIsSameException("Status is already " + status);
+                throw new AssignmentStatusIsSameException(status);
                 else {
                 assignment.setStatus(status);
                 assignment.setNotes(notes);
@@ -182,7 +187,7 @@ public class AssignmentServiceImpl implements AssignmentService {
             try {
                 assignment = AssignmentRepository.findById(id).get();
             } catch (RuntimeException e) {
-                throw new AssignmentNotFoundException("id : " + id + " is not exist");
+                throw new AssignmentNotFoundException(id, "Id");
             }
             if (listOfRecoveredItems.get(assignment.getItem().getId()) != null)
                 qty = listOfRecoveredItems.get(assignment.getItem().getId());

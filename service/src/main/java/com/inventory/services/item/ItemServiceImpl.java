@@ -24,6 +24,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
+import static com.inventory.services.ExceptionConstant.ID_WRONG_FORMAT_ERROR;
+
 @Service
 public class ItemServiceImpl implements ItemService {
 
@@ -36,15 +38,17 @@ public class ItemServiceImpl implements ItemService {
     @Autowired
     private AssignmentService assignmentService;
 
+    private final static String ITEM_ID_PREFIX = "IM";
+
     @Override
     @Transactional
     public Item getItem(String id) throws RuntimeException {
-        if (!validator.validateIdFormatEntity(id, "IM"))
-            throw new ItemFieldWrongFormatException("id is not in the right format");
+        if (!validator.validateIdFormatEntity(id, ITEM_ID_PREFIX))
+            throw new ItemFieldWrongFormatException(ID_WRONG_FORMAT_ERROR);
         try {
             return itemRepository.findById(id).get();
         } catch (RuntimeException e) {
-            throw new ItemNotFoundException("id : " + id + " is not exist");
+            throw new ItemNotFoundException(id, "Id");
         }
     }
 
@@ -81,7 +85,7 @@ public class ItemServiceImpl implements ItemService {
         try {
             newItem = itemRepository.findById(item.getId()).get();
         } catch (RuntimeException e) {
-            throw new ItemNotFoundException("id : " + item.getId() + " is not exist");
+            throw new ItemNotFoundException(item.getId(), "Id");
         }
         newItem.setName(item.getName());
         newItem.setPrice(item.getPrice());
@@ -113,13 +117,13 @@ public class ItemServiceImpl implements ItemService {
         boolean isImageUrlValid = validator.validateImageUrlItem(item.getImageUrl());
 
         if (item.getId() != null)
-            isIdValid = validator.validateIdFormatEntity(item.getId(), "IM");
+            isIdValid = validator.validateIdFormatEntity(item.getId(), ITEM_ID_PREFIX);
 
         if (nullFieldItem != null)
             throw new EntityNullFieldException(nullFieldItem);
 
         else if (!isIdValid)
-            throw new ItemFieldWrongFormatException("id is not in the right format");
+            throw new ItemFieldWrongFormatException(ID_WRONG_FORMAT_ERROR);
 
         else if (!isImageUrlValid)
             throw new ImagePathWrongException();
@@ -154,7 +158,7 @@ public class ItemServiceImpl implements ItemService {
             try {
                 item = itemRepository.findById(entry.getKey()).get();
             } catch (RuntimeException e) {
-                throw new ItemNotFoundException("Item : " + entry.getKey() + " is not exist");
+                throw new ItemNotFoundException(entry.getKey(), "Id");
             }
             item.setQty(item.getQty() + entry.getValue());
             itemRepository.save(item);
@@ -166,9 +170,9 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public String deleteItem(List<String> ids) throws RuntimeException {
         for (String id: ids){
-                boolean isIdValid = validator.validateIdFormatEntity(id, "IM");
+            boolean isIdValid = validator.validateIdFormatEntity(id, ITEM_ID_PREFIX);
                 if (!isIdValid)
-                    throw new ItemFieldWrongFormatException("Id is not in the right format");
+                    throw new ItemFieldWrongFormatException(ID_WRONG_FORMAT_ERROR);
                 else if (assignmentService.getAssignmentCountByItemIdAndStatus(id, "Pending") > 0 ||
                         assignmentService.getAssignmentCountByItemIdAndStatus(id, "Approved") > 0 ||
                         assignmentService.getAssignmentCountByItemIdAndStatus(id, "Received") > 0 ||
@@ -178,7 +182,7 @@ public class ItemServiceImpl implements ItemService {
                     try {
                         itemRepository.findById(id).get();
                     } catch (RuntimeException e) {
-                        throw new ItemNotFoundException("Id : " + id + " is not exist");
+                        throw new ItemNotFoundException(id, "Id");
                     }
                     itemRepository.deleteById(id);
                 }
@@ -192,7 +196,7 @@ public class ItemServiceImpl implements ItemService {
         try {
             item = itemRepository.findById(itemId).get();
         } catch (RuntimeException e) {
-            throw new ItemNotFoundException("id : " + itemId + " is not exist");
+            throw new ItemNotFoundException(itemId, "Id");
         }
         Calendar cal = Calendar.getInstance();
         File createdDir = new File("C:\\Users\\olive\\Desktop\\bim-back-end\\resources\\" +

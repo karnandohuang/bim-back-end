@@ -20,7 +20,7 @@ public class AdminServiceImpl implements AdminService {
         try {
             return adminRepository.findByEmail(email);
         } catch (RuntimeException e) {
-            throw new EmployeeNotFoundException("user for email : " + email + " is not exist");
+            throw new EmployeeNotFoundException(email, "Email");
         }
     }
 }
