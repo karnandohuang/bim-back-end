@@ -17,7 +17,7 @@ public class Assignment extends BaseEntity {
 
     @Id
     @GenericGenerator(name = "assignment_sequence", strategy = "com.inventory.models.generators.AssignmentIdGenerator")
-    @GeneratedValue(generator = "assignment_sequence")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "assignment_sequence")
     @Column(name = COLUMN_NAME_ID)
     private String id;
 

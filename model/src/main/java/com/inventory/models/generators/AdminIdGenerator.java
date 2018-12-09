@@ -2,12 +2,11 @@ package com.inventory.models.generators;
 
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
-import org.hibernate.id.IdentifierGenerator;
 
 import java.io.Serializable;
 import java.sql.*;
 
-public class AdminIdGenerator implements IdentifierGenerator {
+public class AdminIdGenerator extends EmployeeIdGenerator {
     private final String DEFAULT_SEQUENCE_NAME = "admin_sequence";
     private final String DATABASE_URL = "jdbc:postgresql://localhost:5432/inventory";
 

@@ -18,7 +18,7 @@ import static com.inventory.models.Constant.*;
 public class Employee extends Member {
     @Id
     @GenericGenerator(name = "employee_sequence", strategy = "com.inventory.models.generators.EmployeeIdGenerator")
-    @GeneratedValue(generator = "employee_sequence")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "employee_sequence")
     @Column(name = COLUMN_NAME_ID)
     private String id;
     @Column(name = EMPLOYEE_COLUMN_NAME_NAME)

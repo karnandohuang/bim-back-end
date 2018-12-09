@@ -1,7 +1,5 @@
 package com.inventory.services.validators;
 
-import com.inventory.models.BaseEntity;
-
 public class EntityValidator {
 
     public boolean validateIdFormatEntity(String id, String prefix) {
@@ -13,11 +11,5 @@ public class EntityValidator {
             }
             return true;
         }
-    }
-
-    public boolean validateNullEntity(BaseEntity entity) {
-        if (entity == null)
-            return true;
-        return false;
     }
 }

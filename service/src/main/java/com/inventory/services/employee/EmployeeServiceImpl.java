@@ -219,7 +219,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     private boolean isEmployeeHavingSubordinate(String id) {
-        this.getEmployee(id);
+//        this.getEmployee(id);
         Float count = employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(id, "");
         if (count > 1)
             return true;
@@ -231,19 +231,22 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public String deleteEmployee(List<String> ids) throws RuntimeException {
         for (String id : ids) {
-            Employee employee;
-            boolean isIdValid = validator.validateIdFormatEntity(id, EMPLOYEE_ID_PREFIX);
-                if (!isIdValid)
-                    throw new EmployeeFieldWrongFormatException(ID_WRONG_FORMAT_ERROR);
-                else if (assignmentService.getAssignmentCountByEmployeeId(id).get("pendingAssignmentCount") > 0)
+            Employee employee = employeeRepository.findById(id).get();
+            if (assignmentService.getAssignmentCountByEmployeeId(id).get("pendingAssignmentCount") > 0)
                     throw new EmployeeStillHavePendingAssignmentException();
                 else {
                     try {
-                        employee = employeeRepository.findById(id).get();
-                        if (!this.isEmployeeHavingSubordinate(employee.getSuperiorId())) {
+                        if (!this.isEmployeeHavingSubordinate(employee.getSuperiorId()) &&
+                                !employee.getSuperiorId().equals("null")) {
                             Employee superior = employeeRepository.findById(employee.getSuperiorId()).get();
                             superior.setRole(validator.assumeRoleEmployee(superior, false));
                             employeeRepository.save(superior);
+                        } else if (employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(id, "") > 0) {
+                            List<Employee> listOfEmployee = employeeRepository.findAllBySuperiorId(id);
+                            for (Employee e : listOfEmployee) {
+                                e.setSuperiorId("null");
+                                employeeRepository.save(e);
+                            }
                         }
                     } catch (RuntimeException e) {
                         throw new EmployeeNotFoundException(id, "Id");

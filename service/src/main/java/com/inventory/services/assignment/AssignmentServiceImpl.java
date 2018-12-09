@@ -8,6 +8,7 @@ import com.inventory.services.exceptions.EntityNullFieldException;
 import com.inventory.services.exceptions.assignment.AssignmentFieldWrongFormatException;
 import com.inventory.services.exceptions.assignment.AssignmentNotFoundException;
 import com.inventory.services.exceptions.assignment.AssignmentStatusIsSameException;
+import com.inventory.services.exceptions.assignment.AssignmentStatusOrderWrongException;
 import com.inventory.services.item.ItemService;
 import com.inventory.services.validators.AssignmentValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -167,7 +168,9 @@ public class AssignmentServiceImpl implements AssignmentService {
                 throw new AssignmentFieldWrongFormatException(ASSIGNMENT_STATUS_WRONG_FORMAT_ERROR);
             else if (assignment.getStatus().equals(status))
                 throw new AssignmentStatusIsSameException(status);
-                else {
+            else if (!validator.validateChangeStatus(assignment.getStatus(), status))
+                throw new AssignmentStatusOrderWrongException(assignment.getStatus(), status);
+            else {
                 assignment.setStatus(status);
                 assignment.setNotes(notes);
                 AssignmentRepository.save(assignment);

@@ -13,8 +13,8 @@ import static com.inventory.models.Constant.*;
 public class Admin extends Member {
 
     @Id
-    @GenericGenerator(name = "admin_sequence", strategy = "com.inventory.models.generators.EmployeeIdGenerator")
-    @GeneratedValue(generator = "admin_sequence")
+    @GenericGenerator(name = "admin_sequence", strategy = "com.inventory.models.generators.AdminIdGenerator")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "admin_sequence")
     @Column(name = COLUMN_NAME_ID)
     private String id;
 }
