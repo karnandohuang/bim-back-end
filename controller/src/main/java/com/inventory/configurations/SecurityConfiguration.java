@@ -16,7 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @ComponentScan("com.inventory.configurations")
-@EnableGlobalMethodSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -26,10 +26,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private MemberDetailsService memberDetailsService;
 
     @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
+    private JwtAuthenticationProvider authenticationProvider;
 
     @Autowired
-    private JwtAuthenticationProvider authenticationProvider;
+    private BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
     private RestAuthenticationEntryPoint authenticationEntryPoint;
@@ -39,12 +39,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/api/login").permitAll()
-                .antMatchers(HttpMethod.PUT, "/api/requests**").hasAnyRole("SUPERIOR", "ADMIN")
-                .antMatchers(HttpMethod.POST).hasRole("ADMIN")
-                .antMatchers(HttpMethod.PUT).hasRole("ADMIN")
-                .antMatchers(HttpMethod.DELETE).hasRole("ADMIN")
                 .antMatchers(HttpMethod.GET).permitAll()
+                .antMatchers("/api/login").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/requests").permitAll()
+//                .antMatchers(HttpMethod.PUT, "/api/requests**").hasAnyRole("SUPERIOR", "ADMIN")
+//                .antMatchers(HttpMethod.POST).hasRole("ADMIN")
+//                .antMatchers(HttpMethod.PUT).hasRole("ADMIN")
+//                .antMatchers(HttpMethod.DELETE).hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -67,6 +68,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(authenticationProvider);
-        auth.userDetailsService(memberDetailsService).passwordEncoder(passwordEncoder);
+//        auth.userDetailsService(memberDetailsService).passwordEncoder(passwordEncoder);
     }
 }

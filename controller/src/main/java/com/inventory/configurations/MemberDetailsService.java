@@ -46,13 +46,13 @@ public class MemberDetailsService implements UserDetailsService {
     private Collection<? extends GrantedAuthority> getGrantedAuthorities(Member member) {
         Collection<? extends GrantedAuthority> authorities;
         if (member instanceof Admin) {
-            authorities = asList(() -> "ADMIN");
+            authorities = asList(() -> "ROLE_ADMIN");
         } else {
             Employee employee = (Employee) member;
             if (employee.getRole().equals("SUPERIOR"))
-                authorities = asList(() -> "SUPERIOR");
+                authorities = asList(() -> "ROLE_SUPERIOR");
             else
-                authorities = asList(() -> "EMPLOYEE");
+                authorities = asList(() -> "ROLE_EMPLOYEE");
         }
         return authorities;
     }
