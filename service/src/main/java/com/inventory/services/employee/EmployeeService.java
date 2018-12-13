@@ -11,7 +11,7 @@ public interface EmployeeService {
 
     Employee getEmployee(String id) throws EmployeeNotFoundException;
 
-    Employee login(String email, String password);
+    Boolean login(String email, String password);
 
     @Transactional
     List<Employee> getSuperiorList(String superiorId, String name, Paging paging) throws RuntimeException;

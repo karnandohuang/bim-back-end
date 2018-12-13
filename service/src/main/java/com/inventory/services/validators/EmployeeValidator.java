@@ -43,7 +43,7 @@ public class EmployeeValidator extends EntityValidator {
         }
     }
 
-    public boolean validateEmailFormatEmployee(String email) {
+    public boolean validateEmailFormatMember(String email) {
         if (email == null)
             return false;
         else {

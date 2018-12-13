@@ -6,10 +6,12 @@ import com.inventory.models.Employee;
 import com.inventory.models.Paging;
 import com.inventory.services.employee.EmployeeService;
 import com.inventory.services.exceptions.employee.EmployeeNotFoundException;
+import com.inventory.services.member.MemberService;
 import com.inventory.webmodels.requests.DeleteRequest;
 import com.inventory.webmodels.requests.employee.EmployeeRequest;
 import com.inventory.webmodels.requests.employee.LoginRequest;
 import com.inventory.webmodels.responses.BaseResponse;
+import com.inventory.webmodels.responses.assignment.AuthenticationResponse;
 import com.inventory.webmodels.responses.employee.EmployeeResponse;
 import com.inventory.webmodels.responses.employee.ListOfEmployeeResponse;
 import com.inventory.webmodels.responses.employee.ListOfSuperiorResponse;
@@ -19,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import static com.inventory.constants.API_PATH.*;
-import static com.inventory.constants.ErrorConstant.LOGIN_ERROR;
 
 @CrossOrigin
 @RestController
@@ -33,6 +34,9 @@ public class EmployeeController {
 
     @Autowired
     private EmployeeService employeeService;
+
+    @Autowired
+    private MemberService memberService;
 
     @GetMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<ListOfEmployeeResponse> listOfEmployee(
@@ -55,11 +59,21 @@ public class EmployeeController {
     @PostMapping(value = API_PATH_LOGIN, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    public BaseResponse<String> login(@RequestBody LoginRequest request) {
-        Employee employee = employeeService.login(request.getEmail(), request.getPassword());
-        if (employee == null)
-            return helper.getStandardBaseResponse(false, LOGIN_ERROR);
-        return helper.getStandardBaseResponse(true, "");
+    public BaseResponse<AuthenticationResponse> login(@RequestBody LoginRequest request) {
+        BaseResponse<AuthenticationResponse> response;
+        if (request == null || request.getEmail() == null || request.getPassword() == null)
+            return helper.getBaseResponse(false, "", new Paging());
+        String token = memberService.authenticateUser(request.getEmail(), request.getPassword());
+        if (token != null) {
+            AuthenticationResponse authenticationResponse = new AuthenticationResponse();
+            authenticationResponse.setUsername(request.getEmail());
+            authenticationResponse.setToken(token);
+            response = helper.getBaseResponse(true, "", new Paging());
+            response.setValue(authenticationResponse);
+        } else {
+            response = helper.getBaseResponse(false, "", new Paging());
+        }
+        return response;
     }
 
     @GetMapping(value = API_PATH_GET_SUPERIORS, produces = MediaType.APPLICATION_JSON_VALUE)

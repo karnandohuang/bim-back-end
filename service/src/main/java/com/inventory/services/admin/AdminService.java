@@ -7,4 +7,6 @@ import javax.transaction.Transactional;
 public interface AdminService {
     @Transactional
     Admin getAdminByEmail(String email);
+
+    Boolean login(String email, String password);
 }

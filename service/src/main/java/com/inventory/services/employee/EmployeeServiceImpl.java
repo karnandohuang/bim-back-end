@@ -53,7 +53,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional
     public Employee getEmployeeByEmail(String email) throws EmployeeNotFoundException {
-        if (!validator.validateEmailFormatEmployee(email))
+        if (!validator.validateEmailFormatMember(email))
             throw new EmployeeFieldWrongFormatException(EMPLOYEE_EMAIL_WRONG_FORMAT_ERROR);
         try {
             return employeeRepository.findByEmail(email);
@@ -63,21 +63,21 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public Employee login(String email, String password) {
-        boolean isEmailValid = validator.validateEmailFormatEmployee(email);
+    public Boolean login(String email, String password) {
+        boolean isEmailValid = validator.validateEmailFormatMember(email);
         if (!isEmailValid)
-            return null;
+            return false;
         Employee employee;
         try {
             employee = employeeRepository.findByEmail(
                     email);
         } catch (Exception e) {
-            return null;
+            return false;
         }
         if (encoder.matches(password, employee.getPassword()))
-            return employeeRepository.save(employee);
+            return true;
         else
-            return null;
+            return false;
     }
 
     @Override
@@ -191,7 +191,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         boolean isDobValid = validator.isDobValid(employee.getDob());
 
-        boolean isEmailValid = validator.validateEmailFormatEmployee(employee.getEmail());
+        boolean isEmailValid = validator.validateEmailFormatMember(employee.getEmail());
 
         employee.setRole(validator.assumeRoleEmployee(employee, false));
 
