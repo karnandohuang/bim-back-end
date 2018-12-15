@@ -41,6 +41,14 @@ public class ModelHelper {
         return response;
     }
 
+    public BaseResponse<byte[]> getPdfBaseResponse(boolean success, byte[] document) {
+        BaseResponse<byte[]> response = new BaseResponse<>();
+        response.setValue(document);
+        response.setCode(HttpStatus.OK.toString());
+        response.setSuccess(success);
+        return response;
+    }
+
     public Paging getPaging(int pageNumber, int pageSize, String sortedBy, String sortedType) {
         Paging paging = new Paging();
         paging.setPageNumber(pageNumber);

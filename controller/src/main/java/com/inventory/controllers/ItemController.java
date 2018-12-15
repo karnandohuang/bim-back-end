@@ -2,6 +2,7 @@ package com.inventory.controllers;
 
 import com.inventory.mappers.GeneralMapper;
 import com.inventory.mappers.ModelHelper;
+import com.inventory.mappers.PdfMapper;
 import com.inventory.models.Item;
 import com.inventory.models.Paging;
 import com.inventory.services.item.ItemService;
@@ -10,8 +11,12 @@ import com.inventory.webmodels.requests.item.ItemRequest;
 import com.inventory.webmodels.responses.BaseResponse;
 import com.inventory.webmodels.responses.item.ItemResponse;
 import com.inventory.webmodels.responses.item.ListOfItemResponse;
+import com.itextpdf.text.DocumentException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,6 +36,9 @@ public class ItemController {
 
     @Autowired
     private ModelHelper helper;
+
+    @Autowired
+    private PdfMapper pdfMapper;
 
     @GetMapping(value = API_PATH_ITEMS, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<ListOfItemResponse> ListOfItem(
@@ -100,7 +108,7 @@ public class ItemController {
     }
 
     @DeleteMapping(value = API_PATH_ITEMS, consumes = MediaType.APPLICATION_JSON_VALUE,
-    produces = MediaType.APPLICATION_JSON_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<String> deleteItem(@RequestBody DeleteRequest request) {
         BaseResponse<String> response;
         try {
@@ -111,4 +119,40 @@ public class ItemController {
         }
         return response;
     }
+
+    //    @GetMapping(value = API_PATH_GET_ITEM_DETAIL_PDF ,
+//            produces = MediaType.APPLICATION_PDF_VALUE)
+//    public BaseResponse<byte[]> getPdf(@PathVariable String id) throws DocumentException {
+//        Item item;
+//        item = itemService.getItem(id);
+//        byte[] pdf = pdfMapper.getPdf(item);
+//
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.parseMediaType("application/pdf"));
+//        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+//        headers.set("Content-Disposition", "inline");
+//
+//        BaseResponse<byte[]> response = helper.getPdfBaseResponse(true, pdf);
+//
+//        return response;
+//    }
+    @GetMapping(value = API_PATH_GET_ITEM_DETAIL_PDF, produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> getPdf(@PathVariable String id) throws DocumentException {
+        Item item;
+        item = itemService.getItem(id);
+        byte[] pdf = pdfMapper.getPdf(item);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("application/pdf"));
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+        headers.set("Content-Disposition", "inline");
+        headers.set("filename", "details.pdf");
+        headers.setContentLength(pdf.length);
+
+//        BaseResponse<byte[]> response = helper.getPdfBaseResponse(true, pdf);
+        ResponseEntity<byte[]> response = new ResponseEntity<>(pdf, headers, HttpStatus.OK);
+        return response;
+    }
+
+
 }

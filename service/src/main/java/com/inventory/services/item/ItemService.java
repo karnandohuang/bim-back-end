@@ -24,5 +24,4 @@ public interface ItemService {
     Item changeItemQty(Assignment assignment);
 
     String recoverItemQty(Map<String, Integer> listOfRecoveredItems);
-
 }

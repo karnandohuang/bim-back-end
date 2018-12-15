@@ -199,9 +199,9 @@ public class ItemServiceImpl implements ItemService {
             throw new ItemNotFoundException(itemId, "Id");
         }
         Calendar cal = Calendar.getInstance();
-        File createdDir = new File("C:\\Users\\olive\\Desktop\\bim-back-end\\resources\\" +
-                cal.get(cal.YEAR) + "\\" + (cal.get(cal.MONTH) + 1) + "\\" + itemId);
-        File convertFile = new File(createdDir.getAbsolutePath() + "\\" +
+        File createdDir = new File("/Users/karnandohuang/Documents/Projects/blibli-inventory-system/bim-back-end/" +
+                cal.get(cal.YEAR) + "/" + (cal.get(cal.MONTH) + 1) + "/" + itemId);
+        File convertFile = new File(createdDir.getAbsolutePath() + "/" +
                 file.getOriginalFilename());
         try {
             if (!convertFile.exists())
