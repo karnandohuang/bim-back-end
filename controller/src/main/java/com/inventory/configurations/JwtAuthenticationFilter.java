@@ -34,11 +34,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String header = req.getHeader(HEADER_STRING);
         String username = null;
         String authToken = null;
-        if (header != null && header.startsWith(TOKEN_PREFIX)) {
+
+        if (header != null && header.startsWith(TOKEN_PREFIX) && authToken == null) {
             authToken = header.replace(TOKEN_PREFIX, "");
             try {
                 username = jwtService.verifyToken(authToken);
-            } catch (IllegalArgumentException | URISyntaxException e) {
+            } catch (IllegalArgumentException | URISyntaxException | IOException e) {
                 e.printStackTrace();
             }
         }
@@ -51,10 +52,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (authentication != null) {
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
                 }
+
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
-
         chain.doFilter(req, res);
     }
 

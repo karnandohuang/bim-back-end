@@ -16,7 +16,6 @@ import com.inventory.webmodels.responses.BaseResponse;
 import com.inventory.webmodels.responses.assignment.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -162,7 +161,6 @@ public class AssignmentController {
     @PutMapping(value = API_PATH_CHANGE_STATUS_ASSIGNMENT, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERIOR')")
     public BaseResponse<ChangeAssignmentStatusResponse> changeStatus(@RequestBody ChangeAssignmentStatusRequest AssignmentBody) {
         BaseResponse<ChangeAssignmentStatusResponse> response;
         Assignment Assignment = generalMapper.map(AssignmentBody, Assignment.class);

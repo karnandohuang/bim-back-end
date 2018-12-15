@@ -108,9 +108,9 @@ public class EmployeeServiceImpl implements EmployeeService {
             throws EmployeeFieldWrongFormatException {
         if (name == null)
             name = "";
-        if (superiorId == null)
+        if (superiorId.equals("all"))
             superiorId = "null";
-        if (!validator.validateIdFormatEntity(superiorId, EMPLOYEE_ID_PREFIX))
+        if (!validator.validateIdFormatEntity(superiorId, EMPLOYEE_ID_PREFIX) && !superiorId.equals("null"))
             throw new EmployeeFieldWrongFormatException(EMPLOYEE_SUPERIOR_ID_WRONG_FORMAT_ERROR);
         List<Employee> listOfEmployee;
         if (paging.getSortedType().matches("desc")) {

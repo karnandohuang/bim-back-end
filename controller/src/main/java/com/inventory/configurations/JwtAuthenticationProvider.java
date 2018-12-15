@@ -43,6 +43,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         } catch (RuntimeException e) {
             throw new UsernameNotFoundException("User not found: " + email);
         }
+
         return new UsernamePasswordAuthenticationToken(user.getUsername(), null, user.getAuthorities());
     }
 
