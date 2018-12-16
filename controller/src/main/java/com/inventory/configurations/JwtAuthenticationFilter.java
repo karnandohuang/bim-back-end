@@ -31,28 +31,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     public void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException, ServletException {
+
         String header = req.getHeader(HEADER_STRING);
         String username = null;
         String authToken = null;
 
-        if (header != null && header.startsWith(TOKEN_PREFIX) && authToken == null) {
+        if (header != null && header.startsWith(TOKEN_PREFIX)) {
             authToken = header.replace(TOKEN_PREFIX, "");
             try {
                 username = jwtService.verifyToken(authToken);
             } catch (IllegalArgumentException | URISyntaxException | IOException e) {
                 e.printStackTrace();
             }
-        }
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UserDetails userDetails = memberDetailsService.loadUserByUsername(username);
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            if (jwtService.validateToken(authToken, userDetails)) {
+                UserDetails userDetails = memberDetailsService.loadUserByUsername(username);
+
                 UsernamePasswordAuthenticationToken authentication = this.getAuthentication(authToken, SecurityContextHolder.getContext().getAuthentication(), userDetails);
                 if (authentication != null) {
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
                 }
-
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }

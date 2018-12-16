@@ -31,16 +31,20 @@ public class MemberDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String name) throws UsernameNotFoundException {
         Member member;
-        try {
-            member = employeeService.getEmployeeByEmail(name);
-        } catch (RuntimeException e) {
+        if (name.equals("admin")) {
+            return new User("admin", "admin123", getAdminAuthorities());
+        } else {
             try {
-                member = adminService.getAdminByEmail(name);
-            } catch (RuntimeException rte) {
-                return new User("", "", getGrantedAuthorities(null));
+                member = employeeService.getEmployeeByEmail(name);
+            } catch (RuntimeException e) {
+                try {
+                    member = adminService.getAdminByEmail(name);
+                } catch (RuntimeException rte) {
+                    return new User("", "", getGrantedAuthorities(null));
+                }
             }
+            return new User(member.getEmail(), member.getPassword(), getGrantedAuthorities(member));
         }
-        return new User(member.getEmail(), member.getPassword(), getGrantedAuthorities(member));
     }
 
     private Collection<? extends GrantedAuthority> getGrantedAuthorities(Member member) {
@@ -54,6 +58,12 @@ public class MemberDetailsService implements UserDetailsService {
             else
                 authorities = asList(() -> "ROLE_EMPLOYEE");
         }
+        return authorities;
+    }
+
+    private Collection<? extends GrantedAuthority> getAdminAuthorities() {
+        Collection<? extends GrantedAuthority> authorities;
+        authorities = asList(() -> "ROLE_ADMIN");
         return authorities;
     }
 }

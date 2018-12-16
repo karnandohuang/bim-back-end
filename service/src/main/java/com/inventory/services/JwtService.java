@@ -4,7 +4,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -34,15 +33,5 @@ public class JwtService {
         Jws<Claims> claims = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token);
         //returning authenticated/verified username
         return claims.getBody().getSubject();
-    }
-
-    public boolean validateToken(String token, UserDetails user) {
-        try {
-            if (this.verifyToken(token).equals(user.getUsername()))
-                return true;
-        } catch (IOException | URISyntaxException e) {
-            return false;
-        }
-        return false;
     }
 }

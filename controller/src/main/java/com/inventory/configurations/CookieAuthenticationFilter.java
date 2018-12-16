@@ -1,57 +1,92 @@
-//package com.inventory.configurations;
-//
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.security.authentication.AuthenticationManager;
-//import org.springframework.security.authentication.AuthenticationServiceException;
-//import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-//import org.springframework.security.core.Authentication;
-//import org.springframework.security.core.AuthenticationException;
-//import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
-//import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-//import org.springframework.security.web.util.matcher.RequestMatcher;
-//import org.springframework.stereotype.Component;
-//import org.springframework.util.StringUtils;
-//
-//import javax.servlet.ServletException;
-//import javax.servlet.http.Cookie;
-//import javax.servlet.http.HttpServletRequest;
-//import javax.servlet.http.HttpServletResponse;
-//import java.io.IOException;
-//import java.util.List;
-//
-//@Component
-//public class CookieAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
-//
-//    protected CookieAuthenticationFilter(AuthenticationManager authenticationManager) {
-//        super("/api/employees**"); //defaultFilterProcessesUrl - specified in applicationContext.xml.
-//        super.setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/api/employees**")); //Authentication will only be initiated for the request url matching this pattern
-//        setAuthenticationManager(authenticationManager);
-//    }
-//
-//    @Override
-//    public Authentication attemptAuthentication(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws AuthenticationException, IOException, ServletException {
-//
-//        // get token from a Cookie
-//        Cookie[] cookies = httpServletRequest.getCookies();
-//
-//        if( cookies == null || cookies.length < 1 ) {
-//            throw new AuthenticationServiceException( "Invalid Token" );
-//        }
-//
-//        Cookie userCookie = null;
-//        for( Cookie cookie : cookies ) {
-//            if( ( "someSessionId" ).equals( cookie.getName() ) ) {
-//                userCookie = cookie;
-//                break;
-//            }
-//        }
-//
-//        // TODO: move the cookie validation into a private method
-//        if( userCookie == null || StringUtils.isEmpty( userCookie.getValue() ) ) {
-//            throw new AuthenticationServiceException( "Invalid Token" );
-//        }
-//
-//        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userCookie.getValue(), null, null);
-//        return authToken;
-//    }
-//}
+package com.inventory.configurations;
+
+import com.inventory.services.JwtService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URISyntaxException;
+
+@Component
+public class CookieAuthenticationFilter extends OncePerRequestFilter {
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private MemberDetailsService memberDetailsService;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+
+        String authToken = "";
+        String email = "";
+
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null && cookies.length > 1) {
+            for (Cookie ck : cookies) {
+                if ("USERCOOKIE".equals(ck.getName())) {
+                    authToken = ck.getValue();
+                    System.out.println(authToken);
+                    try {
+                        email = jwtService.verifyToken(authToken);
+                        System.out.println(email);
+                    } catch (URISyntaxException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                        UserDetails userDetails = null;
+                        try {
+                            userDetails = memberDetailsService.loadUserByUsername(email);
+                        } catch (NullPointerException e) {
+                            e.printStackTrace();
+                        }
+
+                        UsernamePasswordAuthenticationToken authentication = this.getAuthentication(authToken, SecurityContextHolder.getContext().getAuthentication());
+                        if (authentication != null) {
+                            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        }
+
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
+                }
+                break;
+            }
+        }
+        filterChain.doFilter(request, response);
+    }
+
+    private UsernamePasswordAuthenticationToken getAuthentication(String token, Authentication authentication) {
+        // parse the token.
+        String email = null;
+        try {
+            email = jwtService.verifyToken(token);
+        } catch (IOException | URISyntaxException e) {
+            e.printStackTrace();
+        }
+        if (email != null && authentication == null) {
+            UserDetails userDetails = memberDetailsService.loadUserByUsername(email);
+
+            return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        }
+        return null;
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+}

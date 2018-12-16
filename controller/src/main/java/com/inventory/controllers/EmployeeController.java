@@ -20,8 +20,6 @@ import com.inventory.webmodels.responses.employee.ListOfEmployeeResponse;
 import com.inventory.webmodels.responses.employee.ListOfSuperiorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +28,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.security.Principal;
 
 import static com.inventory.constants.API_PATH.*;
 import static java.util.stream.Collectors.toList;
@@ -91,7 +88,8 @@ public class EmployeeController {
             authenticationResponse.setToken(token);
             Cookie userCookie = new Cookie("USERCOOKIE", token);
             userCookie.setSecure(false);
-            userCookie.setHttpOnly(true);
+            userCookie.setHttpOnly(false);
+            userCookie.setMaxAge(60 * 60);
             res.addCookie(userCookie);
             response = helper.getBaseResponse(true, "", new Paging());
             response.setValue(authenticationResponse);
@@ -102,8 +100,8 @@ public class EmployeeController {
     }
 
     @GetMapping(value = "/api/employee/check")
-    public BaseResponse<CheckUserResponse> checkUserRole(@AuthenticationPrincipal Principal principal) {
-        this.member = (UserDetails) ((Authentication) principal).getPrincipal();
+    public BaseResponse<CheckUserResponse> checkUserRole(@CookieValue("USERCOOKIE") String token) throws IOException, URISyntaxException {
+        this.member = memberDetailsService.loadUserByUsername(jwtService.verifyToken(token));
         BaseResponse<CheckUserResponse> response = helper.getBaseResponse(true, "", new Paging());
         CheckUserResponse user = new CheckUserResponse();
         user.setUsername(member.getUsername());
