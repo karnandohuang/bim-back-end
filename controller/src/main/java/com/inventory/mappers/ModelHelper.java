@@ -6,11 +6,13 @@ import com.inventory.models.Item;
 import com.inventory.models.Paging;
 import com.inventory.webmodels.requests.assignment.AssignmentRequest;
 import com.inventory.webmodels.responses.BaseResponse;
-import com.inventory.webmodels.responses.assignment.AssignmentResponse;
-import com.inventory.webmodels.responses.assignment.EmployeeAssignmentResponse;
+import com.inventory.webmodels.responses.assignment.*;
+import com.inventory.webmodels.responses.item.ItemResponse;
 import com.inventory.webmodels.responses.item.UploadFileResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 
 @Component
@@ -32,7 +34,7 @@ public class ModelHelper {
         return response;
     }
 
-    public BaseResponse getBaseResponse(boolean success, String errorMessage, Paging paging) {
+    public BaseResponse getListBaseResponse(boolean success, String errorMessage, Paging paging) {
         BaseResponse response = new BaseResponse<>();
         response.setCode(HttpStatus.OK.toString());
         response.setSuccess(success);
@@ -41,18 +43,31 @@ public class ModelHelper {
         return response;
     }
 
+    public BaseResponse getBaseResponse(boolean success, String errorMessage) {
+        BaseResponse response = new BaseResponse<>();
+        response.setCode(HttpStatus.OK.toString());
+        response.setSuccess(success);
+        response.setErrorMessage(errorMessage);
+        response.setPaging(null);
+        return response;
+    }
+
     public Paging getPaging(int pageNumber, int pageSize, String sortedBy, String sortedType) {
         Paging paging = new Paging();
         paging.setPageNumber(pageNumber);
         paging.setPageSize(pageSize);
+
         if (sortedBy != null)
             paging.setSortedBy(sortedBy);
         else
             paging.setSortedBy("updatedDate");
+
+
         if (sortedType != null)
             paging.setSortedType(sortedType);
         else
             paging.setSortedType("desc");
+
         return paging;
     }
 
@@ -79,5 +94,29 @@ public class ModelHelper {
         assignment.setNotes("");
         assignment.setStatus("Pending");
         return assignment;
+    }
+
+    public ChangeAssignmentStatusResponse getMappedResponse(String success, String successItem) {
+        ChangeAssignmentStatusResponse response = new ChangeAssignmentStatusResponse();
+        response.setSuccess(success);
+        response.setSuccessItem(successItem);
+        return response;
+    }
+
+    public AssignmentCountResponse getMappedAssignmentCountResponse(Map<String, Double> listOfCount) {
+        AssignmentCountResponse response = new AssignmentCountResponse();
+        response.setListOfCount(listOfCount);
+        return response;
+    }
+
+    public ItemResponse getMappedItemResponse(Item item) {
+        return new ItemResponse(item);
+    }
+
+    public AuthenticationResponse getMappedAuthenticationResponse(String email, String token) {
+        AuthenticationResponse response = new AuthenticationResponse();
+        response.setUsername(email);
+        response.setToken(token);
+        return response;
     }
 }

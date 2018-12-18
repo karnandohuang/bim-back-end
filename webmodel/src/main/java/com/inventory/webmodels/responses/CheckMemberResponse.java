@@ -1,11 +1,11 @@
-package com.inventory.webmodels.responses.employee;
+package com.inventory.webmodels.responses;
 
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-public class CheckUserResponse {
+public class CheckMemberResponse {
     private String username;
     private List<String> role;
 }

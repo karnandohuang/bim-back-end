@@ -3,6 +3,7 @@ package com.inventory.services.employee;
 import com.inventory.models.Employee;
 import com.inventory.models.Paging;
 import com.inventory.repositories.EmployeeRepository;
+import com.inventory.services.GeneralMapper;
 import com.inventory.services.assignment.AssignmentService;
 import com.inventory.services.exceptions.EntityNullFieldException;
 import com.inventory.services.exceptions.employee.EmployeeAlreadyExistException;
@@ -19,7 +20,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.List;
 
-import static com.inventory.services.ExceptionConstant.*;
+import static com.inventory.services.constants.ExceptionConstant.*;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
@@ -32,6 +33,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Autowired
     private PasswordEncoder encoder;
+
+    @Autowired
+    private GeneralMapper mapper;
 
     @Autowired
     private EmployeeValidator validator;
@@ -54,7 +58,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public Employee getEmployeeByEmail(String email) throws EmployeeNotFoundException {
         if (!validator.validateEmailFormatMember(email))
-            throw new EmployeeFieldWrongFormatException(EMPLOYEE_EMAIL_WRONG_FORMAT_ERROR);
+            throw new EmployeeFieldWrongFormatException(MEMBER_EMAIL_WRONG_FORMAT_ERROR);
         try {
             return employeeRepository.findByEmail(email);
         } catch (RuntimeException e) {
@@ -64,39 +68,37 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public Boolean login(String email, String password) {
-        boolean isEmailValid = validator.validateEmailFormatMember(email);
-        if (!isEmailValid)
-            return false;
         Employee employee;
         try {
             employee = employeeRepository.findByEmail(
                     email);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return false;
         }
-        if (encoder.matches(password, employee.getPassword()))
-            return true;
-        else
+        if (!encoder.matches(password, employee.getPassword()))
             return false;
+        return true;
     }
 
     @Override
     @Transactional
     public List<Employee> getEmployeeList(String name, Paging paging) {
         List<Employee> listOfEmployee;
+        PageRequest pageRequest;
         if (paging.getSortedType().matches("desc")) {
-            listOfEmployee = employeeRepository.findAllByNameContainingIgnoreCase(name,
-                    PageRequest.of(paging.getPageNumber() - 1,
-                            paging.getPageSize(),
-                            Sort.Direction.DESC,
-                            paging.getSortedBy())).getContent();
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
+                    paging.getPageSize(),
+                    Sort.Direction.DESC,
+                    paging.getSortedBy());
         } else {
-            listOfEmployee = employeeRepository.findAllByNameContainingIgnoreCase(name,
-                    PageRequest.of(paging.getPageNumber() - 1,
-                            paging.getPageSize(),
-                            Sort.Direction.ASC,
-                            paging.getSortedBy())).getContent();
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
+                    paging.getPageSize(),
+                    Sort.Direction.ASC,
+                    paging.getSortedBy());
         }
+        listOfEmployee = employeeRepository.findAllByNameContainingIgnoreCase(name, pageRequest).getContent();
         float totalRecords = employeeRepository.countAllByNameContainingIgnoreCase(name);
         setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfEmployee;
@@ -108,24 +110,27 @@ public class EmployeeServiceImpl implements EmployeeService {
             throws EmployeeFieldWrongFormatException {
         if (name == null)
             name = "";
-        if (superiorId.equals("all"))
+        else if (superiorId == null)
             superiorId = "null";
-        if (!validator.validateIdFormatEntity(superiorId, EMPLOYEE_ID_PREFIX) && !superiorId.equals("null"))
+        else if (!validator.validateIdFormatEntity(superiorId, EMPLOYEE_ID_PREFIX) && !superiorId.equals("null"))
             throw new EmployeeFieldWrongFormatException(EMPLOYEE_SUPERIOR_ID_WRONG_FORMAT_ERROR);
         List<Employee> listOfEmployee;
+        PageRequest pageRequest;
         if (paging.getSortedType().matches("desc")) {
-            listOfEmployee = employeeRepository.findAllBySuperiorIdAndNameContainingIgnoreCase(
-                    superiorId, name, PageRequest.of(paging.getPageNumber() - 1,
-                            paging.getPageSize(),
-                            Sort.Direction.DESC,
-                            paging.getSortedBy())).getContent();
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
+                    paging.getPageSize(),
+                    Sort.Direction.DESC,
+                    paging.getSortedBy());
         } else {
-            listOfEmployee = employeeRepository.findAllBySuperiorIdAndNameContainingIgnoreCase(
-                    superiorId, name, PageRequest.of(paging.getPageNumber() - 1,
-                            paging.getPageSize(),
-                            Sort.Direction.ASC,
-                            paging.getSortedBy())).getContent();
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
+                    paging.getPageSize(),
+                    Sort.Direction.ASC,
+                    paging.getSortedBy());
         }
+        listOfEmployee = employeeRepository.findAllBySuperiorIdAndNameContainingIgnoreCase(
+                superiorId, name, pageRequest).getContent();
         float totalRecords = employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(
                 superiorId, name);
         setPagingTotalRecordsAndTotalPage(paging, totalRecords);
@@ -138,20 +143,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         paging.setTotalPage((int) totalPage);
     }
 
-    private Employee editEmployee(Employee employee) {
-        Employee newEmployee;
-        try {
-            newEmployee = employeeRepository.findById(employee.getId()).get();
-        } catch (RuntimeException e) {
-            throw new EmployeeNotFoundException(employee.getId(), "Id");
-        }
-        newEmployee.setName(employee.getName());
-        newEmployee.setEmail(employee.getEmail());
-        newEmployee.setDob(employee.getDob());
-        newEmployee.setPosition(employee.getPosition());
-        newEmployee.setDivision(employee.getDivision());
-        newEmployee.setSuperiorId(employee.getSuperiorId());
-        return newEmployee;
+    private Employee editEmployee(Employee request) {
+        this.getEmployee(request.getId());
+        return mapper.map(request, Employee.class);
     }
 
     @Override
@@ -178,14 +172,19 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         if (employee.getSuperiorId().equals("null"))
             superior = new Employee();
+
         else {
+
             try {
                 superior = employeeRepository.findById(employee.getSuperiorId()).get();
+
                 superior.setRole(validator.assumeRoleEmployee(superior, true));
+
                 employeeRepository.save(superior);
             } catch (RuntimeException e) {
                 throw new EmployeeNotFoundException(employee.getSuperiorId(), "SuperiorId");
             }
+
         }
         boolean isSuperiorIdValid = true;
 
@@ -203,28 +202,30 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new EntityNullFieldException(nullFieldEmployee);
 
         else if (!isEmailValid)
-            throw new EmployeeFieldWrongFormatException(EMPLOYEE_EMAIL_WRONG_FORMAT_ERROR);
+            throw new EmployeeFieldWrongFormatException(MEMBER_EMAIL_WRONG_FORMAT_ERROR);
 
         else if (!isDobValid)
             throw new EmployeeFieldWrongFormatException(EMPLOYEE_DOB_WRONG_FORMAT_ERROR);
 
         else if (!isSuperiorIdValid)
             throw new EmployeeFieldWrongFormatException(EMPLOYEE_SUPERIOR_ID_WRONG_FORMAT_ERROR);
+
         else if (isEmployeeExist != null && !isEmployeeExist.getId().equals(employee.getId()))
             throw new EmployeeAlreadyExistException(employee.getEmail());
+
         else if (superior == null)
             throw new EmployeeNotFoundException(employee.getSuperiorId(), "SuperiorId");
+
         else
             return employeeRepository.save(employee);
     }
 
     private boolean isEmployeeHavingSubordinate(String id) {
-//        this.getEmployee(id);
+        this.getEmployee(id);
         Float count = employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(id, "");
-        if (count > 1)
-            return true;
-        else
+        if (count < 1)
             return false;
+        return true;
     }
 
     @Override

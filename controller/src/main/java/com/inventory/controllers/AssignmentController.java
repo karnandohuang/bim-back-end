@@ -1,14 +1,15 @@
 package com.inventory.controllers;
 
-import com.inventory.mappers.GeneralMapper;
 import com.inventory.mappers.ModelHelper;
 import com.inventory.models.Assignment;
 import com.inventory.models.Employee;
 import com.inventory.models.Item;
 import com.inventory.models.Paging;
+import com.inventory.services.GeneralMapper;
 import com.inventory.services.assignment.AssignmentService;
 import com.inventory.services.employee.EmployeeService;
 import com.inventory.services.item.ItemService;
+import com.inventory.services.member.MemberService;
 import com.inventory.webmodels.requests.assignment.AssignmentRequest;
 import com.inventory.webmodels.requests.assignment.ChangeAssignmentStatusRequest;
 import com.inventory.webmodels.requests.item.ItemRequest;
@@ -16,10 +17,13 @@ import com.inventory.webmodels.responses.BaseResponse;
 import com.inventory.webmodels.responses.assignment.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +42,9 @@ public class AssignmentController {
 
     @Autowired
     private EmployeeService employeeService;
+
+    @Autowired
+    private MemberService memberService;
 
     @Autowired
     private ModelHelper helper;
@@ -60,14 +67,15 @@ public class AssignmentController {
             listOfAssignmentResponse.add(AssignmentResponse);
         }
         ListOfAssignmentResponse list = new ListOfAssignmentResponse(listOfAssignmentResponse);
-        BaseResponse<ListOfAssignmentResponse> response = helper.getBaseResponse(true, "", paging);
+        BaseResponse<ListOfAssignmentResponse> response =
+                helper.getListBaseResponse(true, "", paging);
         response.setValue(list);
         return response;
     }
 
     @GetMapping(value = API_PATH_EMPLOYEE_ASSIGNMENT, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<List<EmployeeAssignmentResponse>> listOfEmployeeAssignment(
-            @RequestParam String employeeId,
+            @AuthenticationPrincipal Principal principal,
             @RequestParam int pageNumber,
             @RequestParam int pageSize,
             @RequestParam(required = false) String sortedBy,
@@ -76,7 +84,9 @@ public class AssignmentController {
         Paging paging = helper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         BaseResponse response;
         try {
-            List<Assignment> listOfAssignment = assignmentService.getEmployeeAssignmentList(employeeId, paging);
+            UserDetails member = memberService.getLoggedInUser(principal);
+            Employee employee = employeeService.getEmployeeByEmail(member.getUsername());
+            List<Assignment> listOfAssignment = assignmentService.getEmployeeAssignmentList(employee.getId(), paging);
             List<EmployeeAssignmentResponse> listOfEmployeeAssignment = new ArrayList<>();
             for (Assignment assignment : listOfAssignment) {
                 Item item = itemService.getItem(assignment.getItem().getId());
@@ -84,12 +94,12 @@ public class AssignmentController {
                         helper.getMappedEmployeeAssignmentResponse(assignment, item);
                 listOfEmployeeAssignment.add(employeeAssignmentResponse);
             }
-            response = helper.getBaseResponse(
+            response = helper.getListBaseResponse(
                     true, "", paging);
             response.setValue(listOfEmployeeAssignment);
         } catch (RuntimeException e) {
             response = helper.getBaseResponse(
-                    false, e.getMessage(), new Paging());
+                    false, e.getMessage());
             response.setValue(null);
         }
 
@@ -98,16 +108,13 @@ public class AssignmentController {
 
     @GetMapping(value = API_PATH_GET_ASSIGNMENT_COUNT_BY_EMPLOYEE_ID_AND_STATUS, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<AssignmentCountResponse> getAssignmentCount(@RequestParam String employeeId) throws IOException{
-        AssignmentCountResponse AssignmentCountResponse = new AssignmentCountResponse();
         BaseResponse response;
         try {
             Map<String, Double> listOfCount = assignmentService.getAssignmentCountByEmployeeId(employeeId);
-            AssignmentCountResponse.setListOfCount(listOfCount);
-
-            response = helper.getBaseResponse(true, "", new Paging());
-            response.setValue(AssignmentCountResponse);
+            response = helper.getBaseResponse(true, "");
+            response.setValue(helper.getMappedAssignmentCountResponse(listOfCount));
         } catch (RuntimeException e) {
-            response = helper.getBaseResponse(false, e.getMessage(), new Paging());
+            response = helper.getBaseResponse(false, e.getMessage());
             response.setValue(null);
         }
         return response;
@@ -115,14 +122,12 @@ public class AssignmentController {
 
     @GetMapping(value = API_PATH_API_ASSIGNMENT_BY_ID, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<AssignmentResponse> getAssignment(@PathVariable String id) throws IOException {
-        AssignmentResponse AssignmentResponse = new AssignmentResponse();
         BaseResponse response;
         try {
-            AssignmentResponse.setAssignment(assignmentService.getAssignment(id));
-            response = helper.getBaseResponse(true, "", new Paging());
-            response.setValue(AssignmentResponse);
+            response = helper.getBaseResponse(true, "");
+            response.setValue(helper.getMappedAssignmentResponse(assignmentService.getAssignment(id)));
         } catch (RuntimeException e) {
-            response = helper.getBaseResponse(false, e.getMessage(), new Paging());
+            response = helper.getBaseResponse(false, e.getMessage());
             response.setValue(null);
         }
         return response;
@@ -131,11 +136,13 @@ public class AssignmentController {
     @RequestMapping(value = API_PATH_ASSIGNMENT, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE, method = {RequestMethod.POST, RequestMethod.PUT})
     @Transactional
-    public BaseResponse<String> saveAssignment(@RequestBody AssignmentRequest requestBody) {
+    public BaseResponse<String> saveAssignment(@RequestBody AssignmentRequest requestBody,
+                                               @AuthenticationPrincipal Principal principal) {
         Employee employee;
         Item item;
         try {
-            employee = employeeService.getEmployee(requestBody.getEmployeeId());
+            UserDetails member = memberService.getLoggedInUser(principal);
+            employee = employeeService.getEmployeeByEmail(member.getUsername());
         } catch (RuntimeException e) {
             return helper.getStandardBaseResponse(false, e.getMessage());
         }
@@ -161,27 +168,28 @@ public class AssignmentController {
     @PutMapping(value = API_PATH_CHANGE_STATUS_ASSIGNMENT, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    public BaseResponse<ChangeAssignmentStatusResponse> changeStatus(@RequestBody ChangeAssignmentStatusRequest AssignmentBody) {
+    public BaseResponse<ChangeAssignmentStatusResponse> changeStatus(
+            @RequestBody ChangeAssignmentStatusRequest AssignmentBody,
+            @AuthenticationPrincipal Principal principal) {
         BaseResponse<ChangeAssignmentStatusResponse> response;
         Assignment Assignment = generalMapper.map(AssignmentBody, Assignment.class);
-        ChangeAssignmentStatusResponse changeAssignmentStatusResponse = new ChangeAssignmentStatusResponse();
         Map<String, Integer> listOfRecoveredItems;
         try {
+            UserDetails userDetails = memberService.getLoggedInUser(principal);
+            String employeeId = employeeService.getEmployeeByEmail(userDetails.getUsername()).getId();
             String success = assignmentService.changeStatusAssignments(AssignmentBody.getIds(),
-                    Assignment.getStatus(), Assignment.getNotes());
-            String successItem;
+                    Assignment.getStatus(), Assignment.getNotes(), employeeId);
+            String successItem = "";
             if (Assignment.getStatus().equals("Rejected")) {
                 listOfRecoveredItems = assignmentService.getRecoveredItems(AssignmentBody.getIds());
                 successItem = itemService.recoverItemQty(listOfRecoveredItems);
-            } else
-                successItem = "";
-            changeAssignmentStatusResponse.setSuccess(success);
-            changeAssignmentStatusResponse.setSuccessItem(successItem);
-            response = helper.getBaseResponse(true, "", new Paging());
+            }
+            response = helper.getBaseResponse(true, "");
+            response.setValue(helper.getMappedResponse(success, successItem));
         } catch (RuntimeException e) {
-            response = helper.getBaseResponse(false, e.getMessage(), new Paging());
+            response = helper.getBaseResponse(false, e.getMessage());
+            response.setValue(null);
         }
-        response.setValue(changeAssignmentStatusResponse);
         return response;
     }
 }

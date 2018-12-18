@@ -4,11 +4,16 @@ import com.inventory.services.JwtService;
 import com.inventory.services.admin.AdminService;
 import com.inventory.services.employee.EmployeeService;
 import com.inventory.services.exceptions.auth.FailedToLoginException;
+import com.inventory.services.exceptions.auth.LoginEmptyException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.security.Principal;
 
 @Service
 public class MemberServiceImpl implements MemberService {
@@ -47,5 +52,18 @@ public class MemberServiceImpl implements MemberService {
             }
         }
         throw new FailedToLoginException(String.format("unable to authenticate user [%s]", email));
+    }
+
+    @Override
+    public void validateUser(String email, String password) {
+        if (email == null)
+            throw new LoginEmptyException("Email");
+        else if (password == null)
+            throw new LoginEmptyException("Password");
+    }
+
+    @Override
+    public UserDetails getLoggedInUser(@AuthenticationPrincipal Principal principal) {
+        return (UserDetails) ((Authentication) principal).getPrincipal();
     }
 }

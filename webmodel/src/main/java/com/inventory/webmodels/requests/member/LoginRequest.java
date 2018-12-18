@@ -1,4 +1,4 @@
-package com.inventory.webmodels.requests.employee;
+package com.inventory.webmodels.requests.member;
 
 import lombok.Data;
 

@@ -4,6 +4,7 @@ import com.inventory.models.Assignment;
 import com.inventory.models.Item;
 import com.inventory.models.Paging;
 import com.inventory.repositories.ItemRepository;
+import com.inventory.services.GeneralMapper;
 import com.inventory.services.assignment.AssignmentService;
 import com.inventory.services.exceptions.EntityNullFieldException;
 import com.inventory.services.exceptions.item.*;
@@ -24,7 +25,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
-import static com.inventory.services.ExceptionConstant.ID_WRONG_FORMAT_ERROR;
+import static com.inventory.services.constants.ExceptionConstant.ID_WRONG_FORMAT_ERROR;
 
 @Service
 public class ItemServiceImpl implements ItemService {
@@ -37,6 +38,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Autowired
     private AssignmentService assignmentService;
+
+    @Autowired
+    private GeneralMapper mapper;
 
     private final static String ITEM_ID_PREFIX = "IM";
 
@@ -56,19 +60,21 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public List<Item> getItemList(String name, Paging paging) {
         List<Item> listOfItem;
+        PageRequest pageRequest;
         if (paging.getSortedType().matches("desc")) {
-            listOfItem = itemRepository.findAllByNameContainingIgnoreCase(name,
-                    PageRequest.of(paging.getPageNumber() - 1,
-                            paging.getPageSize(),
-                            Sort.Direction.DESC,
-                            paging.getSortedBy())).getContent();
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
+                    paging.getPageSize(),
+                    Sort.Direction.DESC,
+                    paging.getSortedBy());
         } else {
-            listOfItem = itemRepository.findAllByNameContainingIgnoreCase(name,
-                    PageRequest.of(paging.getPageNumber() - 1,
-                            paging.getPageSize(),
-                            Sort.Direction.ASC,
-                            paging.getSortedBy())).getContent();
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
+                    paging.getPageSize(),
+                    Sort.Direction.ASC,
+                    paging.getSortedBy());
         }
+        listOfItem = itemRepository.findAllByNameContainingIgnoreCase(name, pageRequest).getContent();
         float totalRecords = itemRepository.countAllByNameContainingIgnoreCase(name);
         setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfItem;
@@ -80,19 +86,9 @@ public class ItemServiceImpl implements ItemService {
         paging.setTotalPage((int) totalPage);
     }
 
-    private Item editItem(Item item) {
-        Item newItem;
-        try {
-            newItem = itemRepository.findById(item.getId()).get();
-        } catch (RuntimeException e) {
-            throw new ItemNotFoundException(item.getId(), "Id");
-        }
-        newItem.setName(item.getName());
-        newItem.setPrice(item.getPrice());
-        newItem.setQty(item.getQty());
-        newItem.setLocation(item.getLocation());
-        newItem.setImageUrl(item.getImageUrl());
-        return newItem;
+    private Item editItem(Item request) {
+        this.getItem(request.getId());
+        return mapper.map(request, Item.class);
     }
 
     @Override
@@ -128,21 +124,19 @@ public class ItemServiceImpl implements ItemService {
         else if (!isImageUrlValid)
             throw new ImagePathWrongException();
 
-        else {
-            item = itemRepository.save(item);
-            itemRepository.flush();
-            return item;
-        }
+        item = itemRepository.save(item);
+        itemRepository.flush();
+        return item;
     }
 
     @Override
     @Transactional
     public Item changeItemQty(Assignment assignment) throws RuntimeException {
-        Item item = itemRepository.findById(assignment.getItem().getId()).get();
+        Item item = this.getItem(assignment.getItem().getId());
         int qty = item.getQty() - assignment.getQty();
         if (item.getQty() <= 0)
             throw new ItemOutOfQtyException(item.getName());
-        if (qty < 0)
+        else if (qty < 0)
             throw new ItemQtyLimitReachedException(item.getName());
         item.setQty(qty);
         item = itemRepository.save(item);
@@ -166,6 +160,13 @@ public class ItemServiceImpl implements ItemService {
         return "Recover success";
     }
 
+    private Boolean checkItemAssignmentCount(String itemId) {
+        return assignmentService.getAssignmentCountByItemIdAndStatus(itemId, "Pending") > 0 ||
+                assignmentService.getAssignmentCountByItemIdAndStatus(itemId, "Approved") > 0 ||
+                assignmentService.getAssignmentCountByItemIdAndStatus(itemId, "Received") > 0 ||
+                assignmentService.getAssignmentCountByItemIdAndStatus(itemId, "Rejected") > 0;
+    }
+
     @Override
     @Transactional
     public String deleteItem(List<String> ids) throws RuntimeException {
@@ -173,14 +174,11 @@ public class ItemServiceImpl implements ItemService {
             boolean isIdValid = validator.validateIdFormatEntity(id, ITEM_ID_PREFIX);
                 if (!isIdValid)
                     throw new ItemFieldWrongFormatException(ID_WRONG_FORMAT_ERROR);
-                else if (assignmentService.getAssignmentCountByItemIdAndStatus(id, "Pending") > 0 ||
-                        assignmentService.getAssignmentCountByItemIdAndStatus(id, "Approved") > 0 ||
-                        assignmentService.getAssignmentCountByItemIdAndStatus(id, "Received") > 0 ||
-                        assignmentService.getAssignmentCountByItemIdAndStatus(id, "Rejected") > 0)
+                else if (checkItemAssignmentCount(id))
                     throw new ItemStillHaveAssignmentException();
                 else {
                     try {
-                        itemRepository.findById(id).get();
+                        this.getItem(id);
                     } catch (RuntimeException e) {
                         throw new ItemNotFoundException(id, "Id");
                     }
@@ -193,11 +191,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public String uploadFile(MultipartFile file, String itemId) throws RuntimeException {
         Item item;
-        try {
-            item = itemRepository.findById(itemId).get();
-        } catch (RuntimeException e) {
-            throw new ItemNotFoundException(itemId, "Id");
-        }
+        item = this.getItem(itemId);
         Calendar cal = Calendar.getInstance();
         File createdDir = new File("C:\\Users\\olive\\Desktop\\bim-back-end\\resources\\" +
                 cal.get(cal.YEAR) + "\\" + (cal.get(cal.MONTH) + 1) + "\\" + itemId);

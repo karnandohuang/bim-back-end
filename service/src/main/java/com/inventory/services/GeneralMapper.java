@@ -1,4 +1,4 @@
-package com.inventory.mappers;
+package com.inventory.services;
 
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.impl.DefaultMapperFactory;

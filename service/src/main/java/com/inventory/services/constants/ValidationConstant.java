@@ -1,10 +1,11 @@
-package com.inventory.services;
+package com.inventory.services.constants;
 
 public class ValidationConstant {
 
+    public final static String MEMBER_EMAIL_EMPTY = "Email is empty";
+    public final static String MEMBER_PASSWORD_EMPTY = "Password is empty";
+
     public final static String EMPLOYEE_NAME_EMPTY = "Name is empty";
-    public final static String EMPLOYEE_EMAIL_EMPTY = "Email is empty";
-    public final static String EMPLOYEE_PASSWORD_EMPTY = "Password is empty";
     public final static String EMPLOYEE_DOB_EMPTY = "Date of Birth is empty";
     public final static String EMPLOYEE_DIVISION_EMPTY = "Division is empty";
     public final static String EMPLOYEE_POSITION_EMPTY = "Position is empty";
