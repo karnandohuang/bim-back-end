@@ -1,6 +1,6 @@
 package com.inventory.controllers;
 
-import com.inventory.mappers.ModelHelper;
+import com.inventory.mappers.AssignmentHelper;
 import com.inventory.models.Assignment;
 import com.inventory.models.Employee;
 import com.inventory.models.Item;
@@ -17,6 +17,7 @@ import com.inventory.webmodels.responses.BaseResponse;
 import com.inventory.webmodels.responses.assignment.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.inventory.constants.API_PATH.*;
+import static com.inventory.webmodels.API_PATH.*;
 
 @RestController
 @CrossOrigin
@@ -47,7 +48,7 @@ public class AssignmentController {
     private MemberService memberService;
 
     @Autowired
-    private ModelHelper helper;
+    private AssignmentHelper helper;
 
     @Autowired
     private GeneralMapper generalMapper;
@@ -57,10 +58,11 @@ public class AssignmentController {
             @RequestParam int pageNumber,
             @RequestParam int pageSize,
             @RequestParam(required = false) String sortedBy,
-            @RequestParam(required = false) String sortedType
+            @RequestParam(required = false) String sortedType,
+            @RequestParam(required = false) String filterStatus
     ) throws IOException {
         Paging paging = helper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
-        List<Assignment> listOfAssignment = assignmentService.getAssignmentList(paging);
+        List<Assignment> listOfAssignment = assignmentService.getAssignmentList(filterStatus, paging);
         List<AssignmentResponse> listOfAssignmentResponse = new ArrayList<>();
         for (Assignment assignment : listOfAssignment) {
             AssignmentResponse AssignmentResponse = helper.getMappedAssignmentResponse(assignment);
@@ -74,19 +76,25 @@ public class AssignmentController {
     }
 
     @GetMapping(value = API_PATH_EMPLOYEE_ASSIGNMENT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'SUPERIOR')")
     public BaseResponse<List<EmployeeAssignmentResponse>> listOfEmployeeAssignment(
             @AuthenticationPrincipal Principal principal,
             @RequestParam int pageNumber,
             @RequestParam int pageSize,
             @RequestParam(required = false) String sortedBy,
-            @RequestParam(required = false) String sortedType
+            @RequestParam(required = false) String sortedType,
+            @RequestParam(required = false) String filterStatus
     ) throws IOException {
         Paging paging = helper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         BaseResponse response;
         try {
             UserDetails member = memberService.getLoggedInUser(principal);
             Employee employee = employeeService.getEmployeeByEmail(member.getUsername());
-            List<Assignment> listOfAssignment = assignmentService.getEmployeeAssignmentList(employee.getId(), paging);
+            System.out.println(employee.getId());
+            List<Assignment> listOfAssignment = assignmentService.getEmployeeAssignmentList(
+                    employee.getId(),
+                    filterStatus,
+                    paging);
             List<EmployeeAssignmentResponse> listOfEmployeeAssignment = new ArrayList<>();
             for (Assignment assignment : listOfAssignment) {
                 Item item = itemService.getItem(assignment.getItem().getId());
@@ -98,19 +106,22 @@ public class AssignmentController {
                     true, "", paging);
             response.setValue(listOfEmployeeAssignment);
         } catch (RuntimeException e) {
-            response = helper.getBaseResponse(
-                    false, e.getMessage());
+            response = helper.getListBaseResponse(
+                    false, e.getMessage(), helper.getEmptyPaging());
             response.setValue(null);
         }
 
         return response;
     }
 
+    @PreAuthorize("hasAnyRole('SUPERIOR', 'EMPLOYEE')")
     @GetMapping(value = API_PATH_GET_ASSIGNMENT_COUNT_BY_EMPLOYEE_ID_AND_STATUS, produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<AssignmentCountResponse> getAssignmentCount(@RequestParam String employeeId) throws IOException{
+    public BaseResponse<AssignmentCountResponse> getAssignmentCount(@AuthenticationPrincipal Principal principal) throws IOException {
         BaseResponse response;
+        UserDetails member = memberService.getLoggedInUser(principal);
+        Employee employee = employeeService.getEmployeeByEmail(member.getUsername());
         try {
-            Map<String, Double> listOfCount = assignmentService.getAssignmentCountByEmployeeId(employeeId);
+            Map<String, Double> listOfCount = assignmentService.getAssignmentCountByEmployeeId(employee.getId());
             response = helper.getBaseResponse(true, "");
             response.setValue(helper.getMappedAssignmentCountResponse(listOfCount));
         } catch (RuntimeException e) {

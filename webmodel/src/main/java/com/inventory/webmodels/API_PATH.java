@@ -1,4 +1,4 @@
-package com.inventory.constants;
+package com.inventory.webmodels;
 
 public class API_PATH {
     public static final String API_PATH_EMPLOYEES = "api/employees";

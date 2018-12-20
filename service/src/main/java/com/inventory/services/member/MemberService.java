@@ -9,6 +9,8 @@ import java.security.Principal;
 public interface MemberService {
     String authenticateUser(String email, String password) throws FailedToLoginException;
 
+    String getMemberRole(String email);
+
     void validateUser(String email, String password);
 
     UserDetails getLoggedInUser(@AuthenticationPrincipal Principal principal);

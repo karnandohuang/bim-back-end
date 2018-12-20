@@ -10,9 +10,9 @@ public interface AssignmentService {
 
     Assignment getAssignment(String id);
 
-    List<Assignment> getAssignmentList(Paging paging);
+    List<Assignment> getAssignmentList(String filterStatus, Paging paging);
 
-    List<Assignment> getEmployeeAssignmentList(String employeeId, Paging paging);
+    List<Assignment> getEmployeeAssignmentList(String employeeId, String filterStatus, Paging paging);
 
     Map<String, Double> getAssignmentCountByEmployeeId(String employeeId);
 

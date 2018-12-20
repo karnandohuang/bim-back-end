@@ -6,6 +6,7 @@ import com.inventory.repositories.AssignmentRepository;
 import com.inventory.services.employee.EmployeeService;
 import com.inventory.services.exceptions.EntityNullFieldException;
 import com.inventory.services.exceptions.assignment.*;
+import com.inventory.services.helper.PagingHelper;
 import com.inventory.services.item.ItemService;
 import com.inventory.services.validators.AssignmentValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,9 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Autowired
     private AssignmentValidator validator;
 
+    @Autowired
+    private PagingHelper pagingHelper;
+
     private final static String ASSIGNMENT_ID_PREFIX = "AT";
 
 
@@ -52,7 +56,9 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     @Transactional
-    public List<Assignment> getAssignmentList(Paging paging) {
+    public List<Assignment> getAssignmentList(String filterStatus, Paging paging) {
+        if (filterStatus == null)
+            filterStatus = "";
         List<Assignment> listOfAssignment;
         PageRequest pageRequest;
         if (paging.getSortedType().matches("desc")) {
@@ -68,15 +74,17 @@ public class AssignmentServiceImpl implements AssignmentService {
                     Sort.Direction.ASC,
                     paging.getSortedBy());
         }
-        listOfAssignment = AssignmentRepository.findAll(pageRequest).getContent();
+        listOfAssignment = AssignmentRepository.findAllByStatusContaining(filterStatus, pageRequest).getContent();
         float totalRecords = (float) AssignmentRepository.count();
-        setPagingTotalRecordsAndTotalPage(paging, totalRecords);
+        pagingHelper.setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfAssignment;
     }
 
     @Override
     @Transactional
-    public List<Assignment> getEmployeeAssignmentList(String employeeId, Paging paging) throws RuntimeException {
+    public List<Assignment> getEmployeeAssignmentList(String employeeId, String filterStatus, Paging paging) throws RuntimeException {
+        if (filterStatus == null)
+            filterStatus = "";
         try {
             employeeService.getEmployee(employeeId);
         } catch (RuntimeException e) {
@@ -97,16 +105,10 @@ public class AssignmentServiceImpl implements AssignmentService {
                     Sort.Direction.ASC,
                     paging.getSortedBy());
         }
-        listOfAssignment = AssignmentRepository.findAllByEmployeeId(employeeId, pageRequest).getContent();
-        float totalRecords = AssignmentRepository.countAllByEmployeeId(employeeId);
-        setPagingTotalRecordsAndTotalPage(paging, totalRecords);
+        listOfAssignment = AssignmentRepository.findAllByEmployeeIdAndStatusContaining(employeeId, filterStatus, pageRequest).getContent();
+        float totalRecords = AssignmentRepository.countAllByEmployeeIdAndStatusContaining(employeeId, filterStatus);
+        pagingHelper.setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfAssignment;
-    }
-
-    private void setPagingTotalRecordsAndTotalPage(Paging paging, float totalRecords) {
-        paging.setTotalRecords((int) totalRecords);
-        double totalPage = (int) Math.ceil((totalRecords / paging.getPageSize()));
-        paging.setTotalPage((int) totalPage);
     }
 
     @Override

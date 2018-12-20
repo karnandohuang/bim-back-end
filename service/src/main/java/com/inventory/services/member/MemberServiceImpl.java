@@ -1,5 +1,7 @@
 package com.inventory.services.member;
 
+import com.inventory.models.Employee;
+import com.inventory.models.Member;
 import com.inventory.services.JwtService;
 import com.inventory.services.admin.AdminService;
 import com.inventory.services.employee.EmployeeService;
@@ -52,6 +54,28 @@ public class MemberServiceImpl implements MemberService {
             }
         }
         throw new FailedToLoginException(String.format("unable to authenticate user [%s]", email));
+    }
+
+    @Override
+    public String getMemberRole(String email) {
+        Member member;
+        try {
+            member = adminService.getAdminByEmail(email);
+        } catch (RuntimeException e) {
+            member = null;
+        }
+
+        if (member == null) {
+            try {
+                member = employeeService.getEmployeeByEmail(email);
+            } catch (RuntimeException e) {
+                throw new FailedToLoginException(String.format("unable to authenticate user [%s]", email));
+            }
+        }
+
+        if (member instanceof Employee)
+            return ((Employee) member).getRole();
+        return "ADMIN";
     }
 
     @Override

@@ -1,12 +1,11 @@
 package com.inventory.controllers;
 
-import com.inventory.mappers.ModelHelper;
+import com.inventory.mappers.AdminHelper;
 import com.inventory.models.Admin;
 import com.inventory.models.Paging;
 import com.inventory.services.GeneralMapper;
 import com.inventory.services.admin.AdminService;
 import com.inventory.services.exceptions.admin.AdminNotFoundException;
-import com.inventory.services.member.MemberService;
 import com.inventory.webmodels.requests.DeleteRequest;
 import com.inventory.webmodels.requests.admin.AdminRequest;
 import com.inventory.webmodels.responses.BaseResponse;
@@ -14,12 +13,11 @@ import com.inventory.webmodels.responses.admin.AdminResponse;
 import com.inventory.webmodels.responses.admin.ListOfAdminResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import static com.inventory.constants.API_PATH.API_PATH_ADMINS;
-import static com.inventory.constants.API_PATH.API_PATH_GET_ADMIN;
+import static com.inventory.webmodels.API_PATH.API_PATH_ADMINS;
+import static com.inventory.webmodels.API_PATH.API_PATH_GET_ADMIN;
 
 @CrossOrigin
 @RestController
@@ -29,15 +27,10 @@ public class AdminController {
     private GeneralMapper generalMapper;
 
     @Autowired
-    private MemberService memberService;
-
-    @Autowired
-    private ModelHelper helper;
+    private AdminHelper helper;
 
     @Autowired
     private AdminService adminService;
-
-    private UserDetails userDetails;
 
     @GetMapping(value = API_PATH_ADMINS, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<ListOfAdminResponse> listOfAdmin(

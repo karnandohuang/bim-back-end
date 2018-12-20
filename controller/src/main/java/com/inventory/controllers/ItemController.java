@@ -1,6 +1,6 @@
 package com.inventory.controllers;
 
-import com.inventory.mappers.ModelHelper;
+import com.inventory.mappers.ItemHelper;
 import com.inventory.models.Item;
 import com.inventory.models.Paging;
 import com.inventory.services.GeneralMapper;
@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-import static com.inventory.constants.API_PATH.*;
+import static com.inventory.webmodels.API_PATH.*;
 
 @CrossOrigin
 @RestController
@@ -30,7 +30,7 @@ public class ItemController {
     private GeneralMapper generalMapper;
 
     @Autowired
-    private ModelHelper helper;
+    private ItemHelper helper;
 
     @GetMapping(value = API_PATH_ITEMS, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<ListOfItemResponse> ListOfItem(

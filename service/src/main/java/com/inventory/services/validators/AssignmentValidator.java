@@ -12,9 +12,9 @@ public class AssignmentValidator extends EntityValidator {
     private final static String REJECTED = "Rejected";
 
     public boolean validateChangeStatus(String status, String changedStatus) {
-        if ((status.equals(APPROVED) || !status.equals(PENDING)) && changedStatus.equals(HANDOVER))
-            return true;
-        return false;
+        if (status.equals(PENDING) && changedStatus.equals(HANDOVER))
+            return false;
+        return true;
     }
 
     public boolean validateStatus(String status) {

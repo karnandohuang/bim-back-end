@@ -1,13 +1,11 @@
 package com.inventory.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.util.List;
 
 import static com.inventory.models.Constant.*;
 
@@ -34,8 +32,4 @@ public class Item extends BaseEntity {
     private String location;
     @Column(name = ITEM_COLUMN_NAME_IMAGE_URL)
     private String imageUrl;
-
-    @OneToMany(mappedBy = "item", cascade = CascadeType.REMOVE)
-    @JsonIgnore
-    private List<Assignment> assignmentList;
 }

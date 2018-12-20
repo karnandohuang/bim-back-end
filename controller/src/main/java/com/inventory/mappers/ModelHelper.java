@@ -1,35 +1,18 @@
 package com.inventory.mappers;
 
-import com.inventory.models.Assignment;
-import com.inventory.models.Employee;
-import com.inventory.models.Item;
 import com.inventory.models.Paging;
-import com.inventory.webmodels.requests.assignment.AssignmentRequest;
 import com.inventory.webmodels.responses.BaseResponse;
-import com.inventory.webmodels.responses.assignment.*;
-import com.inventory.webmodels.responses.item.ItemResponse;
-import com.inventory.webmodels.responses.item.UploadFileResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-
 
 @Component
-public class ModelHelper {
+public abstract class ModelHelper {
     public BaseResponse<String> getStandardBaseResponse(boolean success, String errorMessage) {
         BaseResponse<String> response = new BaseResponse<>();
         response.setCode(HttpStatus.OK.toString());
         response.setSuccess(success);
         response.setValue("");
-        response.setErrorMessage(errorMessage);
-        return response;
-    }
-
-    public BaseResponse<UploadFileResponse> getUploadBaseResponse(boolean success, String errorMessage) {
-        BaseResponse<UploadFileResponse> response = new BaseResponse<>();
-        response.setCode(HttpStatus.OK.toString());
-        response.setSuccess(success);
         response.setErrorMessage(errorMessage);
         return response;
     }
@@ -71,52 +54,15 @@ public class ModelHelper {
         return paging;
     }
 
-    public AssignmentResponse getMappedAssignmentResponse(Assignment assignment) {
-        AssignmentResponse assignmentResponse = new AssignmentResponse();
-        assignmentResponse.setAssignment(assignment);
-        return assignmentResponse;
+    public Paging getEmptyPaging() {
+        Paging paging = new Paging();
+        paging.setTotalRecords(0);
+        paging.setTotalPage(0);
+        paging.setSortedBy("updatedDate");
+        paging.setSortedType("desc");
+        paging.setPageNumber(0);
+        paging.setPageSize(0);
+        return paging;
     }
 
-    public EmployeeAssignmentResponse getMappedEmployeeAssignmentResponse(Assignment assignment, Item item) {
-        EmployeeAssignmentResponse employeeAssignmentResponse = new EmployeeAssignmentResponse();
-        item.setQty(assignment.getQty());
-        employeeAssignmentResponse.setItem(item);
-        employeeAssignmentResponse.setStatus(assignment.getStatus());
-        employeeAssignmentResponse.setAssignmentId(assignment.getId());
-        return employeeAssignmentResponse;
-    }
-
-    public Assignment getMappedAssignment(AssignmentRequest request, Employee employee, Item item, int qty) {
-        Assignment assignment = new Assignment();
-        assignment.setEmployee(employee);
-        assignment.setItem(item);
-        assignment.setQty(qty);
-        assignment.setNotes("");
-        assignment.setStatus("Pending");
-        return assignment;
-    }
-
-    public ChangeAssignmentStatusResponse getMappedResponse(String success, String successItem) {
-        ChangeAssignmentStatusResponse response = new ChangeAssignmentStatusResponse();
-        response.setSuccess(success);
-        response.setSuccessItem(successItem);
-        return response;
-    }
-
-    public AssignmentCountResponse getMappedAssignmentCountResponse(Map<String, Double> listOfCount) {
-        AssignmentCountResponse response = new AssignmentCountResponse();
-        response.setListOfCount(listOfCount);
-        return response;
-    }
-
-    public ItemResponse getMappedItemResponse(Item item) {
-        return new ItemResponse(item);
-    }
-
-    public AuthenticationResponse getMappedAuthenticationResponse(String email, String token) {
-        AuthenticationResponse response = new AuthenticationResponse();
-        response.setUsername(email);
-        response.setToken(token);
-        return response;
-    }
 }

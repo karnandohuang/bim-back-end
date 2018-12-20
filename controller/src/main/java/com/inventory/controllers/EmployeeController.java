@@ -1,6 +1,6 @@
 package com.inventory.controllers;
 
-import com.inventory.mappers.ModelHelper;
+import com.inventory.mappers.EmployeeHelper;
 import com.inventory.models.Employee;
 import com.inventory.models.Paging;
 import com.inventory.services.GeneralMapper;
@@ -14,10 +14,11 @@ import com.inventory.webmodels.responses.employee.ListOfEmployeeResponse;
 import com.inventory.webmodels.responses.employee.ListOfSuperiorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import static com.inventory.constants.API_PATH.*;
+import static com.inventory.webmodels.API_PATH.*;
 
 @CrossOrigin
 @RestController
@@ -27,7 +28,7 @@ public class EmployeeController {
     private GeneralMapper generalMapper;
 
     @Autowired
-    private ModelHelper helper;
+    private EmployeeHelper helper;
 
     @Autowired
     private EmployeeService employeeService;
@@ -75,6 +76,7 @@ public class EmployeeController {
     }
 
     @GetMapping(value = API_PATH_GET_EMPLOYEE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostAuthorize("hasRole('ADMIN') OR returnObject.value.value.email == principal.username")
     public BaseResponse<EmployeeResponse> getEmployee(
             @PathVariable String id) {
         BaseResponse<EmployeeResponse> response;

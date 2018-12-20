@@ -9,8 +9,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ItemRepository extends JpaRepository<Item, String> {
 
-    Page<Item> findAllByNameContainingIgnoreCase(String name, Pageable pageable);
+    Page<Item> findAllByNameContainingIgnoreCaseOrIdContainingIgnoreCase(String name, String id, Pageable pageable);
 
-    Float countAllByNameContainingIgnoreCase(String name);
+    Float countAllByNameContainingIgnoreCaseOrIdContainingIgnoreCase(String name, String id);
 
 }

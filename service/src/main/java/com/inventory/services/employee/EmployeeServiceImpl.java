@@ -10,6 +10,7 @@ import com.inventory.services.exceptions.employee.EmployeeAlreadyExistException;
 import com.inventory.services.exceptions.employee.EmployeeFieldWrongFormatException;
 import com.inventory.services.exceptions.employee.EmployeeNotFoundException;
 import com.inventory.services.exceptions.employee.EmployeeStillHavePendingAssignmentException;
+import com.inventory.services.helper.PagingHelper;
 import com.inventory.services.validators.EmployeeValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -39,6 +40,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Autowired
     private EmployeeValidator validator;
+
+    @Autowired
+    private PagingHelper pagingHelper;
 
     private final static String EMPLOYEE_ID_PREFIX = "EM";
 
@@ -100,7 +104,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         listOfEmployee = employeeRepository.findAllByNameContainingIgnoreCase(name, pageRequest).getContent();
         float totalRecords = employeeRepository.countAllByNameContainingIgnoreCase(name);
-        setPagingTotalRecordsAndTotalPage(paging, totalRecords);
+        pagingHelper.setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfEmployee;
     }
 
@@ -111,7 +115,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (name == null)
             name = "";
         else if (superiorId == null)
-            superiorId = "null";
+            superiorId = "-";
         else if (!validator.validateIdFormatEntity(superiorId, EMPLOYEE_ID_PREFIX) && !superiorId.equals("null"))
             throw new EmployeeFieldWrongFormatException(EMPLOYEE_SUPERIOR_ID_WRONG_FORMAT_ERROR);
         List<Employee> listOfEmployee;
@@ -133,14 +137,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                 superiorId, name, pageRequest).getContent();
         float totalRecords = employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(
                 superiorId, name);
-        setPagingTotalRecordsAndTotalPage(paging, totalRecords);
+        pagingHelper.setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfEmployee;
-    }
-
-    private void setPagingTotalRecordsAndTotalPage(Paging paging, float totalRecords) {
-        paging.setTotalRecords((int) totalRecords);
-        double totalPage = (int) Math.ceil((totalRecords / paging.getPageSize()));
-        paging.setTotalPage((int) totalPage);
     }
 
     private Employee editEmployee(Employee request) {
@@ -184,7 +182,6 @@ public class EmployeeServiceImpl implements EmployeeService {
             } catch (RuntimeException e) {
                 throw new EmployeeNotFoundException(employee.getSuperiorId(), "SuperiorId");
             }
-
         }
         boolean isSuperiorIdValid = true;
 
@@ -213,11 +210,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         else if (isEmployeeExist != null && !isEmployeeExist.getId().equals(employee.getId()))
             throw new EmployeeAlreadyExistException(employee.getEmail());
 
-        else if (superior == null)
-            throw new EmployeeNotFoundException(employee.getSuperiorId(), "SuperiorId");
-
-        else
+        else {
+            if (employee.getSuperiorId().equals("null"))
+                employee.setSuperiorId("-");
             return employeeRepository.save(employee);
+        }
     }
 
     private boolean isEmployeeHavingSubordinate(String id) {

@@ -1,7 +1,8 @@
 package com.inventory.controllers;
 
-import com.inventory.mappers.ModelHelper;
-import com.inventory.services.GeneralMapper;
+import com.inventory.mappers.MemberHelper;
+import com.inventory.services.admin.AdminService;
+import com.inventory.services.employee.EmployeeService;
 import com.inventory.services.member.MemberService;
 import com.inventory.webmodels.requests.member.LoginRequest;
 import com.inventory.webmodels.responses.BaseResponse;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
-import static com.inventory.constants.API_PATH.API_PATH_LOGIN;
+import static com.inventory.webmodels.API_PATH.API_PATH_LOGIN;
 import static java.util.stream.Collectors.toList;
 
 @CrossOrigin
@@ -27,10 +28,13 @@ public class MemberController {
     private MemberService memberService;
 
     @Autowired
-    private ModelHelper helper;
+    private EmployeeService employeeService;
 
     @Autowired
-    private GeneralMapper generalMapper;
+    private AdminService adminService;
+
+    @Autowired
+    private MemberHelper helper;
 
     private UserDetails userDetails;
 
@@ -42,8 +46,11 @@ public class MemberController {
         try {
             memberService.validateUser(request.getEmail(), request.getPassword());
             String token = memberService.authenticateUser(request.getEmail(), request.getPassword());
+            String role = memberService.getMemberRole(request.getEmail());
             response = helper.getBaseResponse(true, "");
-            response.setValue(helper.getMappedAuthenticationResponse(request.getEmail(), token));
+            response.setValue(helper.getMappedAuthenticationResponse(
+                    request.getEmail(),
+                    token, role));
         } catch (RuntimeException e) {
             response = helper.getBaseResponse(false, e.getMessage());
             response.setValue(null);

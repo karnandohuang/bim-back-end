@@ -8,6 +8,7 @@ import com.inventory.services.GeneralMapper;
 import com.inventory.services.assignment.AssignmentService;
 import com.inventory.services.exceptions.EntityNullFieldException;
 import com.inventory.services.exceptions.item.*;
+import com.inventory.services.helper.PagingHelper;
 import com.inventory.services.validators.ItemValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -42,6 +43,9 @@ public class ItemServiceImpl implements ItemService {
     @Autowired
     private GeneralMapper mapper;
 
+    @Autowired
+    private PagingHelper pagingHelper;
+
     private final static String ITEM_ID_PREFIX = "IM";
 
     @Override
@@ -58,7 +62,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
-    public List<Item> getItemList(String name, Paging paging) {
+    public List<Item> getItemList(String search, Paging paging) {
         List<Item> listOfItem;
         PageRequest pageRequest;
         if (paging.getSortedType().matches("desc")) {
@@ -74,17 +78,13 @@ public class ItemServiceImpl implements ItemService {
                     Sort.Direction.ASC,
                     paging.getSortedBy());
         }
-        listOfItem = itemRepository.findAllByNameContainingIgnoreCase(name, pageRequest).getContent();
-        float totalRecords = itemRepository.countAllByNameContainingIgnoreCase(name);
-        setPagingTotalRecordsAndTotalPage(paging, totalRecords);
+        listOfItem = itemRepository.findAllByNameContainingIgnoreCaseOrIdContainingIgnoreCase(search, search, pageRequest).getContent();
+        float totalRecords = itemRepository.countAllByNameContainingIgnoreCaseOrIdContainingIgnoreCase(search, search);
+        pagingHelper.setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfItem;
     }
 
-    private void setPagingTotalRecordsAndTotalPage(Paging paging, float totalRecords) {
-        paging.setTotalRecords((int) totalRecords);
-        double totalPage = (int) Math.ceil((totalRecords / paging.getPageSize()));
-        paging.setTotalPage((int) totalPage);
-    }
+
 
     private Item editItem(Item request) {
         this.getItem(request.getId());
@@ -161,10 +161,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private Boolean checkItemAssignmentCount(String itemId) {
-        return assignmentService.getAssignmentCountByItemIdAndStatus(itemId, "Pending") > 0 ||
-                assignmentService.getAssignmentCountByItemIdAndStatus(itemId, "Approved") > 0 ||
-                assignmentService.getAssignmentCountByItemIdAndStatus(itemId, "Received") > 0 ||
-                assignmentService.getAssignmentCountByItemIdAndStatus(itemId, "Rejected") > 0;
+        return assignmentService.getAssignmentCountByItemIdAndStatus(itemId, "Pending") > 0;
     }
 
     @Override
