@@ -15,5 +15,7 @@ public interface AssignmentRepository extends JpaRepository<Assignment, String> 
 
     Float countAllByEmployeeIdAndStatus(String employeeId, String status);
 
+    Float countAllByStatus(String status);
+
     Float countAllByItemIdAndStatus(String itemId, String status);
 }

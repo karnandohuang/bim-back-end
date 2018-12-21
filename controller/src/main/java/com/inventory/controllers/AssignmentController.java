@@ -115,19 +115,29 @@ public class AssignmentController {
         return response;
     }
 
-    @PreAuthorize("hasAnyRole('SUPERIOR', 'EMPLOYEE')")
     @GetMapping(value = API_PATH_GET_ASSIGNMENT_COUNT_BY_EMPLOYEE_ID_AND_STATUS, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<AssignmentCountResponse> getAssignmentCount(@AuthenticationPrincipal Principal principal) throws IOException {
         BaseResponse response;
         UserDetails member = memberService.getLoggedInUser(principal);
-        Employee employee = employeeService.getEmployeeByEmail(member.getUsername());
-        try {
-            Map<String, Double> listOfCount = assignmentService.getAssignmentCountByEmployeeId(employee.getId());
-            response = helper.getBaseResponse(true, "");
-            response.setValue(helper.getMappedAssignmentCountResponse(listOfCount));
-        } catch (RuntimeException e) {
-            response = helper.getBaseResponse(false, e.getMessage());
-            response.setValue(null);
+        if (memberService.getMemberRole(member.getUsername()).equals("ADMIN")) {
+            try {
+                Map<String, Double> listOfCount = assignmentService.getAssignmentCountByEmployeeId("ADMIN");
+                response = helper.getBaseResponse(true, "");
+                response.setValue(helper.getMappedAssignmentCountResponse(listOfCount));
+            } catch (RuntimeException e) {
+                response = helper.getBaseResponse(false, e.getMessage());
+                response.setValue(null);
+            }
+        } else {
+            Employee employee = employeeService.getEmployeeByEmail(member.getUsername());
+            try {
+                Map<String, Double> listOfCount = assignmentService.getAssignmentCountByEmployeeId(employee.getId());
+                response = helper.getBaseResponse(true, "");
+                response.setValue(helper.getMappedAssignmentCountResponse(listOfCount));
+            } catch (RuntimeException e) {
+                response = helper.getBaseResponse(false, e.getMessage());
+                response.setValue(null);
+            }
         }
         return response;
     }

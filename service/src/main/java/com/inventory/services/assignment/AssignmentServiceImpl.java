@@ -114,18 +114,31 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Override
     @Transactional
     public Map<String, Double> getAssignmentCountByEmployeeId(String employeeId) {
-        try {
-            employeeService.getEmployee(employeeId);
-        } catch (RuntimeException e) {
-            throw e;
-        }
 
-        Double pendingAssignmentCount = Math.ceil(AssignmentRepository.
-                countAllByEmployeeIdAndStatus(employeeId, "Pending"));
-        Double pendingHandoverCount = Math.ceil(AssignmentRepository.
-                countAllByEmployeeIdAndStatus(employeeId, "Approved"));
-        Double receivedCount = Math.ceil(AssignmentRepository.
-                countAllByEmployeeIdAndStatus(employeeId, "Received"));
+        Double pendingHandoverCount;
+        Double pendingAssignmentCount;
+        Double receivedCount;
+        if (employeeId.equals("ADMIN")) {
+            pendingAssignmentCount = Math.ceil(AssignmentRepository.
+                    countAllByStatus("Pending"));
+            pendingHandoverCount = Math.ceil(AssignmentRepository.
+                    countAllByStatus("Approved"));
+            receivedCount = Math.ceil(AssignmentRepository.
+                    countAllByStatus("Received"));
+        } else {
+            try {
+                employeeService.getEmployee(employeeId);
+            } catch (RuntimeException e) {
+                throw e;
+            }
+
+            pendingAssignmentCount = Math.ceil(AssignmentRepository.
+                    countAllByEmployeeIdAndStatus(employeeId, "Pending"));
+            pendingHandoverCount = Math.ceil(AssignmentRepository.
+                    countAllByEmployeeIdAndStatus(employeeId, "Approved"));
+            receivedCount = Math.ceil(AssignmentRepository.
+                    countAllByEmployeeIdAndStatus(employeeId, "Received"));
+        }
 
         Map<String, Double> listOfCount = new HashMap<>();
 
