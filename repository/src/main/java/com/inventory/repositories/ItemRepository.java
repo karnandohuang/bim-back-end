@@ -1,6 +1,6 @@
 package com.inventory.repositories;
 
-import com.inventory.models.Item;
+import com.inventory.models.entity.Item;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,7 +1,7 @@
 package com.inventory.webmodels.responses.admin;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.inventory.models.Admin;
+import com.inventory.models.entity.Admin;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

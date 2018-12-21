@@ -1,4 +1,4 @@
-package com.inventory.configurations;
+package com.inventory.configurations.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.MediaType;

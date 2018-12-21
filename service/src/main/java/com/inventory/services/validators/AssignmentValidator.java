@@ -1,6 +1,6 @@
 package com.inventory.services.validators;
 
-import com.inventory.models.Assignment;
+import com.inventory.models.entity.Assignment;
 import org.springframework.stereotype.Component;
 
 @Component

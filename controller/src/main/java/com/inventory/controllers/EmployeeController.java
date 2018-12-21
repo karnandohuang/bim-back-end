@@ -1,8 +1,8 @@
 package com.inventory.controllers;
 
 import com.inventory.mappers.EmployeeHelper;
-import com.inventory.models.Employee;
 import com.inventory.models.Paging;
+import com.inventory.models.entity.Employee;
 import com.inventory.services.GeneralMapper;
 import com.inventory.services.employee.EmployeeService;
 import com.inventory.services.exceptions.employee.EmployeeNotFoundException;

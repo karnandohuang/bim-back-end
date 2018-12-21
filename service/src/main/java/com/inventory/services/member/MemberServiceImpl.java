@@ -1,7 +1,7 @@
 package com.inventory.services.member;
 
-import com.inventory.models.Employee;
-import com.inventory.models.Member;
+import com.inventory.models.abstract_entity.Member;
+import com.inventory.models.entity.Employee;
 import com.inventory.services.JwtService;
 import com.inventory.services.admin.AdminService;
 import com.inventory.services.employee.EmployeeService;

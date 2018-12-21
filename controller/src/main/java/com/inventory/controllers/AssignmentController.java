@@ -1,10 +1,10 @@
 package com.inventory.controllers;
 
 import com.inventory.mappers.AssignmentHelper;
-import com.inventory.models.Assignment;
-import com.inventory.models.Employee;
-import com.inventory.models.Item;
 import com.inventory.models.Paging;
+import com.inventory.models.entity.Assignment;
+import com.inventory.models.entity.Employee;
+import com.inventory.models.entity.Item;
 import com.inventory.services.GeneralMapper;
 import com.inventory.services.assignment.AssignmentService;
 import com.inventory.services.employee.EmployeeService;
@@ -17,7 +17,6 @@ import com.inventory.webmodels.responses.BaseResponse;
 import com.inventory.webmodels.responses.assignment.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,8 +58,7 @@ public class AssignmentController {
             @RequestParam int pageSize,
             @RequestParam(required = false) String sortedBy,
             @RequestParam(required = false) String sortedType,
-            @RequestParam(required = false) String filterStatus,
-            @RequestParam(required = false) String superiorId
+            @RequestParam(required = false) String filterStatus
     ) throws IOException {
         Paging paging = helper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         List<Assignment> listOfAssignment = assignmentService.getAssignmentList(filterStatus, paging);
@@ -77,7 +75,6 @@ public class AssignmentController {
     }
 
     @GetMapping(value = API_PATH_EMPLOYEE_ASSIGNMENT, produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'SUPERIOR')")
     public BaseResponse<List<EmployeeAssignmentResponse>> listOfEmployeeAssignment(
             @AuthenticationPrincipal Principal principal,
             @RequestParam int pageNumber,
@@ -98,9 +95,45 @@ public class AssignmentController {
                     paging);
             List<EmployeeAssignmentResponse> listOfEmployeeAssignment = new ArrayList<>();
             for (Assignment assignment : listOfAssignment) {
-                Item item = itemService.getItem(assignment.getItem().getId());
                 EmployeeAssignmentResponse employeeAssignmentResponse =
-                        helper.getMappedEmployeeAssignmentResponse(assignment, item);
+                        helper.getMappedEmployeeAssignmentResponse(assignment, assignment.getItem());
+                listOfEmployeeAssignment.add(employeeAssignmentResponse);
+            }
+            response = helper.getListBaseResponse(
+                    true, "", paging);
+            response.setValue(listOfEmployeeAssignment);
+        } catch (RuntimeException e) {
+            response = helper.getListBaseResponse(
+                    false, e.getMessage(), helper.getEmptyPaging());
+            response.setValue(null);
+        }
+
+        return response;
+    }
+
+    @GetMapping(value = API_PATH_SUPERIOR_EMPLOYEE_ASSIGNMENT, produces = MediaType.APPLICATION_JSON_VALUE)
+    public BaseResponse<List<EmployeeAssignmentResponse>> listOfEmployeeSuperiorAssignment(
+            @AuthenticationPrincipal Principal principal,
+            @RequestParam int pageNumber,
+            @RequestParam int pageSize,
+            @RequestParam(required = false) String sortedBy,
+            @RequestParam(required = false) String sortedType,
+            @RequestParam(required = false) String filterStatus
+    ) throws IOException {
+        Paging paging = helper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
+        BaseResponse response;
+        try {
+            UserDetails member = memberService.getLoggedInUser(principal);
+            Employee employee = employeeService.getEmployeeByEmail(member.getUsername());
+            System.out.println(employee.getId());
+            List<Assignment> listOfAssignment = assignmentService.getEmployeeSuperiorAssignmentList(
+                    employee.getId(),
+                    filterStatus,
+                    paging);
+            List<EmployeeAssignmentResponse> listOfEmployeeAssignment = new ArrayList<>();
+            for (Assignment assignment : listOfAssignment) {
+                EmployeeAssignmentResponse employeeAssignmentResponse =
+                        helper.getMappedEmployeeAssignmentResponse(assignment, assignment.getItem());
                 listOfEmployeeAssignment.add(employeeAssignmentResponse);
             }
             response = helper.getListBaseResponse(

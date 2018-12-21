@@ -1,7 +1,7 @@
 package com.inventory.services.admin;
 
-import com.inventory.models.Admin;
 import com.inventory.models.Paging;
+import com.inventory.models.entity.Admin;
 import com.inventory.services.exceptions.admin.AdminNotFoundException;
 
 import javax.transaction.Transactional;

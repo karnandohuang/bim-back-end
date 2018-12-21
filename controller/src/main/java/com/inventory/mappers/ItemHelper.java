@@ -1,6 +1,6 @@
 package com.inventory.mappers;
 
-import com.inventory.models.Item;
+import com.inventory.models.entity.Item;
 import com.inventory.webmodels.responses.BaseResponse;
 import com.inventory.webmodels.responses.item.ItemResponse;
 import com.inventory.webmodels.responses.item.UploadFileResponse;

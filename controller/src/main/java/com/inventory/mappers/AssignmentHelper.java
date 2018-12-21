@@ -1,8 +1,8 @@
 package com.inventory.mappers;
 
-import com.inventory.models.Assignment;
-import com.inventory.models.Employee;
-import com.inventory.models.Item;
+import com.inventory.models.entity.Assignment;
+import com.inventory.models.entity.Employee;
+import com.inventory.models.entity.Item;
 import com.inventory.webmodels.requests.assignment.AssignmentRequest;
 import com.inventory.webmodels.responses.assignment.AssignmentCountResponse;
 import com.inventory.webmodels.responses.assignment.AssignmentResponse;

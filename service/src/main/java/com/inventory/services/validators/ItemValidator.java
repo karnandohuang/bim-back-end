@@ -1,6 +1,6 @@
 package com.inventory.services.validators;
 
-import com.inventory.models.Item;
+import com.inventory.models.entity.Item;
 import org.springframework.stereotype.Component;
 
 import java.io.File;

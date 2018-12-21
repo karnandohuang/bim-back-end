@@ -1,8 +1,8 @@
 package com.inventory.controllers;
 
 import com.inventory.mappers.ItemHelper;
-import com.inventory.models.Item;
 import com.inventory.models.Paging;
+import com.inventory.models.entity.Item;
 import com.inventory.services.GeneralMapper;
 import com.inventory.services.item.ItemService;
 import com.inventory.webmodels.requests.DeleteRequest;

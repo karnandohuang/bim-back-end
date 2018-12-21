@@ -1,8 +1,8 @@
 package com.inventory.controllers;
 
 import com.inventory.mappers.AdminHelper;
-import com.inventory.models.Admin;
 import com.inventory.models.Paging;
+import com.inventory.models.entity.Admin;
 import com.inventory.services.GeneralMapper;
 import com.inventory.services.admin.AdminService;
 import com.inventory.services.exceptions.admin.AdminNotFoundException;

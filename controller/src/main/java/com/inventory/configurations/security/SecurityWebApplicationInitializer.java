@@ -1,4 +1,4 @@
-package com.inventory.configurations;
+package com.inventory.configurations.security;
 
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 

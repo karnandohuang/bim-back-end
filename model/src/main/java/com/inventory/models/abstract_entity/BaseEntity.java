@@ -1,4 +1,4 @@
-package com.inventory.models;
+package com.inventory.models.abstract_entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;

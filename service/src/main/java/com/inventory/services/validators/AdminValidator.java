@@ -1,6 +1,6 @@
 package com.inventory.services.validators;
 
-import com.inventory.models.Admin;
+import com.inventory.models.entity.Admin;
 import org.springframework.stereotype.Component;
 
 import static com.inventory.services.constants.ValidationConstant.MEMBER_EMAIL_EMPTY;

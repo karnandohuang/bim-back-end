@@ -1,4 +1,4 @@
-package com.inventory.configurations;
+package com.inventory.configurations.security;
 
 import com.inventory.services.JwtService;
 import com.inventory.services.exceptions.auth.JwtAuthenticationException;

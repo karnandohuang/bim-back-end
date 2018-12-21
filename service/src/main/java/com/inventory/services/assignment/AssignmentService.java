@@ -1,7 +1,8 @@
 package com.inventory.services.assignment;
 
-import com.inventory.models.Assignment;
 import com.inventory.models.Paging;
+import com.inventory.models.entity.Assignment;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,10 @@ public interface AssignmentService {
     List<Assignment> getAssignmentList(String filterStatus, Paging paging);
 
     List<Assignment> getEmployeeAssignmentList(String employeeId, String filterStatus, Paging paging);
+
+    @Transactional
+    List<Assignment> getEmployeeSuperiorAssignmentList(String superiorId, String filterStatus, Paging paging)
+            throws RuntimeException;
 
     Map<String, Double> getAssignmentCountByEmployeeId(String employeeId);
 

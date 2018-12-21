@@ -1,6 +1,6 @@
 package com.inventory.services.validators;
 
-import com.inventory.models.Employee;
+import com.inventory.models.entity.Employee;
 import org.springframework.stereotype.Component;
 
 import static com.inventory.services.constants.ValidationConstant.*;

@@ -1,4 +1,4 @@
-package com.inventory.configurations;
+package com.inventory.configurations.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
@@ -43,8 +43,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/login").permitAll()
                 .antMatchers("/api/logout").permitAll()
                 .antMatchers("/swagger-ui.html").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/superiors").hasRole("SUPERIOR")
                 .antMatchers(HttpMethod.POST, "/api/requests").hasAnyRole("EMPLOYEE", "SUPERIOR")
-                .antMatchers(HttpMethod.PUT, "/api/requests/**").hasAnyRole("SUPERIOR", "ADMIN")
+                .antMatchers(HttpMethod.GET, "/api/requests/employee").hasAnyRole("EMPLOYEE", "SUPERIOR")
+                .antMatchers(HttpMethod.GET, "/api/requests/superior/employee").hasRole("SUPERIOR")
+                .antMatchers(HttpMethod.PUT, "/api/requests/changeStatus").hasAnyRole("ADMIN", "SUPERIOR")
+                .antMatchers(HttpMethod.PUT, "/api/requests/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")

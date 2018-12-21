@@ -1,8 +1,8 @@
 package com.inventory.services.item;
 
-import com.inventory.models.Assignment;
-import com.inventory.models.Item;
 import com.inventory.models.Paging;
+import com.inventory.models.entity.Assignment;
+import com.inventory.models.entity.Item;
 import com.inventory.repositories.ItemRepository;
 import com.inventory.services.GeneralMapper;
 import com.inventory.services.assignment.AssignmentService;

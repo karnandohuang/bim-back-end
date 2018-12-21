@@ -1,7 +1,7 @@
 package com.inventory.services.assignment;
 
-import com.inventory.models.Assignment;
 import com.inventory.models.Paging;
+import com.inventory.models.entity.Assignment;
 import com.inventory.repositories.AssignmentRepository;
 import com.inventory.services.employee.EmployeeService;
 import com.inventory.services.exceptions.EntityNullFieldException;
@@ -107,6 +107,38 @@ public class AssignmentServiceImpl implements AssignmentService {
         }
         listOfAssignment = AssignmentRepository.findAllByEmployeeIdAndStatusContaining(employeeId, filterStatus, pageRequest).getContent();
         float totalRecords = AssignmentRepository.countAllByEmployeeIdAndStatusContaining(employeeId, filterStatus);
+        pagingHelper.setPagingTotalRecordsAndTotalPage(paging, totalRecords);
+        return listOfAssignment;
+    }
+
+    @Override
+    @Transactional
+    public List<Assignment> getEmployeeSuperiorAssignmentList(String superiorId, String filterStatus, Paging paging)
+            throws RuntimeException {
+        if (filterStatus == null)
+            filterStatus = "";
+        try {
+            employeeService.getEmployee(superiorId);
+        } catch (RuntimeException e) {
+            throw e;
+        }
+        List<Assignment> listOfAssignment;
+        PageRequest pageRequest;
+        if (paging.getSortedType().matches("desc")) {
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
+                    paging.getPageSize(),
+                    Sort.Direction.DESC,
+                    paging.getSortedBy());
+        } else {
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
+                    paging.getPageSize(),
+                    Sort.Direction.ASC,
+                    paging.getSortedBy());
+        }
+        listOfAssignment = AssignmentRepository.findAllByEmployeeSuperiorIdAndStatusContaining(superiorId, filterStatus, pageRequest).getContent();
+        float totalRecords = AssignmentRepository.countAllByEmployeeSuperiorIdAndStatusContaining(superiorId, filterStatus);
         pagingHelper.setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfAssignment;
     }

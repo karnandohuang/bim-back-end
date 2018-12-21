@@ -1,5 +1,6 @@
-package com.inventory.models;
+package com.inventory.models.entity;
 
+import com.inventory.models.abstract_entity.Member;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 

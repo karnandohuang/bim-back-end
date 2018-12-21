@@ -1,7 +1,7 @@
 package com.inventory.services.employee;
 
-import com.inventory.models.Employee;
 import com.inventory.models.Paging;
+import com.inventory.models.entity.Employee;
 import com.inventory.services.exceptions.employee.EmployeeNotFoundException;
 
 import javax.transaction.Transactional;

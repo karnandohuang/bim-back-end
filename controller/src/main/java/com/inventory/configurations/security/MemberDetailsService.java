@@ -1,8 +1,8 @@
-package com.inventory.configurations;
+package com.inventory.configurations.security;
 
-import com.inventory.models.Admin;
-import com.inventory.models.Employee;
-import com.inventory.models.Member;
+import com.inventory.models.abstract_entity.Member;
+import com.inventory.models.entity.Admin;
+import com.inventory.models.entity.Employee;
 import com.inventory.services.admin.AdminService;
 import com.inventory.services.employee.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
