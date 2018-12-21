@@ -15,8 +15,13 @@ import com.inventory.webmodels.responses.employee.ListOfSuperiorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 import static com.inventory.webmodels.API_PATH.*;
 
@@ -53,7 +58,7 @@ public class EmployeeController {
 
     @GetMapping(value = API_PATH_GET_SUPERIORS, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<ListOfSuperiorResponse> listOfSuperior(
-            @RequestParam(required = false) String superiorId,
+            @AuthenticationPrincipal Principal principal,
             @RequestParam(required = false) String name,
             @RequestParam int pageNumber,
             @RequestParam int pageSize,
@@ -63,8 +68,10 @@ public class EmployeeController {
         Paging paging = helper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         BaseResponse<ListOfSuperiorResponse> response;
         ListOfSuperiorResponse list;
+        String email = ((UserDetails) (((Authentication) principal).getPrincipal())).getUsername();
+        String employeeId = employeeService.getEmployeeByEmail(email).getId();
         try {
-            list = new ListOfSuperiorResponse(employeeService.getSuperiorList(superiorId, name, paging));
+            list = new ListOfSuperiorResponse(employeeService.getSuperiorList(employeeId, name, paging));
             response = helper.getListBaseResponse(true, "", paging);
         } catch (RuntimeException e) {
             list = null;
