@@ -59,7 +59,8 @@ public class AssignmentController {
             @RequestParam int pageSize,
             @RequestParam(required = false) String sortedBy,
             @RequestParam(required = false) String sortedType,
-            @RequestParam(required = false) String filterStatus
+            @RequestParam(required = false) String filterStatus,
+            @RequestParam(required = false) String superiorId
     ) throws IOException {
         Paging paging = helper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         List<Assignment> listOfAssignment = assignmentService.getAssignmentList(filterStatus, paging);

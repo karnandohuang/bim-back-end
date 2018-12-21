@@ -37,12 +37,15 @@ public class MemberDetailsService implements UserDetailsService {
             try {
                 member = employeeService.getEmployeeByEmail(name);
             } catch (RuntimeException e) {
+                member = null;
+            }
+
+            if (member == null)
                 try {
                     member = adminService.getAdminByEmail(name);
                 } catch (RuntimeException rte) {
                     return new User("", "", getGrantedAuthorities(null));
                 }
-            }
             return new User(member.getEmail(), member.getPassword(), getGrantedAuthorities(member));
         }
     }
