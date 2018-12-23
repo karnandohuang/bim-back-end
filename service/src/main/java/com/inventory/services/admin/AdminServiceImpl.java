@@ -143,8 +143,12 @@ public class AdminServiceImpl implements AdminService {
     }
 
     private Admin editAdmin(Admin request) {
-        this.getAdmin(request.getId());
-        return mapper.map(request, Admin.class);
+        String password = this.getAdmin(request.getId()).getPassword();
+        if (request.getPassword() != null)
+            password = encoder.encode(request.getPassword());
+        Admin a = mapper.map(request, Admin.class);
+        a.setPassword(password);
+        return a;
     }
 
     @Override

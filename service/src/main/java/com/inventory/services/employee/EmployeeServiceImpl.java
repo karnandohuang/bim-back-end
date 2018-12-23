@@ -142,8 +142,12 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     private Employee editEmployee(Employee request) {
-        this.getEmployee(request.getId());
-        return mapper.map(request, Employee.class);
+        String password = this.getEmployee(request.getId()).getPassword();
+        if (request.getPassword() != null)
+            password = encoder.encode(request.getPassword());
+        Employee e = mapper.map(request, Employee.class);
+        e.setPassword(password);
+        return e;
     }
 
     @Override
