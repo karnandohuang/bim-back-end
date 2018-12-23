@@ -1,0 +1,17 @@
+<!--<global-method-security pre-post-annotations="enabled" />-->
+
+<!--<http pattern="/api/login" security="none"/>-->
+<!--<http pattern="/api/signup" security="none"/>-->
+
+<!--<http pattern="/api/**" entry-point-ref="restAuthenticationEntryPoint" create-session="stateless">-->
+<!--<csrf disabled="true"/>  (4)-->
+<!--<custom-filter before="FORM_LOGIN_FILTER" ref="jwtAuthenticationFilter"/>-->
+
+<!--<beans:bean id="jwtAuthenticationFilter" class="com.toptal.travelplanner.security.JwtAuthenticationFilter">-->
+<!--<beans:property name="authenticationManager" ref="authenticationManager" />-->
+<!--<beans:property name="authenticationSuccessHandler" ref="jwtAuthenticationSuccessHandler" />-->
+<!--</beans:bean>-->
+
+<!--<authentication-manager alias="authenticationManager">-->
+<!--<authentication-provider ref="jwtAuthenticationProvider" />-->
+<!--</authentication-manager>-->

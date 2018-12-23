@@ -1,6 +1,6 @@
 package com.inventory.webmodels.responses.assignment;
 
-import com.inventory.models.Item;
+import com.inventory.models.entity.Item;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

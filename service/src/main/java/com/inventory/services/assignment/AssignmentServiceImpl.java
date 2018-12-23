@@ -1,13 +1,12 @@
 package com.inventory.services.assignment;
 
-import com.inventory.models.Assignment;
 import com.inventory.models.Paging;
+import com.inventory.models.entity.Assignment;
 import com.inventory.repositories.AssignmentRepository;
 import com.inventory.services.employee.EmployeeService;
 import com.inventory.services.exceptions.EntityNullFieldException;
-import com.inventory.services.exceptions.assignment.AssignmentFieldWrongFormatException;
-import com.inventory.services.exceptions.assignment.AssignmentNotFoundException;
-import com.inventory.services.exceptions.assignment.AssignmentStatusIsSameException;
+import com.inventory.services.exceptions.assignment.*;
+import com.inventory.services.helper.PagingHelper;
 import com.inventory.services.item.ItemService;
 import com.inventory.services.validators.AssignmentValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.inventory.services.ExceptionConstant.ASSIGNMENT_STATUS_WRONG_FORMAT_ERROR;
-import static com.inventory.services.ExceptionConstant.ID_WRONG_FORMAT_ERROR;
+import static com.inventory.services.constants.ExceptionConstant.ASSIGNMENT_STATUS_WRONG_FORMAT_ERROR;
+import static com.inventory.services.constants.ExceptionConstant.ID_WRONG_FORMAT_ERROR;
 
 @Service
 public class AssignmentServiceImpl implements AssignmentService {
@@ -37,6 +36,9 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Autowired
     private AssignmentValidator validator;
+
+    @Autowired
+    private PagingHelper pagingHelper;
 
     private final static String ASSIGNMENT_ID_PREFIX = "AT";
 
@@ -54,72 +56,121 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     @Transactional
-    public List<Assignment> getAssignmentList(Paging paging) {
+    public List<Assignment> getAssignmentList(String filterStatus, Paging paging) {
+        if (filterStatus == null)
+            filterStatus = "";
         List<Assignment> listOfAssignment;
+        PageRequest pageRequest;
         if (paging.getSortedType().matches("desc")) {
-            listOfAssignment = AssignmentRepository.findAll(PageRequest.of(paging.getPageNumber() - 1,
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
                     paging.getPageSize(),
                     Sort.Direction.DESC,
-                    paging.getSortedBy())).getContent();
+                    paging.getSortedBy());
         } else {
-            listOfAssignment = AssignmentRepository.findAll(PageRequest.of(paging.getPageNumber() - 1,
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
                     paging.getPageSize(),
                     Sort.Direction.ASC,
-                    paging.getSortedBy())).getContent();
+                    paging.getSortedBy());
         }
+        listOfAssignment = AssignmentRepository.findAllByStatusContaining(filterStatus, pageRequest).getContent();
         float totalRecords = (float) AssignmentRepository.count();
-        setPagingTotalRecordsAndTotalPage(paging, totalRecords);
+        pagingHelper.setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfAssignment;
     }
 
     @Override
     @Transactional
-    public List<Assignment> getEmployeeAssignmentList(String employeeId, Paging paging) throws RuntimeException {
+    public List<Assignment> getEmployeeAssignmentList(String employeeId, String filterStatus, Paging paging) throws RuntimeException {
+        if (filterStatus == null)
+            filterStatus = "";
         try {
             employeeService.getEmployee(employeeId);
         } catch (RuntimeException e) {
             throw e;
         }
         List<Assignment> listOfAssignment;
+        PageRequest pageRequest;
         if (paging.getSortedType().matches("desc")) {
-            listOfAssignment = AssignmentRepository.findAllByEmployeeId(employeeId,
-                    PageRequest.of(paging.getPageNumber() - 1,
-                            paging.getPageSize(),
-                            Sort.Direction.DESC,
-                            paging.getSortedBy())).getContent();
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
+                    paging.getPageSize(),
+                    Sort.Direction.DESC,
+                    paging.getSortedBy());
         } else {
-            listOfAssignment = AssignmentRepository.findAllByEmployeeId(employeeId,
-                    PageRequest.of(paging.getPageNumber() - 1,
-                            paging.getPageSize(),
-                            Sort.Direction.ASC,
-                            paging.getSortedBy())).getContent();
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
+                    paging.getPageSize(),
+                    Sort.Direction.ASC,
+                    paging.getSortedBy());
         }
-        float totalRecords = AssignmentRepository.countAllByEmployeeId(employeeId);
-        setPagingTotalRecordsAndTotalPage(paging, totalRecords);
+        listOfAssignment = AssignmentRepository.findAllByEmployeeIdAndStatusContaining(employeeId, filterStatus, pageRequest).getContent();
+        float totalRecords = AssignmentRepository.countAllByEmployeeIdAndStatusContaining(employeeId, filterStatus);
+        pagingHelper.setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfAssignment;
     }
 
-    private void setPagingTotalRecordsAndTotalPage(Paging paging, float totalRecords) {
-        paging.setTotalRecords((int) totalRecords);
-        double totalPage = (int) Math.ceil((totalRecords / paging.getPageSize()));
-        paging.setTotalPage((int) totalPage);
+    @Override
+    @Transactional
+    public List<Assignment> getEmployeeSuperiorAssignmentList(String superiorId, String filterStatus, Paging paging)
+            throws RuntimeException {
+        if (filterStatus == null)
+            filterStatus = "";
+        try {
+            employeeService.getEmployee(superiorId);
+        } catch (RuntimeException e) {
+            throw e;
+        }
+        List<Assignment> listOfAssignment;
+        PageRequest pageRequest;
+        if (paging.getSortedType().matches("desc")) {
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
+                    paging.getPageSize(),
+                    Sort.Direction.DESC,
+                    paging.getSortedBy());
+        } else {
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
+                    paging.getPageSize(),
+                    Sort.Direction.ASC,
+                    paging.getSortedBy());
+        }
+        listOfAssignment = AssignmentRepository.findAllByEmployeeSuperiorIdAndStatusContaining(superiorId, filterStatus, pageRequest).getContent();
+        float totalRecords = AssignmentRepository.countAllByEmployeeSuperiorIdAndStatusContaining(superiorId, filterStatus);
+        pagingHelper.setPagingTotalRecordsAndTotalPage(paging, totalRecords);
+        return listOfAssignment;
     }
 
     @Override
     @Transactional
     public Map<String, Double> getAssignmentCountByEmployeeId(String employeeId) {
-        try {
-            employeeService.getEmployee(employeeId);
-        } catch (RuntimeException e) {
-            throw e;
-        }
 
-        Double pendingAssignmentCount = Math.ceil(AssignmentRepository.
-                countAllByEmployeeIdAndStatus(employeeId, "Pending"));
-        Double pendingHandoverCount = Math.ceil(AssignmentRepository.
-                countAllByEmployeeIdAndStatus(employeeId, "Approved"));
-        Double receivedCount = Math.ceil(AssignmentRepository.
-                countAllByEmployeeIdAndStatus(employeeId, "Received"));
+        Double pendingHandoverCount;
+        Double pendingAssignmentCount;
+        Double receivedCount;
+        if (employeeId.equals("ADMIN")) {
+            pendingAssignmentCount = Math.ceil(AssignmentRepository.
+                    countAllByStatus("Pending"));
+            pendingHandoverCount = Math.ceil(AssignmentRepository.
+                    countAllByStatus("Approved"));
+            receivedCount = Math.ceil(AssignmentRepository.
+                    countAllByStatus("Received"));
+        } else {
+            try {
+                employeeService.getEmployee(employeeId);
+            } catch (RuntimeException e) {
+                throw e;
+            }
+
+            pendingAssignmentCount = Math.ceil(AssignmentRepository.
+                    countAllByEmployeeIdAndStatus(employeeId, "Pending"));
+            pendingHandoverCount = Math.ceil(AssignmentRepository.
+                    countAllByEmployeeIdAndStatus(employeeId, "Approved"));
+            receivedCount = Math.ceil(AssignmentRepository.
+                    countAllByEmployeeIdAndStatus(employeeId, "Received"));
+        }
 
         Map<String, Double> listOfCount = new HashMap<>();
 
@@ -140,8 +191,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         }
         if (!validator.validateStatus(status))
             throw new AssignmentFieldWrongFormatException(ASSIGNMENT_STATUS_WRONG_FORMAT_ERROR);
-        Double count = Math.ceil(AssignmentRepository.countAllByItemIdAndStatus(itemId, status));
-        return count;
+        return Math.ceil(AssignmentRepository.countAllByItemIdAndStatus(itemId, status));
     }
 
     @Override
@@ -155,23 +205,22 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     @Transactional
-    public String changeStatusAssignments(List<String> ids, String status, String notes) throws RuntimeException {
+    public String changeStatusAssignments(List<String> ids, String status, String notes, String employeeId) throws RuntimeException {
         for (String id : ids) {
             Assignment assignment;
-            try {
-                assignment = AssignmentRepository.findById(id).get();
-            } catch (RuntimeException e) {
-                throw new AssignmentNotFoundException(id, "Id");
-            }
+            assignment = this.getAssignment(id);
             if (!validator.validateStatus(status))
                 throw new AssignmentFieldWrongFormatException(ASSIGNMENT_STATUS_WRONG_FORMAT_ERROR);
             else if (assignment.getStatus().equals(status))
                 throw new AssignmentStatusIsSameException(status);
-                else {
-                assignment.setStatus(status);
-                assignment.setNotes(notes);
-                AssignmentRepository.save(assignment);
-            }
+            else if (!validator.validateChangeStatus(assignment.getStatus(), status))
+                throw new AssignmentStatusOrderWrongException(assignment.getStatus(), status);
+            else if (assignment.getEmployee().getId().equals(employeeId))
+                throw new AssignmentAuthorizedSameEmployeeException(assignment.getId(), employeeId);
+
+            assignment.setStatus(status);
+            assignment.setNotes(notes);
+            AssignmentRepository.save(assignment);
         }
         return "Change status success";
     }

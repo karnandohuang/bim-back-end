@@ -1,16 +1,26 @@
 package com.inventory.services.validators;
 
-import com.inventory.models.Assignment;
+import com.inventory.models.entity.Assignment;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AssignmentValidator extends EntityValidator {
 
-    public boolean validateStatus(String status) {
-        if (!status.equals("Pending") && !status.equals("Approved") &&
-                !status.equals("Rejected") && !status.equals("Received"))
+    private final static String PENDING = "Pending";
+    private final static String APPROVED = "Approved";
+    private final static String HANDOVER = "Received";
+    private final static String REJECTED = "Rejected";
+
+    public boolean validateChangeStatus(String status, String changedStatus) {
+        if (status.equals(PENDING) && changedStatus.equals(HANDOVER))
             return false;
-//        else if(status.equals("Rejected") && actualStatus.equals("Approved"))
+        return true;
+    }
+
+    public boolean validateStatus(String status) {
+        if (!status.equals(PENDING) && !status.equals(APPROVED) &&
+                !status.equals(REJECTED) && !status.equals(HANDOVER))
+            return false;
         return true;
     }
 

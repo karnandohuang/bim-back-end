@@ -1,14 +1,16 @@
 package com.inventory.services.employee;
 
-import com.inventory.models.Employee;
 import com.inventory.models.Paging;
+import com.inventory.models.entity.Employee;
 import com.inventory.repositories.EmployeeRepository;
+import com.inventory.services.GeneralMapper;
 import com.inventory.services.assignment.AssignmentService;
 import com.inventory.services.exceptions.EntityNullFieldException;
 import com.inventory.services.exceptions.employee.EmployeeAlreadyExistException;
 import com.inventory.services.exceptions.employee.EmployeeFieldWrongFormatException;
 import com.inventory.services.exceptions.employee.EmployeeNotFoundException;
 import com.inventory.services.exceptions.employee.EmployeeStillHavePendingAssignmentException;
+import com.inventory.services.helper.PagingHelper;
 import com.inventory.services.validators.EmployeeValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -19,7 +21,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.List;
 
-import static com.inventory.services.ExceptionConstant.*;
+import static com.inventory.services.constants.ExceptionConstant.*;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
@@ -34,7 +36,13 @@ public class EmployeeServiceImpl implements EmployeeService {
     private PasswordEncoder encoder;
 
     @Autowired
+    private GeneralMapper mapper;
+
+    @Autowired
     private EmployeeValidator validator;
+
+    @Autowired
+    private PagingHelper pagingHelper;
 
     private final static String EMPLOYEE_ID_PREFIX = "EM";
 
@@ -53,8 +61,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional
     public Employee getEmployeeByEmail(String email) throws EmployeeNotFoundException {
-        if (!validator.validateEmailFormatEmployee(email))
-            throw new EmployeeFieldWrongFormatException(EMPLOYEE_EMAIL_WRONG_FORMAT_ERROR);
+        if (!validator.validateEmailFormatMember(email))
+            throw new EmployeeFieldWrongFormatException(MEMBER_EMAIL_WRONG_FORMAT_ERROR);
         try {
             return employeeRepository.findByEmail(email);
         } catch (RuntimeException e) {
@@ -63,42 +71,40 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public Employee login(String email, String password) {
-        boolean isEmailValid = validator.validateEmailFormatEmployee(email);
-        if (!isEmailValid)
-            return null;
+    public Boolean login(String email, String password) {
         Employee employee;
         try {
             employee = employeeRepository.findByEmail(
                     email);
-        } catch (Exception e) {
-            return null;
+        } catch (RuntimeException e) {
+            return false;
         }
-        if (encoder.matches(password, employee.getPassword()))
-            return employeeRepository.save(employee);
-        else
-            return null;
+        if (!encoder.matches(password, employee.getPassword()))
+            return false;
+        return true;
     }
 
     @Override
     @Transactional
     public List<Employee> getEmployeeList(String name, Paging paging) {
         List<Employee> listOfEmployee;
+        PageRequest pageRequest;
         if (paging.getSortedType().matches("desc")) {
-            listOfEmployee = employeeRepository.findAllByNameContainingIgnoreCase(name,
-                    PageRequest.of(paging.getPageNumber() - 1,
-                            paging.getPageSize(),
-                            Sort.Direction.DESC,
-                            paging.getSortedBy())).getContent();
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
+                    paging.getPageSize(),
+                    Sort.Direction.DESC,
+                    paging.getSortedBy());
         } else {
-            listOfEmployee = employeeRepository.findAllByNameContainingIgnoreCase(name,
-                    PageRequest.of(paging.getPageNumber() - 1,
-                            paging.getPageSize(),
-                            Sort.Direction.ASC,
-                            paging.getSortedBy())).getContent();
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
+                    paging.getPageSize(),
+                    Sort.Direction.ASC,
+                    paging.getSortedBy());
         }
+        listOfEmployee = employeeRepository.findAllByNameContainingIgnoreCase(name, pageRequest).getContent();
         float totalRecords = employeeRepository.countAllByNameContainingIgnoreCase(name);
-        setPagingTotalRecordsAndTotalPage(paging, totalRecords);
+        pagingHelper.setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfEmployee;
     }
 
@@ -108,50 +114,40 @@ public class EmployeeServiceImpl implements EmployeeService {
             throws EmployeeFieldWrongFormatException {
         if (name == null)
             name = "";
-        if (superiorId == null)
-            superiorId = "null";
-        if (!validator.validateIdFormatEntity(superiorId, EMPLOYEE_ID_PREFIX))
+        else if (superiorId == null)
+            superiorId = "-";
+        else if (!validator.validateIdFormatEntity(superiorId, EMPLOYEE_ID_PREFIX) && !superiorId.equals("null"))
             throw new EmployeeFieldWrongFormatException(EMPLOYEE_SUPERIOR_ID_WRONG_FORMAT_ERROR);
         List<Employee> listOfEmployee;
+        PageRequest pageRequest;
         if (paging.getSortedType().matches("desc")) {
-            listOfEmployee = employeeRepository.findAllBySuperiorIdAndNameContainingIgnoreCase(
-                    superiorId, name, PageRequest.of(paging.getPageNumber() - 1,
-                            paging.getPageSize(),
-                            Sort.Direction.DESC,
-                            paging.getSortedBy())).getContent();
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
+                    paging.getPageSize(),
+                    Sort.Direction.DESC,
+                    paging.getSortedBy());
         } else {
-            listOfEmployee = employeeRepository.findAllBySuperiorIdAndNameContainingIgnoreCase(
-                    superiorId, name, PageRequest.of(paging.getPageNumber() - 1,
-                            paging.getPageSize(),
-                            Sort.Direction.ASC,
-                            paging.getSortedBy())).getContent();
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
+                    paging.getPageSize(),
+                    Sort.Direction.ASC,
+                    paging.getSortedBy());
         }
+        listOfEmployee = employeeRepository.findAllBySuperiorIdAndNameContainingIgnoreCase(
+                superiorId, name, pageRequest).getContent();
         float totalRecords = employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(
                 superiorId, name);
-        setPagingTotalRecordsAndTotalPage(paging, totalRecords);
+        pagingHelper.setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfEmployee;
     }
 
-    private void setPagingTotalRecordsAndTotalPage(Paging paging, float totalRecords) {
-        paging.setTotalRecords((int) totalRecords);
-        double totalPage = (int) Math.ceil((totalRecords / paging.getPageSize()));
-        paging.setTotalPage((int) totalPage);
-    }
-
-    private Employee editEmployee(Employee employee) {
-        Employee newEmployee;
-        try {
-            newEmployee = employeeRepository.findById(employee.getId()).get();
-        } catch (RuntimeException e) {
-            throw new EmployeeNotFoundException(employee.getId(), "Id");
-        }
-        newEmployee.setName(employee.getName());
-        newEmployee.setEmail(employee.getEmail());
-        newEmployee.setDob(employee.getDob());
-        newEmployee.setPosition(employee.getPosition());
-        newEmployee.setDivision(employee.getDivision());
-        newEmployee.setSuperiorId(employee.getSuperiorId());
-        return newEmployee;
+    private Employee editEmployee(Employee request) {
+        String password = this.getEmployee(request.getId()).getPassword();
+        if (request.getPassword() != null)
+            password = encoder.encode(request.getPassword());
+        Employee e = mapper.map(request, Employee.class);
+        e.setPassword(password);
+        return e;
     }
 
     @Override
@@ -178,10 +174,14 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         if (employee.getSuperiorId().equals("null"))
             superior = new Employee();
+
         else {
+
             try {
                 superior = employeeRepository.findById(employee.getSuperiorId()).get();
+
                 superior.setRole(validator.assumeRoleEmployee(superior, true));
+
                 employeeRepository.save(superior);
             } catch (RuntimeException e) {
                 throw new EmployeeNotFoundException(employee.getSuperiorId(), "SuperiorId");
@@ -191,7 +191,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         boolean isDobValid = validator.isDobValid(employee.getDob());
 
-        boolean isEmailValid = validator.validateEmailFormatEmployee(employee.getEmail());
+        boolean isEmailValid = validator.validateEmailFormatMember(employee.getEmail());
 
         employee.setRole(validator.assumeRoleEmployee(employee, false));
 
@@ -203,47 +203,52 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new EntityNullFieldException(nullFieldEmployee);
 
         else if (!isEmailValid)
-            throw new EmployeeFieldWrongFormatException(EMPLOYEE_EMAIL_WRONG_FORMAT_ERROR);
+            throw new EmployeeFieldWrongFormatException(MEMBER_EMAIL_WRONG_FORMAT_ERROR);
 
         else if (!isDobValid)
             throw new EmployeeFieldWrongFormatException(EMPLOYEE_DOB_WRONG_FORMAT_ERROR);
 
         else if (!isSuperiorIdValid)
             throw new EmployeeFieldWrongFormatException(EMPLOYEE_SUPERIOR_ID_WRONG_FORMAT_ERROR);
+
         else if (isEmployeeExist != null && !isEmployeeExist.getId().equals(employee.getId()))
             throw new EmployeeAlreadyExistException(employee.getEmail());
-        else if (superior == null)
-            throw new EmployeeNotFoundException(employee.getSuperiorId(), "SuperiorId");
-        else
+
+        else {
+            if (employee.getSuperiorId().equals("null"))
+                employee.setSuperiorId("-");
             return employeeRepository.save(employee);
+        }
     }
 
     private boolean isEmployeeHavingSubordinate(String id) {
         this.getEmployee(id);
         Float count = employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(id, "");
-        if (count > 1)
-            return true;
-        else
+        if (count < 1)
             return false;
+        return true;
     }
 
     @Override
     @Transactional
     public String deleteEmployee(List<String> ids) throws RuntimeException {
         for (String id : ids) {
-            Employee employee;
-            boolean isIdValid = validator.validateIdFormatEntity(id, EMPLOYEE_ID_PREFIX);
-                if (!isIdValid)
-                    throw new EmployeeFieldWrongFormatException(ID_WRONG_FORMAT_ERROR);
-                else if (assignmentService.getAssignmentCountByEmployeeId(id).get("pendingAssignmentCount") > 0)
+            Employee employee = employeeRepository.findById(id).get();
+            if (assignmentService.getAssignmentCountByEmployeeId(id).get("pendingAssignmentCount") > 0)
                     throw new EmployeeStillHavePendingAssignmentException();
                 else {
                     try {
-                        employee = employeeRepository.findById(id).get();
-                        if (!this.isEmployeeHavingSubordinate(employee.getSuperiorId())) {
+                        if (!this.isEmployeeHavingSubordinate(employee.getSuperiorId()) &&
+                                !employee.getSuperiorId().equals("null")) {
                             Employee superior = employeeRepository.findById(employee.getSuperiorId()).get();
                             superior.setRole(validator.assumeRoleEmployee(superior, false));
                             employeeRepository.save(superior);
+                        } else if (employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(id, "") > 0) {
+                            List<Employee> listOfEmployee = employeeRepository.findAllBySuperiorId(id);
+                            for (Employee e : listOfEmployee) {
+                                e.setSuperiorId("null");
+                                employeeRepository.save(e);
+                            }
                         }
                     } catch (RuntimeException e) {
                         throw new EmployeeNotFoundException(id, "Id");

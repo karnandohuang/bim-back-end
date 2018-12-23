@@ -11,7 +11,5 @@ public class AssignmentRequest {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String id;
-
-    private String employeeId;
     private List<ItemRequest> items;
 }

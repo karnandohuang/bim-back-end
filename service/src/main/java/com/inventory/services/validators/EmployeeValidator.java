@@ -1,9 +1,9 @@
 package com.inventory.services.validators;
 
-import com.inventory.models.Employee;
+import com.inventory.models.entity.Employee;
 import org.springframework.stereotype.Component;
 
-import static com.inventory.services.ValidationConstant.*;
+import static com.inventory.services.constants.ValidationConstant.*;
 
 @Component
 public class EmployeeValidator extends EntityValidator {
@@ -11,46 +11,37 @@ public class EmployeeValidator extends EntityValidator {
     public String validateNullFieldEmployee(Employee employee) {
         if (employee.getName() == null)
             return EMPLOYEE_NAME_EMPTY;
-        if (employee.getEmail() == null)
-            return EMPLOYEE_EMAIL_EMPTY;
-        if (employee.getPassword() == null && employee.getId() == null)
-            return EMPLOYEE_PASSWORD_EMPTY;
-        if (employee.getDob() == null)
+        else if (employee.getEmail() == null)
+            return MEMBER_EMAIL_EMPTY;
+        else if (employee.getPassword() == null && employee.getId() == null)
+            return MEMBER_PASSWORD_EMPTY;
+        else if (employee.getDob() == null)
             return EMPLOYEE_DOB_EMPTY;
-        if (employee.getDivision() == null)
+        else if (employee.getDivision() == null)
             return EMPLOYEE_DIVISION_EMPTY;
-        if (employee.getPosition() == null)
+        else if (employee.getPosition() == null)
             return EMPLOYEE_POSITION_EMPTY;
         return null;
     }
 
     public boolean isDobValid(String dob) {
-        if (dob.charAt(2) != '/')
+        if (dob.charAt(2) == '/' && dob.charAt(5) == '/')
+            return true;
+        else
             return false;
-        else if (dob.charAt(5) != '/')
-            return false;
-        return true;
     }
 
     public String assumeRoleEmployee(Employee employee, boolean isHavingSubordinate) {
-        if (employee.getId() == null)
+        if (employee.getId() != null && isHavingSubordinate)
+            return "SUPERIOR";
+        else
             return "EMPLOYEE";
-        else {
-            if (!isHavingSubordinate)
-                return "EMPLOYEE";
-            else
-                return "SUPERIOR";
-        }
     }
 
-    public boolean validateEmailFormatEmployee(String email) {
-        if (email == null)
-            return false;
-        else {
-            if (!email.endsWith("@gdn-commerce.com"))
-                return false;
+    public boolean validateEmailFormatMember(String email) {
+        if (email != null && email.endsWith("@gdn-commerce.com"))
             return true;
-        }
+        return false;
     }
 
 
