@@ -10,6 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class EmployeeAssignmentResponse {
     private String assignmentId;
+    private String employeeId;
+    private String employeeName;
     private Item item;
     private String status;
+    private String notes;
 }

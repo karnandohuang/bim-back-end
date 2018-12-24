@@ -75,7 +75,7 @@ public class AssignmentController {
     }
 
     @GetMapping(value = API_PATH_EMPLOYEE_ASSIGNMENT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<List<EmployeeAssignmentResponse>> listOfEmployeeAssignment(
+    public BaseResponse<ListOfEmployeeAssignmentResponse> listOfEmployeeAssignment(
             @AuthenticationPrincipal Principal principal,
             @RequestParam int pageNumber,
             @RequestParam int pageSize,
@@ -96,12 +96,14 @@ public class AssignmentController {
             List<EmployeeAssignmentResponse> listOfEmployeeAssignment = new ArrayList<>();
             for (Assignment assignment : listOfAssignment) {
                 EmployeeAssignmentResponse employeeAssignmentResponse =
-                        helper.getMappedEmployeeAssignmentResponse(assignment, assignment.getItem());
+                        helper.getMappedEmployeeAssignmentResponse(assignment, assignment.getItem(), assignment.getEmployee());
                 listOfEmployeeAssignment.add(employeeAssignmentResponse);
             }
+            ListOfEmployeeAssignmentResponse listResponse = new ListOfEmployeeAssignmentResponse();
+            listResponse.setValue(listOfEmployeeAssignment);
             response = helper.getListBaseResponse(
                     true, "", paging);
-            response.setValue(listOfEmployeeAssignment);
+            response.setValue(listResponse);
         } catch (RuntimeException e) {
             response = helper.getListBaseResponse(
                     false, e.getMessage(), helper.getEmptyPaging());
@@ -133,7 +135,7 @@ public class AssignmentController {
             List<EmployeeAssignmentResponse> listOfEmployeeAssignment = new ArrayList<>();
             for (Assignment assignment : listOfAssignment) {
                 EmployeeAssignmentResponse employeeAssignmentResponse =
-                        helper.getMappedEmployeeAssignmentResponse(assignment, assignment.getItem());
+                        helper.getMappedEmployeeAssignmentResponse(assignment, assignment.getItem(), assignment.getEmployee());
                 listOfEmployeeAssignment.add(employeeAssignmentResponse);
             }
             response = helper.getListBaseResponse(

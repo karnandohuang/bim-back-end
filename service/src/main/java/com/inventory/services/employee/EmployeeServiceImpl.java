@@ -53,7 +53,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public Employee getEmployee(String id) throws EmployeeNotFoundException {
         if (!validator.validateIdFormatEntity(id, EMPLOYEE_ID_PREFIX)) {
-            logger.info("employee id passed is in the wrong format!");
+            logger.info("employee id : " + id + " is in the wrong format!");
             throw new EmployeeFieldWrongFormatException(ID_WRONG_FORMAT_ERROR);
         }
         try {
@@ -71,20 +71,20 @@ public class EmployeeServiceImpl implements EmployeeService {
             logger.info("email passed is in the wrong format!");
             throw new EmployeeFieldWrongFormatException(MEMBER_EMAIL_WRONG_FORMAT_ERROR);
         }
-        try {
-            return employeeRepository.findByEmail(email);
-        } catch (RuntimeException e) {
+        Employee employee = null;
+        employee = employeeRepository.findByEmail(email);
+        if (employee == null) {
             logger.info("error getting employee of email : " + email);
             throw new EmployeeNotFoundException(email, "Email");
         }
+        return employee;
     }
 
     @Override
     public Boolean login(String email, String password) {
         Employee employee;
         try {
-            employee = employeeRepository.findByEmail(
-                    email);
+            employee = employeeRepository.findByEmail(email);
         } catch (RuntimeException e) {
             logger.info("email : " + email + " is wrong. not listed on the database!");
             return false;

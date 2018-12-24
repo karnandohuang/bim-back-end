@@ -21,10 +21,13 @@ public class AssignmentHelper extends ModelHelper {
         return assignmentResponse;
     }
 
-    public EmployeeAssignmentResponse getMappedEmployeeAssignmentResponse(Assignment assignment, Item item) {
+    public EmployeeAssignmentResponse getMappedEmployeeAssignmentResponse(Assignment assignment, Item item, Employee employee) {
         EmployeeAssignmentResponse employeeAssignmentResponse = new EmployeeAssignmentResponse();
         item.setQty(assignment.getQty());
         employeeAssignmentResponse.setItem(item);
+        employeeAssignmentResponse.setNotes(assignment.getNotes());
+        employeeAssignmentResponse.setEmployeeId(employee.getId());
+        employeeAssignmentResponse.setEmployeeName(employee.getName());
         employeeAssignmentResponse.setStatus(assignment.getStatus());
         employeeAssignmentResponse.setAssignmentId(assignment.getId());
         return employeeAssignmentResponse;

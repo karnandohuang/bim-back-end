@@ -37,18 +37,17 @@
         <cglib.version>3.0</cglib.version>
         <orika.version>1.4.6</orika.version>
         <spring.security.version>5.0.8.RELEASE</spring.security.version>
-        <spring.session.version>1.2.2.RELEASE</spring.session.version>
-        <spring.redis.version>1.5.0.RELEASE</spring.redis.version>
         <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
         <itext.version>5.5.10</itext.version>
         <fileupload.version>1.3.2</fileupload.version>
         <swagger.version>2.9.2</swagger.version>
         <jaxb.version>2.2.11</jaxb.version>
         <hibernate.entitymanager.version>5.2.3.Final</hibernate.entitymanager.version>
-        <spring.security.oauth2.version>2.3.3.RELEASE</spring.security.oauth2.version>
         <jjwt.version>0.9.1</jjwt.version>
         <jwt.version>3.4.0</jwt.version>
         <slf4j.version>1.7.25</slf4j.version>
+        <junit.version>4.11</junit.version>
+        <mockito.version>1.10.19</mockito.version>
     </properties>
 
     <dependencyManagement>
@@ -156,21 +155,6 @@
                 <version>${spring.security.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework.security.oauth</groupId>
-                <artifactId>spring-security-oauth2</artifactId>
-                <version>${spring.security.oauth2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.session</groupId>
-                <artifactId>spring-session</artifactId>
-                <version>${spring.session.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.data</groupId>
-                <artifactId>spring-data-redis</artifactId>
-                <version>${spring.redis.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>
                 <version>${javax.servlet.api.version}</version>
@@ -217,6 +201,18 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-log4j12</artifactId>
                 <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-all</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
