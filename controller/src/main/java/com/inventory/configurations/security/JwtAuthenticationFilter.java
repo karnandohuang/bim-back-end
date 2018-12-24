@@ -1,6 +1,7 @@
 package com.inventory.configurations.security;
 
 import com.inventory.services.JwtService;
+import com.inventory.services.MemberDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -15,7 +16,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             authToken = header.replace(TOKEN_PREFIX, "");
             try {
                 username = jwtService.verifyToken(authToken);
-            } catch (IllegalArgumentException | URISyntaxException | IOException e) {
+            } catch (RuntimeException e) {
                 e.printStackTrace();
             }
 
@@ -64,7 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String email = null;
         try {
             email = jwtService.verifyToken(token);
-        } catch (IOException | URISyntaxException e) {
+        } catch (RuntimeException e) {
             e.printStackTrace();
         }
         if (email != null && authentication == null) {

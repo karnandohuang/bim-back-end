@@ -13,8 +13,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.security.Principal;
 
 @Service
@@ -49,7 +47,7 @@ public class MemberServiceImpl implements MemberService {
         if (isAuthenticated) {
             try {
                 return jwtService.generateToken(email);
-            } catch (URISyntaxException | IOException e) {
+            } catch (RuntimeException e) {
                 throw new FailedToLoginException(e.getMessage());
             }
         }

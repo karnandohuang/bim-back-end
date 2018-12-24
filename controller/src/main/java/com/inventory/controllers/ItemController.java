@@ -1,7 +1,7 @@
 package com.inventory.controllers;
 
-import com.inventory.mappers.PdfMapper;
 import com.inventory.mappers.ItemHelper;
+import com.inventory.mappers.PdfMapper;
 import com.inventory.models.Paging;
 import com.inventory.models.entity.Item;
 import com.inventory.services.GeneralMapper;
@@ -13,7 +13,6 @@ import com.inventory.webmodels.responses.item.ItemResponse;
 import com.inventory.webmodels.responses.item.ListOfItemResponse;
 import com.itextpdf.text.DocumentException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -123,15 +122,15 @@ public class ItemController {
         item = itemService.getItem(id);
         byte[] pdf = pdfMapper.getPdf(item);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.parseMediaType("application/pdf"));
-        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-        headers.set("Content-Disposition", "inline");
-        headers.set("filename", "details.pdf");
-        headers.setContentLength(pdf.length);
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.parseMediaType("application/pdf"));
+//        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+//        headers.set("Content-Disposition", "inline");
+//        headers.set("filename", "details.pdf");
+//        headers.setContentLength(pdf.length);
 
 //        BaseResponse<byte[]> response = helper.getPdfBaseResponse(true, pdf);
-        ResponseEntity<byte[]> response = new ResponseEntity<>(pdf, headers, HttpStatus.OK);
+        ResponseEntity<byte[]> response = new ResponseEntity<>(pdf, HttpStatus.OK);
         return response;
     }
 

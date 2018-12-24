@@ -1,8 +1,10 @@
 package com.inventory.configurations.security;
 
 import com.inventory.services.JwtService;
+import com.inventory.services.MemberDetailsService;
 import com.inventory.services.exceptions.auth.JwtAuthenticationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -11,10 +13,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 @Component
+@ComponentScan("com.inventory.services")
 public class JwtAuthenticationProvider implements AuthenticationProvider {
 
     @Autowired
@@ -34,7 +34,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         String email;
         try {
             email = jwtService.verifyToken((String) authentication.getCredentials());
-        } catch (IOException | URISyntaxException e) {
+        } catch (RuntimeException e) {
             throw new JwtAuthenticationException(e.getMessage());
         }
         UserDetails user;

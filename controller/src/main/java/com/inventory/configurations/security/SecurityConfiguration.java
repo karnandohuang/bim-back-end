@@ -19,9 +19,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    private MemberDetailsService memberDetailsService;
-
-    @Autowired
     private JwtAuthenticationProvider authenticationProvider;
 
     @Autowired
@@ -33,7 +30,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http
-                .cors().disable()
+                .cors()
+                .and()
                 .csrf().disable()
                 .httpBasic().disable()
                 .anonymous()

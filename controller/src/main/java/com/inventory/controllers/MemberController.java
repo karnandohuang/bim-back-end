@@ -1,15 +1,12 @@
 package com.inventory.controllers;
 
 import com.inventory.mappers.MemberHelper;
-import com.inventory.services.admin.AdminService;
-import com.inventory.services.employee.EmployeeService;
 import com.inventory.services.member.MemberService;
 import com.inventory.webmodels.requests.member.LoginRequest;
 import com.inventory.webmodels.responses.BaseResponse;
 import com.inventory.webmodels.responses.assignment.AuthenticationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,15 +23,7 @@ public class MemberController {
     private MemberService memberService;
 
     @Autowired
-    private EmployeeService employeeService;
-
-    @Autowired
-    private AdminService adminService;
-
-    @Autowired
     private MemberHelper helper;
-
-    private UserDetails userDetails;
 
     @PostMapping(value = API_PATH_LOGIN, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
