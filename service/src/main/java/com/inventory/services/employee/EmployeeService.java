@@ -1,7 +1,7 @@
 package com.inventory.services.employee;
 
-import com.inventory.models.Employee;
 import com.inventory.models.Paging;
+import com.inventory.models.entity.Employee;
 import com.inventory.services.exceptions.employee.EmployeeNotFoundException;
 
 import javax.transaction.Transactional;
@@ -11,7 +11,7 @@ public interface EmployeeService {
 
     Employee getEmployee(String id) throws EmployeeNotFoundException;
 
-    Employee login(String email, String password);
+    Boolean login(String email, String password);
 
     @Transactional
     List<Employee> getSuperiorList(String superiorId, String name, Paging paging) throws RuntimeException;
