@@ -82,10 +82,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public Boolean login(String email, String password) {
-        Employee employee;
-        try {
-            employee = employeeRepository.findByEmail(email);
-        } catch (RuntimeException e) {
+        Employee employee = null;
+        employee = employeeRepository.findByEmail(email);
+        if (employee == null) {
             logger.info("email : " + email + " is wrong. not listed on the database!");
             return false;
         }
@@ -128,8 +127,10 @@ public class EmployeeServiceImpl implements EmployeeService {
             name = "";
         else if (superiorId == null)
             superiorId = "-";
-        else if (!validator.validateIdFormatEntity(superiorId, EMPLOYEE_ID_PREFIX) && !superiorId.equals("-"))
+        else if (!validator.validateIdFormatEntity(superiorId, EMPLOYEE_ID_PREFIX) && !superiorId.equals("-")) {
+            logger.info("superior id format is wrong!");
             throw new EmployeeFieldWrongFormatException(EMPLOYEE_SUPERIOR_ID_WRONG_FORMAT_ERROR);
+        }
         List<Employee> listOfEmployee;
         PageRequest pageRequest;
         if (paging.getSortedType().matches("desc")) {
@@ -162,6 +163,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         return e;
     }
 
+    private boolean isEmployeeHavingSubordinate(String id) {
+        Float count = employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(id, "");
+        logger.info("employee count for superior : " + id + " is " + count);
+        if (count > 1)
+            return true;
+        return false;
+    }
+
     @Override
     @Transactional
     public Employee saveEmployee(Employee request) throws RuntimeException {
@@ -170,9 +179,17 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         Employee employee;
 
-        if (request.getId() != null)
-
+        if (request.getId() != null) {
+            employee = this.getEmployee(request.getId());
+            if (!this.isEmployeeHavingSubordinate(employee.getSuperiorId()) &&
+                    !employee.getSuperiorId().equals("-")) {
+                Employee superior = employeeRepository.findById(employee.getSuperiorId()).get();
+                superior.setRole(validator.assumeRoleEmployee(superior, false));
+                employeeRepository.save(superior);
+                logger.info("Superior : " + employee.getSuperiorId() + " changed to employee role");
+            }
             employee = editEmployee(request);
+        }
 
         else {
             employee = request;
@@ -234,13 +251,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
     }
 
-    private boolean isEmployeeHavingSubordinate(String id) {
-        Float count = employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(id, "");
-        if (count < 1)
-            return false;
-        return true;
-    }
-
     @Override
     @Transactional
     public String deleteEmployee(List<String> ids) throws RuntimeException {
@@ -255,7 +265,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                             Employee superior = employeeRepository.findById(employee.getSuperiorId()).get();
                             superior.setRole(validator.assumeRoleEmployee(superior, false));
                             employeeRepository.save(superior);
-                            logger.info("Superior of employee : " + id + " changed to employee role");
+                            logger.info("Superior : " + employee.getSuperiorId() + " changed to employee role");
                         } else if (employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(id, "") > 0) {
                             List<Employee> listOfEmployee = employeeRepository.findAllBySuperiorId(id);
                             for (Employee e : listOfEmployee) {

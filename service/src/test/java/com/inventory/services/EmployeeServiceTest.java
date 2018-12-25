@@ -15,8 +15,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Optional;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EmployeeServiceTest {
@@ -43,6 +44,11 @@ public class EmployeeServiceTest {
     private GeneralMapper mapper;
 
     private Employee employee = new Employee();
+
+    private void setEmployee() {
+        employee.setId("EM039");
+        employee.setEmail("karnando@gdn-commerce.com");
+    }
 
     @Test
     public void getEmployeeIdValidSuccess() {
@@ -100,10 +106,10 @@ public class EmployeeServiceTest {
 
     @Test
     public void getEmployeeEmailNotValidFailed() {
-        mockValidateEmail(false, "stelli@gn-commerce.com");
-        mockFindEmployeeByEmail(false, "stelli@gn-commerce.com");
+        mockValidateEmail(false, "karnando@gn-commerce.com");
+        mockFindEmployeeByEmail(false, "karnando@gn-commerce.com");
         try {
-            employeeService.getEmployeeByEmail("stelli@gn-commerce.com");
+            employeeService.getEmployeeByEmail("karnando@gn-commerce.com");
         } catch (RuntimeException e) {
         }
     }
@@ -112,13 +118,29 @@ public class EmployeeServiceTest {
     public void loginEmployeeEmailValidAndPasswordMatchSuccess() {
         mockValidateEmail(true, "karnando@gdn-commerce.com");
         mockFindEmployeeByEmail(true, "karnando@gdn-commerce.com");
-//        mockMatchPassword(true, "karnando", "karnando");
-        try {
-            employeeService.login("karnando@gdn-commerce.com", "karnando");
-        } catch (RuntimeException e) {
-            verify(employeeRepository).findByEmail("karnando@gdn-commerce.com");
-        }
+        mockLoginEmployee(true);
+        assertTrue(employeeService.login("karnando@gdn-commerce.com", "karnando"));
+        verify(employeeRepository, atLeast(2)).findByEmail("karnando@gdn-commerce.com");
+    }
 
+    @Test
+    public void loginEmployeeEmailValidAndPasswordNotMatchFailed() {
+        mockValidateEmail(true, "karnando@gdn-commerce.com");
+        mockFindEmployeeByEmail(true, "karnando@gdn-commerce.com");
+        mockLoginEmployee(false);
+        assertFalse(employeeService.login("karnando@gdn-commerce.com", "karnando"));
+        verify(employeeRepository, atLeast(2)).findByEmail("karnando@gdn-commerce.com");
+    }
+
+    @Test
+    public void loginEmployeeEmailValidNotFoundFailed() {
+        mockValidateEmail(true, "karnandoa@gdn-commerce.com");
+        mockFindEmployeeByEmail(false, "karnandoa@gdn-commerce.com");
+        try {
+            employeeService.login("karnandoa@gdn-commerce.com", "karnando");
+        } catch (RuntimeException e) {
+            verify(employeeRepository).findByEmail("karnandoa@gdn-commerce.com");
+        }
     }
 
     private void mockFindEmployeeById(boolean found) {
@@ -137,6 +159,11 @@ public class EmployeeServiceTest {
         else
             when(employeeRepository.findByEmail(email))
                     .thenReturn(null);
+    }
+
+    private void mockLoginEmployee(boolean valid) {
+        when(employeeService.login("karnando@gdn-commerce.com", "karnando"))
+                .thenReturn(valid ? true : false);
     }
 
     private void mockValidateId(boolean valid, String id) {
