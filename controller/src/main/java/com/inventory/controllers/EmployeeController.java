@@ -47,8 +47,6 @@ public class EmployeeController {
             @RequestParam(required = false) String sortedType
     ) {
         Paging paging = helper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
-        if (name == null)
-            name = "";
         ListOfEmployeeResponse list =
                 new ListOfEmployeeResponse(employeeService.getEmployeeList(name, paging));
         BaseResponse<ListOfEmployeeResponse> response = helper.getListBaseResponse(true, "", paging);
