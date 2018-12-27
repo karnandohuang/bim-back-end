@@ -13,12 +13,14 @@ import com.inventory.webmodels.responses.item.ItemResponse;
 import com.inventory.webmodels.responses.item.ListOfItemResponse;
 import com.itextpdf.text.DocumentException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import static com.inventory.webmodels.API_PATH.*;
@@ -117,21 +119,19 @@ public class ItemController {
     }
 
     @GetMapping(value = API_PATH_GET_ITEM_DETAIL_PDF, produces = MediaType.APPLICATION_PDF_VALUE)
-    public ResponseEntity<byte[]> getPdf(@PathVariable String id) throws DocumentException {
+    public ResponseEntity<InputStreamResource> getPdf(@PathVariable String id) throws DocumentException {
         Item item;
         item = itemService.getItem(id);
-        byte[] pdf = pdfMapper.getPdf(item);
-
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.parseMediaType("application/pdf"));
-//        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-//        headers.set("Content-Disposition", "inline");
-//        headers.set("filename", "details.pdf");
-//        headers.setContentLength(pdf.length);
+        ByteArrayInputStream inputStream = pdfMapper.getPdf(item);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+        headers.set("Content-Disposition", "inline");
+        headers.set("filename", "details.pdf");
 
 //        BaseResponse<byte[]> response = helper.getPdfBaseResponse(true, pdf);
-        ResponseEntity<byte[]> response = new ResponseEntity<>(pdf, HttpStatus.OK);
-        return response;
+        return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_PDF)
+                .body(new InputStreamResource(inputStream));
     }
 
 

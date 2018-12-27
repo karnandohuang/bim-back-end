@@ -5,16 +5,17 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfWriter;
 import org.springframework.stereotype.Component;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Calendar;
 
 @Component
 public class PdfMapper {
 
-    public byte[] getPdf(Item item) throws DocumentException{
+    public ByteArrayInputStream getPdf(Item item) throws DocumentException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Document document = new Document(PageSize.LETTER);
-        PdfWriter.getInstance(document, byteArrayOutputStream);
+        PdfWriter writer = PdfWriter.getInstance(document, byteArrayOutputStream);
         document.open();
 
         //insert header
@@ -33,22 +34,20 @@ public class PdfMapper {
         chapter.add(new Paragraph(item.getLocation(), paragraphFont));
 
 
-//        //insert image
+        //insert image
 //        Path path = null;
 //        Image img = null;
 //        try {
-//            path = Paths.get(ClassLoader.getSystemResource("Java_logo.png").toURI());
-//            img = Image.getInstance(path.toAbsolutePath().toString());
+//            path = Paths.get(ClassLoader.getSystemResource(item.getImageUrl()).toURI());
+//            img = Image.getInstance(item.getImageUrl());
 //        } catch (IOException | NullPointerException | URISyntaxException e) {
 //            e.printStackTrace();
 //        }
 //        document.add(img);
 
         document.add(chapter);
-        byte[] pdf = byteArrayOutputStream.toByteArray();
         document.close();
-
-        return pdf;
+        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
     }
 
 }
