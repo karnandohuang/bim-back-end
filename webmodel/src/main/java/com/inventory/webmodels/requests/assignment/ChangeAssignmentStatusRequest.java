@@ -9,6 +9,7 @@ import java.util.List;
 public class ChangeAssignmentStatusRequest {
     private List<String> ids;
     private String status;
+    private String employeeId;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String notes;

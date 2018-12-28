@@ -226,19 +226,16 @@ public class AssignmentController {
             consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     public BaseResponse<ChangeAssignmentStatusResponse> changeStatus(
-            @RequestBody ChangeAssignmentStatusRequest AssignmentBody,
-            @AuthenticationPrincipal Principal principal) {
+            @RequestBody ChangeAssignmentStatusRequest assignmentBody) {
         BaseResponse<ChangeAssignmentStatusResponse> response;
-        Assignment Assignment = generalMapper.map(AssignmentBody, Assignment.class);
+        Assignment assignment = generalMapper.map(assignmentBody, Assignment.class);
         Map<String, Integer> listOfRecoveredItems;
         try {
-            UserDetails userDetails = memberService.getLoggedInUser(principal);
-            String employeeId = employeeService.getEmployeeByEmail(userDetails.getUsername()).getId();
-            String success = assignmentService.changeStatusAssignments(AssignmentBody.getIds(),
-                    Assignment.getStatus(), Assignment.getNotes(), employeeId);
+            String success = assignmentService.changeStatusAssignments(assignmentBody.getIds(),
+                    assignment.getStatus(), assignment.getNotes(), assignmentBody.getEmployeeId());
             String successItem = "";
-            if (Assignment.getStatus().equals("Rejected")) {
-                listOfRecoveredItems = assignmentService.getRecoveredItems(AssignmentBody.getIds());
+            if (assignment.getStatus().equals("Rejected")) {
+                listOfRecoveredItems = assignmentService.getRecoveredItems(assignmentBody.getIds());
                 successItem = itemService.recoverItemQty(listOfRecoveredItems);
             }
             response = helper.getBaseResponse(true, "");

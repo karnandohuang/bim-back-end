@@ -14,12 +14,12 @@ import com.inventory.webmodels.responses.item.ListOfItemResponse;
 import com.itextpdf.text.DocumentException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
@@ -75,6 +75,7 @@ public class ItemController {
 
     @RequestMapping(value = API_PATH_ITEMS, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE, method = {RequestMethod.POST, RequestMethod.PUT})
+    @Transactional
     public BaseResponse<ItemResponse> saveItem(@RequestBody ItemRequest request) {
         Item item = generalMapper.map(request, Item.class);
         BaseResponse<ItemResponse> response;
@@ -91,9 +92,11 @@ public class ItemController {
 
     @PostMapping(value = API_PATH_UPLOAD_IMAGE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
     public BaseResponse<String> uploadFile(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("itemId") String itemId
+            @RequestParam("itemId") String itemId,
+            HttpServletRequest request
     ) {
         BaseResponse<String> response;
         try {
@@ -107,6 +110,7 @@ public class ItemController {
 
     @DeleteMapping(value = API_PATH_ITEMS, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
     public BaseResponse<String> deleteItem(@RequestBody DeleteRequest request) {
         BaseResponse<String> response;
         try {
@@ -129,9 +133,18 @@ public class ItemController {
         headers.set("Content-Disposition", "inline");
         headers.set("filename", "details.pdf");
 
-//        BaseResponse<byte[]> response = helper.getPdfBaseResponse(true, pdf);
         return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_PDF)
                 .body(new InputStreamResource(inputStream));
+    }
+
+    @RequestMapping(value = "/items/image", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<byte[]> getImageAsResponseEntity(@RequestParam String imagePath) {
+        HttpHeaders headers = new HttpHeaders();
+        byte[] media = itemService.getItemImage(imagePath);
+        headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+
+        ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(media, headers, HttpStatus.OK);
+        return responseEntity;
     }
 
 

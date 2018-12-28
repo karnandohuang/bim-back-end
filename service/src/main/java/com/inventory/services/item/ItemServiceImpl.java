@@ -10,6 +10,8 @@ import com.inventory.services.exceptions.EntityNullFieldException;
 import com.inventory.services.exceptions.item.*;
 import com.inventory.services.helper.PagingHelper;
 import com.inventory.services.validators.ItemValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -21,6 +23,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -47,6 +50,8 @@ public class ItemServiceImpl implements ItemService {
     private PagingHelper pagingHelper;
 
     private final static String ITEM_ID_PREFIX = "IM";
+
+    private final static Logger logger = LoggerFactory.getLogger(ItemServiceImpl.class);
 
     @Override
     @Transactional
@@ -84,33 +89,37 @@ public class ItemServiceImpl implements ItemService {
         return listOfItem;
     }
 
-
-
-    private Item editItem(Item request) {
-        this.getItem(request.getId());
-        return mapper.map(request, Item.class);
-    }
-
     @Override
     @Transactional
     public Item saveItem(Item request) throws RuntimeException {
 
-        String nullFieldItem = validator.validateNullFieldItem(request);
-
         Item item;
 
+        String nullFieldItem = validator.validateNullFieldItem(request);
+        ;
+
         if (request.getId() != null) {
-            item = editItem(request);
+            logger.info("edit item");
+            item = mapper.map(request, Item.class);
+            logger.info("editing item of id : " + item.getId());
         } else {
             item = request;
         }
 
-        if (item.getImageUrl() == null)
+        logger.info("info of item to be saved : " + item.getName());
+
+        if (item.getImageUrl() == null) {
             item.setImageUrl("null");
+            logger.info("image url is null");
+        }
 
         boolean isIdValid = true;
 
+        logger.info("image url : " + item.getImageUrl());
+
         boolean isImageUrlValid = validator.validateImageUrlItem(item.getImageUrl());
+
+        logger.info("checking all validation!");
 
         if (item.getId() != null)
             isIdValid = validator.validateIdFormatEntity(item.getId(), ITEM_ID_PREFIX);
@@ -186,17 +195,21 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public String uploadFile(MultipartFile file, String itemId) throws RuntimeException {
+        logger.info("uploading item image!");
         Item item;
         item = this.getItem(itemId);
+        logger.info(item.getName());
         Calendar cal = Calendar.getInstance();
-        File createdDir = new File("/Users/karnandohuang/Documents/Projects/blibli-inventory-system/bim-back-end/" +
+        logger.info("month : " + (cal.get(cal.MONTH) + 1));
+        File createdDir = new File("C:\\Users\\olive\\Desktop\\bim-back-end\\resources\\" +
                 cal.get(cal.YEAR) + "/" + (cal.get(cal.MONTH) + 1) + "/" + itemId);
         File convertFile = new File(createdDir.getAbsolutePath() + "/" +
                 file.getOriginalFilename());
         try {
             if (!convertFile.exists())
-            convertFile.getParentFile().mkdirs();
+                createdDir.mkdirs();
             else
                 convertFile.createNewFile();
         } catch (Exception e) {
@@ -219,8 +232,25 @@ public class ItemServiceImpl implements ItemService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        logger.info("setting up image url in item! image url : " + convertFile.getAbsolutePath());
+        item.setAssignmentList(null);
         item.setImageUrl(convertFile.getAbsolutePath());
+        logger.info("saving item!");
         this.saveItem(item);
         return "Upload image success";
+    }
+
+    @Override
+    public byte[] getItemImage(String path) {
+        File file = new File(path);
+        if (!file.exists())
+            throw new ImagePathWrongException();
+
+        try {
+            return Files.readAllBytes(file.toPath());
+        } catch (IOException e) {
+            logger.info("error getting image from path : " + path);
+            return new byte[0];
+        }
     }
 }

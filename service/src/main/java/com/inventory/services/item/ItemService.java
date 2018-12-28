@@ -19,9 +19,11 @@ public interface ItemService {
 
     String deleteItem(List<String> ids);
 
-    String uploadFile(MultipartFile file, String itemSku);
+    String uploadFile(MultipartFile file, String itemId);
 
     Item changeItemQty(Assignment assignment);
 
     String recoverItemQty(Map<String, Integer> listOfRecoveredItems);
+
+    byte[] getItemImage(String path);
 }
