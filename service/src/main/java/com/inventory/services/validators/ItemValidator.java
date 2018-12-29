@@ -11,7 +11,7 @@ import static com.inventory.services.constants.ValidationConstant.*;
 public class ItemValidator extends EntityValidator {
 
     public boolean validateImageUrlItem(String url) {
-        if (url != null && !url.equals("null") && new File(url).exists())
+        if ((url != null && !url.equals("null") && new File(url).exists()) || url == null || url.equals("null"))
             return true;
         return false;
     }
