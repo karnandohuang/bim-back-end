@@ -1,5 +1,6 @@
 package com.inventory.services;
 
+import com.inventory.models.Paging;
 import com.inventory.models.entity.Admin;
 import com.inventory.repositories.AdminRepository;
 import com.inventory.services.admin.AdminServiceImpl;
@@ -7,11 +8,16 @@ import com.inventory.services.utils.GeneralMapper;
 import com.inventory.services.utils.validators.AdminValidator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
@@ -36,6 +42,9 @@ public class AdminServiceTest {
     @InjectMocks
     private AdminServiceImpl adminService;
 
+    private Paging paging = new Paging();
+    private List<Admin> adminList = mock(ArrayList.class);
+    private Page<Admin> adminPageList = mock(Page.class);
 
     @Test
     public void getAdminIdValidSuccess() {
@@ -123,6 +132,34 @@ public class AdminServiceTest {
     }
 
     @Test
+    public void findAdminAndPagingAscSuccess(){
+        setPaging("asc");
+
+        mockAdminList();
+        mockCountTotalRecord();
+        ArgumentCaptor<Pageable> pageArgument = ArgumentCaptor.forClass(Pageable.class);
+
+        List<Admin> listOfAdmin = adminService.getAdminList(paging);;
+
+        verify(adminRepository).findAll(pageArgument.capture());
+        verify(adminRepository).count();
+    }
+
+    @Test
+    public void findAdminAndPagingDescSuccess(){
+        setPaging("desc");
+
+        mockAdminList();
+        mockCountTotalRecord();
+        ArgumentCaptor<Pageable> pageArgument = ArgumentCaptor.forClass(Pageable.class);
+
+        List<Admin> listOfAdmin = adminService.getAdminList(paging);;
+
+        verify(adminRepository).findAll(pageArgument.capture());
+        verify(adminRepository).count();
+    }
+
+    @Test
     public void loginAdminEmailValidAndPasswordMatchSuccess() {
         mockValidateEmail(true, "admin2@gdn-commerce.com");
         mockFindAdminByEmail(true, "admin2@gdn-commerce.com");
@@ -166,6 +203,162 @@ public class AdminServiceTest {
         }
     }
 
+    @Test
+    public void insertAdminEmailValidPasswordNotNullSuccess() {
+        Admin admin = setAdminWithEmailAndPassword("admin@gdn-commerce.com", "admin");
+
+        mockFindAdminByEmail(false, "admin@gdn-commerce.com");
+        mockValidateEmail(true, "admin@gdn-commerce.com");
+        adminService.saveAdmin(admin);
+
+        verify(validator).validateNullFieldAdmin(admin);
+        verify(validator).validateEmailFormatMember("admin@gdn-commerce.com");
+        verify(adminRepository).findByEmail("admin@gdn-commerce.com");
+        verify(adminRepository).save(admin);
+        verifyNoMoreInteractions(validator);
+        verifyNoMoreInteractions(adminRepository);
+    }
+
+    @Test
+    public void insertAdminEmailValidPasswordNullFailed() {
+        Admin admin = setAdminWithEmailAndPassword("admin@gdn-commerce.com", null);
+
+        mockFindAdminByEmail(false, "admin@gdn-commerce.com");
+        mockValidateEmail(true, "admin@gdn-commerce.com");
+        mockNullFieldAdminFound(true);
+
+        try {
+            adminService.saveAdmin(admin);
+        } catch (RuntimeException e){
+            verify(validator).validateNullFieldAdmin(admin);
+            verify(validator).validateEmailFormatMember("admin@gdn-commerce.com");
+            verify(adminRepository).findByEmail("admin@gdn-commerce.com");
+            verifyNoMoreInteractions(validator);
+            verifyNoMoreInteractions(adminRepository);
+        }
+    }
+
+    @Test
+    public void insertAdminEmailNotValidPasswordNotNullFailed(){
+        Admin admin = setAdminWithEmailAndPassword("admin@gn-commerce.com", null);
+
+        mockFindAdminByEmail(false, "admin@gn-commerce.com");
+        mockValidateEmail(false, "admin@gn-commerce.com");
+
+        try {
+            adminService.saveAdmin(admin);
+        } catch (RuntimeException e){
+            verify(validator).validateNullFieldAdmin(admin);
+            verify(validator).validateEmailFormatMember("admin@gn-commerce.com");
+            verify(adminRepository).findByEmail("admin@gn-commerce.com");
+            verifyNoMoreInteractions(validator);
+            verifyNoMoreInteractions(adminRepository);
+        }
+    }
+
+    @Test
+    public void insertAdminEmailValidFoundPasswordNotNullFailed(){
+        Admin admin = setAdminWithEmailAndPassword("admin@gdn-commerce.com", "admin");
+
+        mockFindAdminByEmail(true, "admin@gdn-commerce.com");
+        mockValidateEmail(true, "admin@gdn-commerce.com");
+
+        try {
+            adminService.saveAdmin(admin);
+        } catch (RuntimeException e){
+            verify(validator).validateNullFieldAdmin(admin);
+            verify(validator).validateEmailFormatMember("admin@gdn-commerce.com");
+            verify(adminRepository).findByEmail("admin@gdn-commerce.com");
+            verifyNoMoreInteractions(validator);
+            verifyNoMoreInteractions(adminRepository);
+        }
+    }
+
+    @Test
+    public void editAdminEmailValidPasswordNotNullSuccess(){
+        Admin admin = setAdminWithIdEmailAndPassword("AD002","admin@gdn-commerce.com", "admin");
+        mockFindAdminById(true, "AD002");
+        mockFindAdminByEmail(true,"admin@gdn-commerce.com");
+        mockValidateEmail(true, "admin@gdn-commerce.com");
+        mockValidateId(true, "AD002");
+        mockMapAdmin(false, admin);
+        adminService.saveAdmin(admin);
+
+        verify(validator).validateEmailFormatMember("admin@gdn-commerce.com");
+        verify(validator).validateIdFormatEntity("AD002", "AD");
+        verify(validator).validateNullFieldAdmin(admin);
+        verify(adminRepository).findByEmail("admin@gdn-commerce.com");
+        verify(adminRepository).findById("AD002");
+        verify(adminRepository).save(admin);
+        verifyNoMoreInteractions(validator);
+        verifyNoMoreInteractions(adminRepository);
+    }
+
+    @Test
+    public void deleteAdminByListOfIdSuccess(){
+        List<String> ids = new ArrayList<>();
+        ids.add("AD001");
+
+        mockValidateId(true, ids.get(0));
+        mockFindAdminById(true, ids.get(0));
+        assertEquals("Delete success!", adminService.deleteAdmin(ids));
+
+        verify(validator).validateIdFormatEntity(ids.get(0), "AD");
+        verify(adminRepository).findById(ids.get(0));
+        verify(adminRepository).deleteById(ids.get(0));
+        verifyNoMoreInteractions(adminRepository);
+        verifyNoMoreInteractions(validator);
+    }
+
+    @Test public void deleteAdminByListOfIdNotFoundFailed(){
+        List<String> ids = new ArrayList<>();
+        ids.add("AD001");
+
+        mockValidateId(true, ids.get(0));
+        mockFindAdminById(false, ids.get(0));
+
+        try {
+            adminService.deleteAdmin(ids);
+        } catch (RuntimeException e){
+            verify(validator).validateIdFormatEntity(ids.get(0), "AD");
+            verify(adminRepository).findById(ids.get(0));
+            verifyNoMoreInteractions(adminRepository);
+            verifyNoMoreInteractions(validator);
+        }
+    }
+
+    @Test
+    public void deleteAdminByListOfIdNotValidNotFoundFailed(){
+        List<String> ids = new ArrayList<>();
+        ids.add("AE001");
+
+        mockValidateId(false, ids.get(0));
+        mockFindAdminById(false, ids.get(0));
+
+        try {
+            adminService.deleteAdmin(ids);
+        } catch (RuntimeException e){
+            verify(validator).validateIdFormatEntity(ids.get(0), "AD");
+            verifyZeroInteractions(adminRepository);
+            verifyNoMoreInteractions(validator);
+        }
+    }
+
+    private Admin setAdminWithIdEmailAndPassword(String id, String email, String password) {
+        Admin admin = new Admin();
+        admin.setId(id);
+        admin.setEmail(email);
+        admin.setPassword(password);
+        return admin;
+    }
+
+    private Admin setAdminWithEmailAndPassword(String email, String password) {
+        Admin admin = new Admin();
+        admin.setEmail(email);
+        admin.setPassword(password);
+        return admin;
+    }
+
     private Admin setAdminWithId() {
         Admin admin = new Admin();
         admin.setId("AD002");
@@ -204,5 +397,33 @@ public class AdminServiceTest {
     private void mockLoginAdmin(boolean valid) {
         when(adminService.login("admin2@gdn-commerce.com", "admin2"))
                 .thenReturn(valid);
+    }
+
+    private void mockNullFieldAdminFound(boolean found) {
+        when(validator.validateNullFieldAdmin(any(Admin.class)))
+                .thenReturn(found ? "something" : null);
+    }
+
+    private void mockMapAdmin(boolean isNull, Admin a){
+        when(mapper.map(a, Admin.class))
+                .thenReturn(isNull ? null : a);
+    }
+
+    private void mockAdminList(){
+        when(adminRepository.findAll(any(Pageable.class)))
+                .thenReturn(adminPageList);
+
+    }
+
+    private void mockCountTotalRecord(){
+        when(adminRepository.count())
+                .thenReturn((long) 2);
+    }
+
+    private void setPaging(String sortedType){
+        this.paging.setPageNumber(1);
+        this.paging.setPageSize(3);
+        this.paging.setSortedBy("updatedDate");
+        this.paging.setSortedType(sortedType);
     }
 }

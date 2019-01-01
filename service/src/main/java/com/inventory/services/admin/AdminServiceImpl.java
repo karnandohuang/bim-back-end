@@ -95,7 +95,7 @@ public class AdminServiceImpl implements AdminService {
                     paging.getSortedBy());
         }
         listOfAdmin = adminRepository.findAll(pageRequest).getContent();
-        float totalRecords = adminRepository.count();
+        float totalRecords = (float) adminRepository.count();
         setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfAdmin;
     }
