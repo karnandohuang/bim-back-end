@@ -1,11 +1,11 @@
 package com.inventory.controllers;
 
-import com.inventory.mappers.EmployeeHelper;
+import com.inventory.helpers.EmployeeHelper;
 import com.inventory.models.Paging;
 import com.inventory.models.entity.Employee;
-import com.inventory.services.GeneralMapper;
 import com.inventory.services.employee.EmployeeService;
-import com.inventory.services.exceptions.employee.EmployeeNotFoundException;
+import com.inventory.services.utils.GeneralMapper;
+import com.inventory.services.utils.exceptions.employee.EmployeeNotFoundException;
 import com.inventory.webmodels.requests.DeleteRequest;
 import com.inventory.webmodels.requests.employee.EmployeeRequest;
 import com.inventory.webmodels.responses.BaseResponse;

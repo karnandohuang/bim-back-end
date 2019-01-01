@@ -1,15 +1,15 @@
 package com.inventory.controllers;
 
-import com.inventory.mappers.AssignmentHelper;
+import com.inventory.helpers.AssignmentHelper;
 import com.inventory.models.Paging;
 import com.inventory.models.entity.Assignment;
 import com.inventory.models.entity.Employee;
 import com.inventory.models.entity.Item;
-import com.inventory.services.GeneralMapper;
 import com.inventory.services.assignment.AssignmentService;
 import com.inventory.services.employee.EmployeeService;
 import com.inventory.services.item.ItemService;
 import com.inventory.services.member.MemberService;
+import com.inventory.services.utils.GeneralMapper;
 import com.inventory.webmodels.requests.assignment.AssignmentRequest;
 import com.inventory.webmodels.requests.assignment.ChangeAssignmentStatusRequest;
 import com.inventory.webmodels.requests.item.ItemRequest;
@@ -22,7 +22,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,13 +58,13 @@ public class AssignmentController {
             @RequestParam(required = false) String sortedBy,
             @RequestParam(required = false) String sortedType,
             @RequestParam(required = false) String filterStatus
-    ) throws IOException {
+    ) {
         Paging paging = helper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         List<Assignment> listOfAssignment = assignmentService.getAssignmentList(filterStatus, paging);
         List<AssignmentResponse> listOfAssignmentResponse = new ArrayList<>();
         for (Assignment assignment : listOfAssignment) {
-            AssignmentResponse AssignmentResponse = helper.getMappedAssignmentResponse(assignment);
-            listOfAssignmentResponse.add(AssignmentResponse);
+            AssignmentResponse assignmentResponse = helper.getMappedAssignmentResponse(assignment);
+            listOfAssignmentResponse.add(assignmentResponse);
         }
         ListOfAssignmentResponse list = new ListOfAssignmentResponse(listOfAssignmentResponse);
         BaseResponse<ListOfAssignmentResponse> response =
@@ -82,13 +81,12 @@ public class AssignmentController {
             @RequestParam(required = false) String sortedBy,
             @RequestParam(required = false) String sortedType,
             @RequestParam(required = false) String filterStatus
-    ) throws IOException {
+    ) {
         Paging paging = helper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         BaseResponse response;
         try {
             UserDetails member = memberService.getLoggedInUser(principal);
             Employee employee = employeeService.getEmployeeByEmail(member.getUsername());
-            System.out.println(employee.getId());
             List<Assignment> listOfAssignment = assignmentService.getEmployeeAssignmentList(
                     employee.getId(),
                     filterStatus,
@@ -121,13 +119,12 @@ public class AssignmentController {
             @RequestParam(required = false) String sortedBy,
             @RequestParam(required = false) String sortedType,
             @RequestParam(required = false) String filterStatus
-    ) throws IOException {
+    ) {
         Paging paging = helper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         BaseResponse response;
         try {
             UserDetails member = memberService.getLoggedInUser(principal);
             Employee employee = employeeService.getEmployeeByEmail(member.getUsername());
-            System.out.println(employee.getId());
             List<Assignment> listOfAssignment = assignmentService.getEmployeeSuperiorAssignmentList(
                     employee.getId(),
                     filterStatus,
@@ -151,7 +148,7 @@ public class AssignmentController {
     }
 
     @GetMapping(value = API_PATH_GET_ASSIGNMENT_COUNT_BY_EMPLOYEE_ID_AND_STATUS, produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<AssignmentCountResponse> getAssignmentCount(@AuthenticationPrincipal Principal principal) throws IOException {
+    public BaseResponse<AssignmentCountResponse> getAssignmentCount(@AuthenticationPrincipal Principal principal) {
         BaseResponse response;
         UserDetails member = memberService.getLoggedInUser(principal);
         if (memberService.getMemberRole(member.getUsername()).equals("ADMIN")) {
@@ -178,7 +175,7 @@ public class AssignmentController {
     }
 
     @GetMapping(value = API_PATH_API_ASSIGNMENT_BY_ID, produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<AssignmentResponse> getAssignment(@PathVariable String id) throws IOException {
+    public BaseResponse<AssignmentResponse> getAssignment(@PathVariable String id) {
         BaseResponse response;
         try {
             response = helper.getBaseResponse(true, "");
@@ -211,7 +208,7 @@ public class AssignmentController {
             } catch (RuntimeException e) {
                 return helper.getStandardBaseResponse(false, e.getMessage());
             }
-            Assignment rb = helper.getMappedAssignment(requestBody, employee, item, qty);
+            Assignment rb = helper.getMappedAssignment(employee, item, qty);
             try {
                 itemService.changeItemQty(rb);
                 assignmentService.saveAssignment(rb);

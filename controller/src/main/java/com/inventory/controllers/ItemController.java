@@ -1,11 +1,11 @@
 package com.inventory.controllers;
 
-import com.inventory.mappers.ItemHelper;
-import com.inventory.mappers.PdfMapper;
+import com.inventory.helpers.ItemHelper;
+import com.inventory.helpers.PdfMapper;
 import com.inventory.models.Paging;
 import com.inventory.models.entity.Item;
-import com.inventory.services.GeneralMapper;
 import com.inventory.services.item.ItemService;
+import com.inventory.services.utils.GeneralMapper;
 import com.inventory.webmodels.requests.DeleteRequest;
 import com.inventory.webmodels.requests.item.ItemRequest;
 import com.inventory.webmodels.responses.BaseResponse;
@@ -21,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 
 import static com.inventory.webmodels.API_PATH.*;
 
@@ -42,13 +41,13 @@ public class ItemController {
     private PdfMapper pdfMapper;
 
     @GetMapping(value = API_PATH_ITEMS, produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<ListOfItemResponse> ListOfItem(
+    public BaseResponse<ListOfItemResponse> getListItem(
             @RequestParam(required = false) String name,
             @RequestParam int pageNumber,
             @RequestParam int pageSize,
             @RequestParam(required = false) String sortedBy,
             @RequestParam(required = false) String sortedType
-    ) throws IOException {
+    ) {
         Paging paging = helper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         if (name == null)
             name = "";
@@ -59,7 +58,7 @@ public class ItemController {
     }
 
     @GetMapping(value = API_PATH_GET_ITEM, produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<ItemResponse> getItem(@PathVariable String id) throws IOException {
+    public BaseResponse<ItemResponse> getItem(@PathVariable String id) {
         Item item;
         BaseResponse<ItemResponse> response;
         try {
@@ -137,14 +136,13 @@ public class ItemController {
                 .body(new InputStreamResource(inputStream));
     }
 
-    @RequestMapping(value = "/items/image", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+    @GetMapping(value = API_PATH_ITEMS_GET_IMAGE, produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> getImageAsResponseEntity(@RequestParam String imagePath) {
         HttpHeaders headers = new HttpHeaders();
         byte[] media = itemService.getItemImage(imagePath);
         headers.setCacheControl(CacheControl.noCache().getHeaderValue());
 
-        ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(media, headers, HttpStatus.OK);
-        return responseEntity;
+        return new ResponseEntity<>(media, headers, HttpStatus.OK);
     }
 
 

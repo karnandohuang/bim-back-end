@@ -16,8 +16,7 @@ public interface AssignmentService {
     List<Assignment> getEmployeeAssignmentList(String employeeId, String filterStatus, Paging paging);
 
     @Transactional
-    List<Assignment> getEmployeeSuperiorAssignmentList(String superiorId, String filterStatus, Paging paging)
-            throws RuntimeException;
+    List<Assignment> getEmployeeSuperiorAssignmentList(String superiorId, String filterStatus, Paging paging);
 
     Map<String, Double> getAssignmentCountByEmployeeId(String employeeId);
 

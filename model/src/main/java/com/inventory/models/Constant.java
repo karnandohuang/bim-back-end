@@ -11,7 +11,7 @@ public class Constant {
     public static final String SCHEMA_NAME = "public";
 
     public static final String MEMBER_COLUMN_NAME_EMAIL = "email";
-    public static final String MEMBER_COLUMN_NAME_PASSWORD = "password";
+    public static final String MEMBER_COLUMN_NAME_PASSCODE = "password";
 
     public static final String COLUMN_NAME_ID = "id";
     public static final String EMPLOYEE_COLUMN_NAME_SUPERIOR_ID = "superiorId";
@@ -37,6 +37,10 @@ public class Constant {
     public static final String COLUMN_NAME_UPDATED_DATE = "updateddate";
     public static final String COLUMN_NAME_CREATED_BY = "createdby";
     public static final String COLUMN_NAME_UPDATED_BY = "updatedby";
+
+    public static final String DATABASE_URL = "jdbc:postgresql://localhost:5432/inventory";
+    public static final String DATABASE_USERNAME = "bim";
+    public static final String DATABASE_PASSCODE = "bim";
 
 
 }

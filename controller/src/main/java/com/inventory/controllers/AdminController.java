@@ -1,11 +1,11 @@
 package com.inventory.controllers;
 
-import com.inventory.mappers.AdminHelper;
+import com.inventory.helpers.AdminHelper;
 import com.inventory.models.Paging;
 import com.inventory.models.entity.Admin;
-import com.inventory.services.GeneralMapper;
 import com.inventory.services.admin.AdminService;
-import com.inventory.services.exceptions.admin.AdminNotFoundException;
+import com.inventory.services.utils.GeneralMapper;
+import com.inventory.services.utils.exceptions.admin.AdminNotFoundException;
 import com.inventory.webmodels.requests.DeleteRequest;
 import com.inventory.webmodels.requests.admin.AdminRequest;
 import com.inventory.webmodels.responses.BaseResponse;

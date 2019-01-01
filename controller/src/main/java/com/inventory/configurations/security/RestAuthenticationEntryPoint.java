@@ -17,16 +17,6 @@ import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 @Component
 public class RestAuthenticationEntryPoint extends BasicAuthenticationEntryPoint {
 
-//    @Override
-//    public void commence(final HttpServletRequest request,
-//                         final HttpServletResponse response,
-//                         final AuthenticationException authException) throws IOException, ServletException {
-//        //Authentication failed, send error response.
-//        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//        PrintWriter writer = response.getWriter();
-//        writer.println("HTTP Status 401 : " + authException.getMessage());
-//    }
-
     @Override
     public void commence(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AuthenticationException e)
             throws IOException, ServletException {

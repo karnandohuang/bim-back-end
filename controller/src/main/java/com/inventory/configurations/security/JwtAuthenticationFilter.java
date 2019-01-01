@@ -1,7 +1,7 @@
 package com.inventory.configurations.security;
 
-import com.inventory.services.JwtService;
-import com.inventory.services.MemberDetailsService;
+import com.inventory.services.security.JwtService;
+import com.inventory.services.security.MemberDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -46,9 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                UserDetails userDetails = memberDetailsService.loadUserByUsername(username);
-
-                UsernamePasswordAuthenticationToken authentication = this.getAuthentication(authToken, SecurityContextHolder.getContext().getAuthentication(), userDetails);
+                UsernamePasswordAuthenticationToken authentication = this.getAuthentication(authToken, SecurityContextHolder.getContext().getAuthentication());
                 if (authentication != null) {
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
                 }
@@ -58,8 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         chain.doFilter(req, res);
     }
 
-    private UsernamePasswordAuthenticationToken getAuthentication(String token, Authentication authentication,
-                                                                  UserDetails userDetails) {
+    private UsernamePasswordAuthenticationToken getAuthentication(String token, Authentication authentication) {
         // parse the token.
         String email = null;
         try {
@@ -68,7 +65,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             e.printStackTrace();
         }
         if (email != null && authentication == null) {
-            userDetails = memberDetailsService.loadUserByUsername(email);
+            UserDetails userDetails = memberDetailsService.loadUserByUsername(email);
 
             return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
         }

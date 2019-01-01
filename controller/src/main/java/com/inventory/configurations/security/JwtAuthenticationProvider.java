@@ -1,14 +1,13 @@
 package com.inventory.configurations.security;
 
-import com.inventory.services.JwtService;
-import com.inventory.services.MemberDetailsService;
-import com.inventory.services.exceptions.auth.JwtAuthenticationException;
+import com.inventory.services.security.JwtService;
+import com.inventory.services.security.MemberDetailsService;
+import com.inventory.services.utils.exceptions.auth.JwtAuthenticationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
@@ -30,7 +29,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
     }
 
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    public Authentication authenticate(Authentication authentication) {
         String email;
         try {
             email = jwtService.verifyToken((String) authentication.getCredentials());

@@ -3,12 +3,12 @@ package com.inventory.services.employee;
 import com.inventory.models.Paging;
 import com.inventory.models.entity.Employee;
 import com.inventory.repositories.EmployeeRepository;
-import com.inventory.services.GeneralMapper;
 import com.inventory.services.assignment.AssignmentService;
-import com.inventory.services.exceptions.EntityNullFieldException;
-import com.inventory.services.exceptions.employee.*;
 import com.inventory.services.helper.PagingHelper;
-import com.inventory.services.validators.EmployeeValidator;
+import com.inventory.services.utils.GeneralMapper;
+import com.inventory.services.utils.exceptions.EntityNullFieldException;
+import com.inventory.services.utils.exceptions.employee.*;
+import com.inventory.services.utils.validators.EmployeeValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,31 +20,26 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.List;
 
-import static com.inventory.services.constants.ExceptionConstant.*;
+import static com.inventory.services.utils.constants.ExceptionConstant.*;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 
-    @Autowired
-    private EmployeeRepository employeeRepository;
-
-    @Autowired
-    private AssignmentService assignmentService;
-
-    @Autowired
-    private PasswordEncoder encoder;
-
-    @Autowired
-    private GeneralMapper mapper;
-
-    @Autowired
-    private EmployeeValidator validator;
-
-    @Autowired
-    private PagingHelper pagingHelper;
-
     private final static String EMPLOYEE_ID_PREFIX = "EM";
     private final static Logger logger = LoggerFactory.getLogger(EmployeeServiceImpl.class);
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
+    @Autowired
+    private AssignmentService assignmentService;
+    @Autowired
+    private PasswordEncoder encoder;
+    @Autowired
+    private GeneralMapper mapper;
+    @Autowired
+    private EmployeeValidator validator;
+    @Autowired
+    private PagingHelper pagingHelper;
 
     @Override
     @Transactional
@@ -196,17 +191,19 @@ public class EmployeeServiceImpl implements EmployeeService {
             }
 
             employee = mapper.map(request, Employee.class);
-            logger.info("Employee wanted to be saved : " + employee.getId());
+            logger.info("Employee wanted to be saved : " + employee.getName());
             employee.setPassword(password);
         } else {
             employee = request;
 
             employee.setPassword(encoder.encode(request.getPassword()));
         }
-
+        logger.info("finding another employee with same email");
         Employee isEmployeeExist = employeeRepository.findByEmail(employee.getEmail());
 
         Employee superior;
+
+        logger.info("checking all validation");
 
         if (employee.getSuperiorId().equals("null") || employee.getSuperiorId().equals("-"))
             superior = new Employee();
@@ -272,27 +269,37 @@ public class EmployeeServiceImpl implements EmployeeService {
         for (String id : ids) {
             Employee employee = this.getEmployee(id);
             if (assignmentService.getAssignmentCountByEmployeeId(id).get("pendingAssignmentCount") > 0)
-                    throw new EmployeeStillHavePendingAssignmentException();
-                else {
-                    try {
-                        if (!this.isEmployeeHavingSubordinate(employee.getSuperiorId()) &&
-                                !employee.getSuperiorId().equals("-")) {
-                            Employee superior = employeeRepository.findById(employee.getSuperiorId()).get();
+                throw new EmployeeStillHavePendingAssignmentException();
+            else {
+                try {
+                    if (!employee.getSuperiorId().equals("-")) {
+                        logger.info("employee : " + employee.getSuperiorId());
+                        Employee superior = employeeRepository.findById(employee.getSuperiorId()).get();
+                        logger.info("superior : " + superior.getId());
+                        logger.info("found superior : " + superior.getId());
+                        if (!this.isEmployeeHavingSubordinate(superior.getId())) {
                             superior.setRole(validator.assumeRoleEmployee(superior, false));
                             employeeRepository.save(superior);
                             logger.info("Superior : " + employee.getSuperiorId() + " changed to employee role");
-                        } else if (employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(id, "") > 0) {
-                            List<Employee> listOfEmployee = employeeRepository.findAllBySuperiorId(id);
-                            for (Employee e : listOfEmployee) {
-                                e.setSuperiorId("-");
-                                employeeRepository.save(e);
-                            }
-                            logger.info("Employee with this superior is changed to null superior");
                         }
-                    } catch (RuntimeException e) {
-                        throw new EmployeeNotFoundException(id, "Id");
                     }
+                } catch (RuntimeException e) {
+                    logger.info("Employee : " + employee.getSuperiorId() + " is not exist!");
+                    throw new EmployeeNotFoundException(employee.getSuperiorId(), "Id");
                 }
+                try {
+                    if (employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(employee.getId(), "") > 0f) {
+                        List<Employee> listOfEmployee = employeeRepository.findAllBySuperiorId(employee.getId());
+                        for (Employee e : listOfEmployee) {
+                            e.setSuperiorId("-");
+                            employeeRepository.save(e);
+                            logger.info("Employee : " + e.getId() + " is changed to null superior");
+                        }
+                    }
+                } catch (RuntimeException e) {
+                    throw new EmployeeNotFoundException(id, "Id");
+                }
+            }
             employeeRepository.deleteById(id);
         }
         return "Delete success!";

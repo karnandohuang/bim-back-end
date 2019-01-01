@@ -3,12 +3,12 @@ package com.inventory.services.admin;
 import com.inventory.models.Paging;
 import com.inventory.models.entity.Admin;
 import com.inventory.repositories.AdminRepository;
-import com.inventory.services.GeneralMapper;
-import com.inventory.services.exceptions.EntityNullFieldException;
-import com.inventory.services.exceptions.admin.AdminAlreadyExistException;
-import com.inventory.services.exceptions.admin.AdminFieldWrongFormatException;
-import com.inventory.services.exceptions.admin.AdminNotFoundException;
-import com.inventory.services.validators.AdminValidator;
+import com.inventory.services.utils.GeneralMapper;
+import com.inventory.services.utils.exceptions.EntityNullFieldException;
+import com.inventory.services.utils.exceptions.admin.AdminAlreadyExistException;
+import com.inventory.services.utils.exceptions.admin.AdminFieldWrongFormatException;
+import com.inventory.services.utils.exceptions.admin.AdminNotFoundException;
+import com.inventory.services.utils.validators.AdminValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.List;
 
-import static com.inventory.services.constants.ExceptionConstant.ID_WRONG_FORMAT_ERROR;
-import static com.inventory.services.constants.ExceptionConstant.MEMBER_EMAIL_WRONG_FORMAT_ERROR;
+import static com.inventory.services.utils.constants.ExceptionConstant.ID_WRONG_FORMAT_ERROR;
+import static com.inventory.services.utils.constants.ExceptionConstant.MEMBER_EMAIL_WRONG_FORMAT_ERROR;
 
 @Service
 public class AdminServiceImpl implements AdminService {
@@ -36,21 +36,22 @@ public class AdminServiceImpl implements AdminService {
     @Autowired
     private GeneralMapper mapper;
 
-    private final static String ADMIN_ID_PREFIX = "AD";
+    private static final String ADMIN_ID_PREFIX = "AD";
 
     @Override
     @Transactional
     public Admin getAdminByEmail(String email) {
-        try {
-            return adminRepository.findByEmail(email);
-        } catch (RuntimeException e) {
+        if (!validator.validateEmailFormatMember(email))
+            throw new AdminFieldWrongFormatException(MEMBER_EMAIL_WRONG_FORMAT_ERROR);
+        Admin admin = adminRepository.findByEmail(email);
+        if (admin == null)
             throw new AdminNotFoundException(email, "Email");
-        }
+        return admin;
     }
 
     @Override
     @Transactional
-    public Admin getAdmin(String id) throws AdminNotFoundException {
+    public Admin getAdmin(String id) {
         if (!validator.validateIdFormatEntity(id, ADMIN_ID_PREFIX))
             throw new AdminFieldWrongFormatException(ID_WRONG_FORMAT_ERROR);
         try {
@@ -66,12 +67,10 @@ public class AdminServiceImpl implements AdminService {
         if (!isEmailValid)
             return false;
         Admin admin;
-        try {
             admin = adminRepository.findByEmail(
                     email);
-        } catch (Exception e) {
-            return false;
-        }
+        if (admin == null)
+            throw new AdminNotFoundException(email, "Email");
         if (!encoder.matches(password, admin.getPassword()))
             return false;
         return true;
@@ -109,7 +108,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public Admin saveAdmin(Admin request) throws RuntimeException {
+    public Admin saveAdmin(Admin request) {
 
         String nullFieldAdmin = validator.validateNullFieldAdmin(request);
 
@@ -153,7 +152,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public String deleteAdmin(List<String> ids) throws RuntimeException {
+    public String deleteAdmin(List<String> ids) {
         for (String id : ids) {
             this.getAdmin(id);
             adminRepository.deleteById(id);

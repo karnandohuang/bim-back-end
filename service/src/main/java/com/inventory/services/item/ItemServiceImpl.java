@@ -4,12 +4,12 @@ import com.inventory.models.Paging;
 import com.inventory.models.entity.Assignment;
 import com.inventory.models.entity.Item;
 import com.inventory.repositories.ItemRepository;
-import com.inventory.services.GeneralMapper;
 import com.inventory.services.assignment.AssignmentService;
-import com.inventory.services.exceptions.EntityNullFieldException;
-import com.inventory.services.exceptions.item.*;
 import com.inventory.services.helper.PagingHelper;
-import com.inventory.services.validators.ItemValidator;
+import com.inventory.services.utils.GeneralMapper;
+import com.inventory.services.utils.exceptions.EntityNullFieldException;
+import com.inventory.services.utils.exceptions.item.*;
+import com.inventory.services.utils.validators.ItemValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
-import static com.inventory.services.constants.ExceptionConstant.ID_WRONG_FORMAT_ERROR;
+import static com.inventory.services.utils.constants.ExceptionConstant.ID_WRONG_FORMAT_ERROR;
 
 @Service
 public class ItemServiceImpl implements ItemService {

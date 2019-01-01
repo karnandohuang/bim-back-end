@@ -6,7 +6,8 @@ import com.inventory.repositories.EmployeeRepository;
 import com.inventory.services.assignment.AssignmentService;
 import com.inventory.services.employee.EmployeeServiceImpl;
 import com.inventory.services.helper.PagingHelper;
-import com.inventory.services.validators.EmployeeValidator;
+import com.inventory.services.utils.GeneralMapper;
+import com.inventory.services.utils.validators.EmployeeValidator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -18,9 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -49,7 +48,6 @@ public class EmployeeServiceTest {
     @Mock
     private GeneralMapper mapper;
 
-    private Employee employee = new Employee();
     private Paging paging = new Paging();
     private List<Employee> employeeList = mock(ArrayList.class);
     private Page<Employee> employeePageList = mock(Page.class);
@@ -463,7 +461,7 @@ public class EmployeeServiceTest {
 
     @Test
     public void editEmployeeSuperiorIdNullAndPasswordNullSuccess() {
-        setEmployeeWithIdAndSuperiorIdNull();
+        Employee employee = setEmployeeWithIdAndSuperiorIdNull();
         mockValidateId(true, employee.getId());
         mockValidateId(true, employee.getSuperiorId());
         mockValidateEmail(true, employee.getEmail());
@@ -473,7 +471,7 @@ public class EmployeeServiceTest {
         employee.setSuperiorId("-");
         employee.setPassword(null);
         mockSaveEmployee(employee);
-        Employee returned = employeeService.saveEmployee(this.employee);
+        Employee returned = employeeService.saveEmployee(employee);
     }
 
     @Test
@@ -540,7 +538,196 @@ public class EmployeeServiceTest {
         try {
             employeeService.saveEmployee(employee);
         } catch (RuntimeException e) {
+            verify(validator).validateNullFieldEmployee(employee);
+            verifyNoMoreInteractions(validator);
+            verifyNoMoreInteractions(employeeRepository);
         }
+    }
+
+    @Test
+    public void editEmployeeEmailAlreadyTakenFailed() {
+        Employee employee = setEmployeeWithIdAndSuperiorIdNull();
+        mockNullFieldEmployeeFound(false);
+        mockMapEmployee(false, employee);
+        employee.setEmail("abc@gdn-commerce.com");
+        mockValidateId(true, employee.getId());
+        mockValidateDOB(true, employee.getDob());
+        mockFindEmployeeById(true, employee.getId());
+        mockValidateEmail(true, employee.getEmail());
+        mockEmployeeEmailAlreadyTaken(employee.getEmail());
+        mockSaveEmployee(employee);
+        try {
+            employeeService.saveEmployee(employee);
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            verify(employeeRepository).countAllBySuperiorIdAndNameContainingIgnoreCase(anyString(), anyString());
+            verify(employeeRepository).findById(anyString());
+            verify(employeeRepository).findByEmail(anyString());
+            verify(validator).validateIdFormatEntity(employee.getId(), "EM");
+            verify(validator).isDobValid(employee.getDob());
+            verify(validator).validateEmailFormatMember(employee.getEmail());
+            verify(validator).assumeRoleEmployee(any(Employee.class), anyBoolean());
+            verify(validator).validateNullFieldEmployee(employee);
+            verifyNoMoreInteractions(validator);
+            verifyNoMoreInteractions(employeeRepository);
+        }
+    }
+
+    @Test
+    public void deleteEmployeeByListOfIdSuccess() {
+        List<String> ids = new ArrayList<>();
+        ids.add("EM040");
+        mockValidateId(true, ids.get(0));
+        mockFindEmployeeById(true, ids.get(0));
+        mockEmployeeFindSubordinateCount(false, ids.get(0));
+        mockEmployeeFoundPendingAssignment(false, ids.get(0));
+        assertEquals("Delete success!", employeeService.deleteEmployee(ids));
+        verify(employeeRepository).findById(ids.get(0));
+        verify(employeeRepository).countAllBySuperiorIdAndNameContainingIgnoreCase(anyString(), anyString());
+        verify(employeeRepository).deleteById(ids.get(0));
+        verify(validator).validateIdFormatEntity(ids.get(0), "EM");
+        verify(assignmentService).getAssignmentCountByEmployeeId(ids.get(0));
+        verifyNoMoreInteractions(employeeRepository);
+        verifyNoMoreInteractions(validator);
+        verifyNoMoreInteractions(assignmentService);
+    }
+
+    @Test
+    public void deleteEmployeeByListOfIdHaveOneSubordinateSuccess() {
+        List<String> ids = new ArrayList<>();
+        ids.add("EM040");
+        mockValidateId(true, ids.get(0));
+        mockFindEmployeeById(true, ids.get(0));
+        mockEmployeeFindSubordinateCount(true, ids.get(0));
+        mockListOfEmployeeSubordinate(true, ids.get(0));
+        mockEmployeeFoundPendingAssignment(false, ids.get(0));
+        assertEquals("Delete success!", employeeService.deleteEmployee(ids));
+        verify(employeeRepository).findById(ids.get(0));
+        verify(employeeRepository).findAllBySuperiorId(ids.get(0));
+        verify(employeeRepository).save(any(Employee.class));
+        verify(employeeRepository).countAllBySuperiorIdAndNameContainingIgnoreCase(anyString(), anyString());
+        verify(employeeRepository).deleteById(ids.get(0));
+        verify(validator).validateIdFormatEntity(ids.get(0), "EM");
+        verify(assignmentService).getAssignmentCountByEmployeeId(ids.get(0));
+        verifyNoMoreInteractions(employeeRepository);
+        verifyNoMoreInteractions(validator);
+        verifyNoMoreInteractions(assignmentService);
+    }
+
+    @Test
+    public void deleteEmployeeByListOfIdHavePendingAssignmentFailed() {
+        List<String> ids = new ArrayList<>();
+        ids.add("EM040");
+        mockValidateId(true, ids.get(0));
+        mockFindEmployeeById(true, ids.get(0));
+        mockEmployeeFoundPendingAssignment(true, ids.get(0));
+        try {
+            employeeService.deleteEmployee(ids);
+        } catch (RuntimeException e) {
+            verify(employeeRepository).findById(ids.get(0));
+            verify(validator).validateIdFormatEntity(ids.get(0), "EM");
+            verify(assignmentService).getAssignmentCountByEmployeeId(ids.get(0));
+            verifyNoMoreInteractions(employeeRepository);
+            verifyZeroInteractions(validator);
+            verifyNoMoreInteractions(assignmentService);
+        }
+    }
+
+    @Test
+    public void deleteEmployeeByListOfIdSuperiorIdHaveOneSubordinateSuccess() {
+        List<String> ids = new ArrayList<>();
+        ids.add("EM040");
+        mockValidateId(true, ids.get(0));
+        mockFindEmployeeByIdWithSuperiorId(true, "EM040", "EM036");
+        mockEmployeeFoundPendingAssignment(false, ids.get(0));
+        mockEmployeeFindSubordinateCount(true, "EM036");
+        mockFindAnotherEmployeeById(true, "EM036");
+        assertEquals("Delete success!", employeeService.deleteEmployee(ids));
+        verify(employeeRepository, times(2)).findById(anyString());
+        verify(validator).validateIdFormatEntity(ids.get(0), "EM");
+        verify(validator).assumeRoleEmployee(any(Employee.class), anyBoolean());
+        verify(employeeRepository, times(2)).countAllBySuperiorIdAndNameContainingIgnoreCase(anyString(), anyString());
+        verify(employeeRepository).save(any(Employee.class));
+        verify(assignmentService).getAssignmentCountByEmployeeId(ids.get(0));
+        verify(employeeRepository).deleteById(anyString());
+        verifyNoMoreInteractions(employeeRepository);
+        verifyZeroInteractions(validator);
+        verifyNoMoreInteractions(assignmentService);
+    }
+
+    @Test
+    public void deleteEmployeeByListOfIdSuperiorIdHaveTwoSubordinateSuccess() {
+        List<String> ids = new ArrayList<>();
+        ids.add("EM040");
+        mockValidateId(true, ids.get(0));
+        mockFindEmployeeByIdWithSuperiorId(true, "EM040", "EM036");
+        mockEmployeeFoundPendingAssignment(false, ids.get(0));
+        mockSuperiorFindSubordinateCount(true, "EM036");
+        mockFindAnotherEmployeeById(true, "EM036");
+        assertEquals("Delete success!", employeeService.deleteEmployee(ids));
+        verify(employeeRepository, times(2)).findById(anyString());
+        verify(validator).validateIdFormatEntity(anyString(), anyString());
+        verify(employeeRepository, times(2)).countAllBySuperiorIdAndNameContainingIgnoreCase(anyString(), anyString());
+        verify(assignmentService).getAssignmentCountByEmployeeId(ids.get(0));
+        verify(employeeRepository).deleteById(anyString());
+        verifyNoMoreInteractions(employeeRepository);
+        verifyZeroInteractions(validator);
+        verifyNoMoreInteractions(assignmentService);
+    }
+
+    @Test
+    public void deleteEmployeeByListOfIdSuperiorIdNotFoundFailed() {
+        List<String> ids = new ArrayList<>();
+        ids.add("EM040");
+        mockValidateId(true, ids.get(0));
+        mockEmployeeFoundPendingAssignment(false, ids.get(0));
+        mockFindEmployeeByIdWithSuperiorId(true, ids.get(0), "EM100");
+        mockFindEmployeeById(false, "EM100");
+        try {
+            employeeService.deleteEmployee(ids);
+        } catch (RuntimeException e) {
+            verify(employeeRepository, times(2)).findById(anyString());
+            verify(validator).validateIdFormatEntity(ids.get(0), "EM");
+            verify(assignmentService).getAssignmentCountByEmployeeId(ids.get(0));
+            verifyNoMoreInteractions(employeeRepository);
+            verifyNoMoreInteractions(validator);
+            verifyNoMoreInteractions(assignmentService);
+        }
+    }
+
+    private void mockListOfEmployeeSubordinate(boolean found, String employeeId) {
+        Employee employee = setAnotherEmployeeWithIdAndSuperiorId(employeeId);
+        List<Employee> listOfSubordinate = new ArrayList<>();
+        listOfSubordinate.add(employee);
+        when(employeeRepository.findAllBySuperiorId(anyString()))
+                .thenReturn(found ? listOfSubordinate : new ArrayList<>());
+    }
+
+    private void mockEmployeeFoundPendingAssignment(boolean found, String employeeId) {
+        Map<String, Double> mapOfFilledAssignment = new HashMap<>();
+        mapOfFilledAssignment.put("pendingAssignmentCount", 1.0);
+        Map<String, Double> mapOfEmptyAssignment = new HashMap<>();
+        mapOfEmptyAssignment.put("pendingAssignmentCount", 0.0);
+        when(assignmentService.getAssignmentCountByEmployeeId(employeeId))
+                .thenReturn(found ? mapOfFilledAssignment : mapOfEmptyAssignment);
+    }
+
+    private void mockEmployeeFindSubordinateCount(boolean found, String employeeId) {
+        when(employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(employeeId, ""))
+                .thenReturn(found ? 1.0f : 0f);
+    }
+
+    private void mockSuperiorFindSubordinateCount(boolean found, String employeeId) {
+        when(employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(employeeId, ""))
+                .thenReturn(found ? 2.0f : 0.0f);
+    }
+
+    private void mockEmployeeEmailAlreadyTaken(String email) {
+        Employee employee = new Employee();
+        employee.setId("EM099");
+        employee.setEmail(email);
+        when(employeeRepository.findByEmail(email))
+                .thenReturn(employee);
     }
 
     private void mockEmployeeListBasedOnNameAndPaging() {
@@ -569,6 +756,32 @@ public class EmployeeServiceTest {
         employee.setPosition("IT");
         employee.setDivision("Development");
         employee.setRole("SUPERIOR");
+        return employee;
+    }
+
+    private Employee setAnotherEmployeeWithIdAndSuperiorId(String superiorId) {
+        Employee employee = new Employee();
+        employee.setId("EM039");
+        employee.setEmail("karnando@gdn-commerce.com");
+        employee.setSuperiorId(superiorId);
+        employee.setDob("17/06/1998");
+        employee.setName("Karnando");
+        employee.setPosition("IT");
+        employee.setDivision("Development");
+        employee.setRole("EMPLOYEE");
+        return employee;
+    }
+
+    private Employee setAnotherOneEmployeeWithIdAndSuperiorIdNull() {
+        Employee employee = new Employee();
+        employee.setId("EM036");
+        employee.setEmail("david@gdn-commerce.com");
+        employee.setSuperiorId("-");
+        employee.setDob("17/06/1998");
+        employee.setName("David WK");
+        employee.setPosition("IT");
+        employee.setDivision("Development");
+        employee.setRole("EMPLOYEE");
         return employee;
     }
 
@@ -618,6 +831,17 @@ public class EmployeeServiceTest {
     private void mockFindEmployeeById(boolean found, String id) {
         Employee employee = setEmployeeWithIdAndSuperiorIdNull();
         employee.setPassword(encoder.encode("stelli"));
+        if (found)
+            when(employeeRepository.findById(id))
+                    .thenReturn(Optional.ofNullable(employee));
+        else
+            when(employeeRepository.findById(id))
+                    .thenReturn(null);
+    }
+
+    private void mockFindAnotherEmployeeById(boolean found, String id) {
+        Employee employee = setAnotherOneEmployeeWithIdAndSuperiorIdNull();
+        employee.setPassword(encoder.encode("power7500"));
         if (found)
             when(employeeRepository.findById(id))
                     .thenReturn(Optional.ofNullable(employee));

@@ -27,6 +27,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
     private RestAuthenticationEntryPoint authenticationEntryPoint;
 
+    private static final String ADMIN = "ADMIN";
+    private static final String SUPERIOR = "SUPERIOR";
+    private static final String EMPLOYEE = "EMPLOYEE";
+    private static final String ALL_API_PATH = "/api/**";
+
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http
@@ -37,19 +42,19 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .anonymous()
                 .and()
                 .authorizeRequests()
-                .antMatchers("/api/admins**").hasRole("ADMIN")
+                .antMatchers("/api/admins**").hasRole(ADMIN)
                 .antMatchers("/api/login").permitAll()
                 .antMatchers("/api/logout").permitAll()
                 .antMatchers("/swagger-ui.html").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/superiors").hasRole("SUPERIOR")
-                .antMatchers(HttpMethod.POST, "/api/requests").hasAnyRole("EMPLOYEE", "SUPERIOR")
-                .antMatchers(HttpMethod.GET, "/api/requests/employee").hasAnyRole("EMPLOYEE", "SUPERIOR")
-                .antMatchers(HttpMethod.GET, "/api/requests/superior/employee").hasRole("SUPERIOR")
-                .antMatchers(HttpMethod.PUT, "/api/requests/changeStatus").hasAnyRole("ADMIN", "SUPERIOR")
-                .antMatchers(HttpMethod.PUT, "/api/requests/**").hasRole("ADMIN")
-                .antMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
-                .antMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
-                .antMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.GET, "/api/superiors").hasRole(SUPERIOR)
+                .antMatchers(HttpMethod.POST, "/api/requests").hasAnyRole(EMPLOYEE, SUPERIOR)
+                .antMatchers(HttpMethod.GET, "/api/requests/employee").hasAnyRole(EMPLOYEE, SUPERIOR)
+                .antMatchers(HttpMethod.GET, "/api/requests/superior/employee").hasRole(SUPERIOR)
+                .antMatchers(HttpMethod.PUT, "/api/requests/changeStatus").hasAnyRole(ADMIN, SUPERIOR)
+                .antMatchers(HttpMethod.PUT, "/api/requests/**").hasRole(ADMIN)
+                .antMatchers(HttpMethod.POST, ALL_API_PATH).hasRole(ADMIN)
+                .antMatchers(HttpMethod.PUT, ALL_API_PATH).hasRole(ADMIN)
+                .antMatchers(HttpMethod.DELETE, ALL_API_PATH).hasRole(ADMIN)
                 .antMatchers(HttpMethod.GET).permitAll()
                 .antMatchers(HttpMethod.OPTIONS).permitAll()
                 .anyRequest().authenticated()
@@ -57,27 +62,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-//                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling()
                 .authenticationEntryPoint(authenticationEntryPoint);
     }
-
-//    @Bean("corsFilter")
-//    public CorsConfigurationSource corsConfigurationSource() {
-//        final CorsConfiguration configuration = new CorsConfiguration();
-//        configuration.setAllowedOrigins(ImmutableList.of("*"));
-//        configuration.setAllowedMethods(ImmutableList.of("HEAD",
-//                "GET", "POST", "PUT", "DELETE", "PATCH"));
-//        // setAllowCredentials(true) is important, otherwise:
-//        // The value of the 'Access-Control-Allow-Origin' header in the response must not be the wildcard '*' when the request's credentials mode is 'include'.
-//        configuration.setAllowCredentials(true);
-//        // setAllowedHeaders is important! Without it, OPTIONS preflight request
-//        // will fail with 403 Invalid CORS request
-//        configuration.setAllowedHeaders(ImmutableList.of("Authorization", "Cache-Control", "Content-Type", "Set-Cookie"));
-//        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        source.registerCorsConfiguration("/**", configuration);
-//        return source;
-//    }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {

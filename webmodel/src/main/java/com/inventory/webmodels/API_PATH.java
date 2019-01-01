@@ -17,6 +17,7 @@ public class API_PATH {
     public static final String API_PATH_GET_ITEM = "api/items/{id}";
     public static final String API_PATH_UPLOAD_IMAGE = "api/upload";
     public static final String API_PATH_GET_ITEM_DETAIL_PDF = "api/items/pdf/{id}";
+    public static final String API_PATH_ITEMS_GET_IMAGE = "api/items/image";
 
     public static final String API_PATH_ADMINS = "api/admins";
     public static final String API_PATH_GET_ADMIN = "api/admins/{id}";

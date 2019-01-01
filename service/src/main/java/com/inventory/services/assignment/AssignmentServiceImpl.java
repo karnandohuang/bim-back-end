@@ -4,11 +4,11 @@ import com.inventory.models.Paging;
 import com.inventory.models.entity.Assignment;
 import com.inventory.repositories.AssignmentRepository;
 import com.inventory.services.employee.EmployeeService;
-import com.inventory.services.exceptions.EntityNullFieldException;
-import com.inventory.services.exceptions.assignment.*;
 import com.inventory.services.helper.PagingHelper;
 import com.inventory.services.item.ItemService;
-import com.inventory.services.validators.AssignmentValidator;
+import com.inventory.services.utils.exceptions.EntityNullFieldException;
+import com.inventory.services.utils.exceptions.assignment.*;
+import com.inventory.services.utils.validators.AssignmentValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -19,8 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.inventory.services.constants.ExceptionConstant.ASSIGNMENT_STATUS_WRONG_FORMAT_ERROR;
-import static com.inventory.services.constants.ExceptionConstant.ID_WRONG_FORMAT_ERROR;
+import static com.inventory.services.utils.constants.ExceptionConstant.ASSIGNMENT_STATUS_WRONG_FORMAT_ERROR;
+import static com.inventory.services.utils.constants.ExceptionConstant.ID_WRONG_FORMAT_ERROR;
 
 @Service
 public class AssignmentServiceImpl implements AssignmentService {
@@ -40,11 +40,11 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Autowired
     private PagingHelper pagingHelper;
 
-    private final static String ASSIGNMENT_ID_PREFIX = "AT";
+    private static final String ASSIGNMENT_ID_PREFIX = "AT";
 
 
     @Override
-    public Assignment getAssignment(String id) throws RuntimeException {
+    public Assignment getAssignment(String id) {
         try {
             if (!validator.validateIdFormatEntity(id, ASSIGNMENT_ID_PREFIX))
                 throw new AssignmentFieldWrongFormatException(ID_WRONG_FORMAT_ERROR);
@@ -82,7 +82,7 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     @Transactional
-    public List<Assignment> getEmployeeAssignmentList(String employeeId, String filterStatus, Paging paging) throws RuntimeException {
+    public List<Assignment> getEmployeeAssignmentList(String employeeId, String filterStatus, Paging paging) {
         if (filterStatus == null)
             filterStatus = "";
         try {
@@ -113,8 +113,7 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     @Transactional
-    public List<Assignment> getEmployeeSuperiorAssignmentList(String superiorId, String filterStatus, Paging paging)
-            throws RuntimeException {
+    public List<Assignment> getEmployeeSuperiorAssignmentList(String superiorId, String filterStatus, Paging paging) {
         if (filterStatus == null)
             filterStatus = "";
         try {
@@ -183,7 +182,7 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     @Transactional
-    public Double getAssignmentCountByItemIdAndStatus(String itemId, String status) throws RuntimeException {
+    public Double getAssignmentCountByItemIdAndStatus(String itemId, String status) {
         try {
             itemService.getItem(itemId);
         } catch (RuntimeException e) {
@@ -205,7 +204,7 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     @Transactional
-    public String changeStatusAssignments(List<String> ids, String status, String notes, String employeeId) throws RuntimeException {
+    public String changeStatusAssignments(List<String> ids, String status, String notes, String employeeId) {
         for (String id : ids) {
             Assignment assignment;
             assignment = this.getAssignment(id);
@@ -227,7 +226,7 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     @Transactional
-    public Map<String, Integer> getRecoveredItems(List<String> ids) throws RuntimeException {
+    public Map<String, Integer> getRecoveredItems(List<String> ids) {
         Map<String, Integer> listOfRecoveredItems = new HashMap<>();
         int qty = 0;
         for(String id : ids) {

@@ -1,6 +1,6 @@
 package com.inventory.configurations;
 
-import com.inventory.services.AuditorAwareImpl;
+import com.inventory.services.utils.AuditorAwareImpl;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -58,8 +58,7 @@ public class WebConfiguration implements WebMvcConfigurer {
 
     @Bean
     public HibernatePersistenceProvider hibernatePersistenceProvider() {
-        HibernatePersistenceProvider hibernatePersistenceProvider = new HibernatePersistenceProvider();
-        return hibernatePersistenceProvider;
+        return new HibernatePersistenceProvider();
     }
 
     @Bean
@@ -92,7 +91,7 @@ public class WebConfiguration implements WebMvcConfigurer {
     }
 
     private List<MediaType> getSupportedMediaTypes() {
-        List<MediaType> list = new ArrayList<MediaType>();
+        List<MediaType> list = new ArrayList<>();
         list.add(MediaType.IMAGE_JPEG);
         list.add(MediaType.IMAGE_PNG);
         list.add(MediaType.APPLICATION_OCTET_STREAM);

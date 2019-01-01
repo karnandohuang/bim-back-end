@@ -2,7 +2,6 @@ package com.inventory.services.admin;
 
 import com.inventory.models.Paging;
 import com.inventory.models.entity.Admin;
-import com.inventory.services.exceptions.admin.AdminNotFoundException;
 
 import javax.transaction.Transactional;
 import java.util.List;
@@ -12,7 +11,7 @@ public interface AdminService {
     Admin getAdminByEmail(String email);
 
     @Transactional
-    Admin getAdmin(String id) throws AdminNotFoundException;
+    Admin getAdmin(String id);
 
     Boolean login(String email, String password);
 
@@ -20,8 +19,8 @@ public interface AdminService {
     List<Admin> getAdminList(Paging paging);
 
     @Transactional
-    Admin saveAdmin(Admin request) throws RuntimeException;
+    Admin saveAdmin(Admin request);
 
     @Transactional
-    String deleteAdmin(List<String> ids) throws RuntimeException;
+    String deleteAdmin(List<String> ids);
 }

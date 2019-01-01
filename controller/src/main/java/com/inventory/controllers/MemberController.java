@@ -1,6 +1,6 @@
 package com.inventory.controllers;
 
-import com.inventory.mappers.MemberHelper;
+import com.inventory.helpers.MemberHelper;
 import com.inventory.services.member.MemberService;
 import com.inventory.webmodels.requests.member.LoginRequest;
 import com.inventory.webmodels.responses.BaseResponse;
@@ -31,7 +31,6 @@ public class MemberController {
     public BaseResponse<AuthenticationResponse> login(@RequestBody LoginRequest request) {
         BaseResponse<AuthenticationResponse> response;
         try {
-            memberService.validateUser(request.getEmail(), request.getPassword());
             String token = memberService.authenticateUser(request.getEmail(), request.getPassword());
             String role = memberService.getMemberRole(request.getEmail());
             response = helper.getBaseResponse(true, "");

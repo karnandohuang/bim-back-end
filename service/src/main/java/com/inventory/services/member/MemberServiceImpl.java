@@ -2,11 +2,16 @@ package com.inventory.services.member;
 
 import com.inventory.models.abstract_entity.Member;
 import com.inventory.models.entity.Employee;
-import com.inventory.services.JwtService;
 import com.inventory.services.admin.AdminService;
 import com.inventory.services.employee.EmployeeService;
-import com.inventory.services.exceptions.auth.FailedToLoginException;
-import com.inventory.services.exceptions.auth.LoginEmptyException;
+import com.inventory.services.security.JwtService;
+import com.inventory.services.utils.exceptions.auth.FailedToLoginException;
+import com.inventory.services.utils.exceptions.auth.LoginEmptyException;
+import com.inventory.services.utils.exceptions.auth.MemberEmailWrongException;
+import com.inventory.services.utils.exceptions.auth.MemberNotFoundException;
+import com.inventory.services.utils.validators.MemberValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,31 +32,36 @@ public class MemberServiceImpl implements MemberService {
     @Autowired
     private JwtService jwtService;
 
+    private static final Logger logger = LoggerFactory.getLogger(MemberServiceImpl.class);
+    @Autowired
+    private MemberValidator validator;
+
     @Override
     public String authenticateUser(String email, String password) throws FailedToLoginException {
-        boolean isAuthenticated = false;
-        try {
-            if (email.equals("admin") && password.equals("admin123"))
-                isAuthenticated = true;
-            else
-                isAuthenticated = adminService.login(email, password);
-        } catch (NullPointerException e) {
-            isAuthenticated = false;
-        }
-        if (!isAuthenticated)
-            try {
+        logger.info("email : " + email);
+
+        String nullFieldMember = validator.validateNullFieldMember(email, password);
+
+        boolean isEmailValid = validator.validateEmailFormatMember(email);
+
+        logger.info("null field : " + nullFieldMember);
+
+        if (!isEmailValid)
+            throw new MemberEmailWrongException();
+
+        else if (nullFieldMember != null)
+            throw new LoginEmptyException(nullFieldMember);
+
+        else {
+            boolean isAuthenticated = false;
+            isAuthenticated = adminService.login(email, password);
+            if (!isAuthenticated)
                 isAuthenticated = employeeService.login(email, password);
-            } catch (NullPointerException e) {
-                isAuthenticated = false;
-            }
-        if (isAuthenticated) {
-            try {
+            if (isAuthenticated) {
                 return jwtService.generateToken(email);
-            } catch (RuntimeException e) {
-                throw new FailedToLoginException(e.getMessage());
             }
+            throw new FailedToLoginException(String.format("unable to authenticate user [%s]", email));
         }
-        throw new FailedToLoginException(String.format("unable to authenticate user [%s]", email));
     }
 
     @Override
@@ -59,6 +69,7 @@ public class MemberServiceImpl implements MemberService {
         Member member;
         try {
             member = adminService.getAdminByEmail(email);
+            return "ADMIN";
         } catch (RuntimeException e) {
             member = null;
         }
@@ -67,21 +78,10 @@ public class MemberServiceImpl implements MemberService {
             try {
                 member = employeeService.getEmployeeByEmail(email);
             } catch (RuntimeException e) {
-                throw new FailedToLoginException(String.format("unable to authenticate user [%s]", email));
+                throw new MemberNotFoundException(email);
             }
         }
-
-        if (member instanceof Employee)
             return ((Employee) member).getRole();
-        return "ADMIN";
-    }
-
-    @Override
-    public void validateUser(String email, String password) {
-        if (email == null)
-            throw new LoginEmptyException("Email");
-        else if (password == null)
-            throw new LoginEmptyException("Password");
     }
 
     @Override
