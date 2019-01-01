@@ -114,11 +114,14 @@ public class AdminServiceImpl implements AdminService {
 
         Admin admin;
 
-        if (request.getId() != null)
+        if (request.getId() != null) {
+            String password = this.getAdmin(request.getId()).getPassword();
+            if (request.getPassword() != null)
+                password = encoder.encode(request.getPassword());
+            admin = mapper.map(request, Admin.class);
+            admin.setPassword(password);
 
-            admin = editAdmin(request);
-
-        else {
+        } else {
             admin = request;
 
             admin.setPassword(encoder.encode(request.getPassword()));
@@ -139,15 +142,6 @@ public class AdminServiceImpl implements AdminService {
 
         else
             return adminRepository.save(admin);
-    }
-
-    private Admin editAdmin(Admin request) {
-        String password = this.getAdmin(request.getId()).getPassword();
-        if (request.getPassword() != null)
-            password = encoder.encode(request.getPassword());
-        Admin a = mapper.map(request, Admin.class);
-        a.setPassword(password);
-        return a;
     }
 
     @Override

@@ -24,7 +24,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -96,10 +95,10 @@ public class ItemServiceImpl implements ItemService {
         Item item;
 
         String nullFieldItem = validator.validateNullFieldItem(request);
-        ;
 
         if (request.getId() != null) {
             logger.info("edit item");
+            item = this.getItem(request.getId());
             item = mapper.map(request, Item.class);
             logger.info("editing item of id : " + item.getId());
         } else {
@@ -113,22 +112,14 @@ public class ItemServiceImpl implements ItemService {
             logger.info("image url is null");
         }
 
-        boolean isIdValid = true;
-
         logger.info("image url : " + item.getImageUrl());
 
         boolean isImageUrlValid = validator.validateImageUrlItem(item.getImageUrl());
 
         logger.info("checking all validation!");
 
-        if (item.getId() != null)
-            isIdValid = validator.validateIdFormatEntity(item.getId(), ITEM_ID_PREFIX);
-
         if (nullFieldItem != null)
             throw new EntityNullFieldException(nullFieldItem);
-
-        else if (!isIdValid)
-            throw new ItemFieldWrongFormatException(ID_WRONG_FORMAT_ERROR);
 
         else if (!isImageUrlValid)
             throw new ImagePathWrongException();
@@ -155,40 +146,24 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public String recoverItemQty(Map<String, Integer> listOfRecoveredItems) throws RuntimeException {
-        List<String> errorOfItem = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : listOfRecoveredItems.entrySet()) {
             Item item;
-            try {
-                item = itemRepository.findById(entry.getKey()).get();
-            } catch (RuntimeException e) {
-                throw new ItemNotFoundException(entry.getKey(), "Id");
-            }
+            item = this.getItem(entry.getKey());
             item.setQty(item.getQty() + entry.getValue());
             itemRepository.save(item);
         }
         return "Recover success";
     }
 
-    private Boolean checkItemAssignmentCount(String itemId) {
-        return assignmentService.getAssignmentCountByItemIdAndStatus(itemId, "Pending") > 0;
-    }
-
     @Override
     @Transactional
     public String deleteItem(List<String> ids) throws RuntimeException {
         for (String id: ids){
-            boolean isIdValid = validator.validateIdFormatEntity(id, ITEM_ID_PREFIX);
-                if (!isIdValid)
-                    throw new ItemFieldWrongFormatException(ID_WRONG_FORMAT_ERROR);
-                else if (checkItemAssignmentCount(id))
+            Item item = this.getItem(id);
+            if (assignmentService.getAssignmentCountByItemIdAndStatus(item.getId(), "Pending") > 0)
                     throw new ItemStillHaveAssignmentException();
                 else {
-                    try {
-                        this.getItem(id);
-                    } catch (RuntimeException e) {
-                        throw new ItemNotFoundException(id, "Id");
-                    }
-                    itemRepository.deleteById(id);
+                itemRepository.deleteById(item.getId());
                 }
         }
         return "Delete Success";
@@ -242,15 +217,16 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public byte[] getItemImage(String path) {
-        File file = new File(path);
-        if (!file.exists())
+        if (!validator.validateImageUrlExist(path))
             throw new ImagePathWrongException();
-
-        try {
-            return Files.readAllBytes(file.toPath());
-        } catch (IOException e) {
-            logger.info("error getting image from path : " + path);
-            return new byte[0];
+        else {
+            File file = new File(path);
+            try {
+                return Files.readAllBytes(file.toPath());
+            } catch (IOException e) {
+                logger.info("error getting image from path : " + path);
+                return new byte[0];
+            }
         }
     }
 }

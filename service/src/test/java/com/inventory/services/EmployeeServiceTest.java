@@ -167,13 +167,13 @@ public class EmployeeServiceTest {
         setPaging("desc");
         List<Employee> returnEmployees = employeeService.getEmployeeList("", paging);
         ArgumentCaptor<Pageable> pageArgument = ArgumentCaptor.forClass(Pageable.class);
-        verify(employeeRepository, times(1)).findAllByNameContainingIgnoreCase(any(String.class),
+        verify(employeeRepository).findAllByNameContainingIgnoreCase(any(String.class),
                 pageArgument.capture());
         verify(employeeRepository).countAllByNameContainingIgnoreCase(anyString());
 
 
         Sort actualSort = pageArgument.getValue().getSort();
-        assertEquals(Sort.Direction.DESC, actualSort.getOrderFor("updatedDate").getDirection());
+        assertEquals(Sort.Direction.DESC, actualSort.getOrderFor(paging.getSortedBy()).getDirection());
 
         assertEquals(employeeList.size(), returnEmployees.size());
         verifyNoMoreInteractions(employeeRepository);
@@ -720,6 +720,15 @@ public class EmployeeServiceTest {
     private void mockSuperiorFindSubordinateCount(boolean found, String employeeId) {
         when(employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(employeeId, ""))
                 .thenReturn(found ? 2.0f : 0.0f);
+    }
+
+    private Paging setPagingWithDefaultValue() {
+        Paging paging = new Paging();
+        paging.setPageSize(5);
+        paging.setPageNumber(1);
+        paging.setSortedType("desc");
+        paging.setSortedBy("updatedDate");
+        return paging;
     }
 
     private void mockEmployeeEmailAlreadyTaken(String email) {

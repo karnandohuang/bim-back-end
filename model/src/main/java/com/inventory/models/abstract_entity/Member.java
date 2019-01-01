@@ -1,5 +1,6 @@
 package com.inventory.models.abstract_entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import javax.persistence.Column;
@@ -15,5 +16,6 @@ public abstract class Member extends BaseEntity {
     protected String email;
 
     @Column(name = MEMBER_COLUMN_NAME_PASSCODE)
+    @JsonIgnore
     protected String password;
 }

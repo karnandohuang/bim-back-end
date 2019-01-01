@@ -26,7 +26,7 @@ import static com.inventory.services.utils.constants.ExceptionConstant.ID_WRONG_
 public class AssignmentServiceImpl implements AssignmentService {
 
     @Autowired
-    AssignmentRepository AssignmentRepository;
+    AssignmentRepository assignmentRepository;
 
     @Autowired
     ItemService itemService;
@@ -48,7 +48,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         try {
             if (!validator.validateIdFormatEntity(id, ASSIGNMENT_ID_PREFIX))
                 throw new AssignmentFieldWrongFormatException(ID_WRONG_FORMAT_ERROR);
-            return AssignmentRepository.findById(id).get();
+            return assignmentRepository.findById(id).get();
         } catch (RuntimeException e) {
             throw new AssignmentNotFoundException(id, "Id");
         }
@@ -74,8 +74,8 @@ public class AssignmentServiceImpl implements AssignmentService {
                     Sort.Direction.ASC,
                     paging.getSortedBy());
         }
-        listOfAssignment = AssignmentRepository.findAllByStatusContaining(filterStatus, pageRequest).getContent();
-        float totalRecords = (float) AssignmentRepository.count();
+        listOfAssignment = assignmentRepository.findAllByStatusContaining(filterStatus, pageRequest).getContent();
+        float totalRecords = assignmentRepository.countAllByStatus(filterStatus);
         pagingHelper.setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfAssignment;
     }
@@ -105,8 +105,8 @@ public class AssignmentServiceImpl implements AssignmentService {
                     Sort.Direction.ASC,
                     paging.getSortedBy());
         }
-        listOfAssignment = AssignmentRepository.findAllByEmployeeIdAndStatusContaining(employeeId, filterStatus, pageRequest).getContent();
-        float totalRecords = AssignmentRepository.countAllByEmployeeIdAndStatusContaining(employeeId, filterStatus);
+        listOfAssignment = assignmentRepository.findAllByEmployeeIdAndStatusContaining(employeeId, filterStatus, pageRequest).getContent();
+        float totalRecords = assignmentRepository.countAllByEmployeeIdAndStatusContaining(employeeId, filterStatus);
         pagingHelper.setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfAssignment;
     }
@@ -136,8 +136,8 @@ public class AssignmentServiceImpl implements AssignmentService {
                     Sort.Direction.ASC,
                     paging.getSortedBy());
         }
-        listOfAssignment = AssignmentRepository.findAllByEmployeeSuperiorIdAndStatusContaining(superiorId, filterStatus, pageRequest).getContent();
-        float totalRecords = AssignmentRepository.countAllByEmployeeSuperiorIdAndStatusContaining(superiorId, filterStatus);
+        listOfAssignment = assignmentRepository.findAllByEmployeeSuperiorIdAndStatusContaining(superiorId, filterStatus, pageRequest).getContent();
+        float totalRecords = assignmentRepository.countAllByEmployeeSuperiorIdAndStatusContaining(superiorId, filterStatus);
         pagingHelper.setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfAssignment;
     }
@@ -150,11 +150,11 @@ public class AssignmentServiceImpl implements AssignmentService {
         Double pendingAssignmentCount;
         Double receivedCount;
         if (employeeId.equals("ADMIN")) {
-            pendingAssignmentCount = Math.ceil(AssignmentRepository.
+            pendingAssignmentCount = Math.ceil(assignmentRepository.
                     countAllByStatus("Pending"));
-            pendingHandoverCount = Math.ceil(AssignmentRepository.
+            pendingHandoverCount = Math.ceil(assignmentRepository.
                     countAllByStatus("Approved"));
-            receivedCount = Math.ceil(AssignmentRepository.
+            receivedCount = Math.ceil(assignmentRepository.
                     countAllByStatus("Received"));
         } else {
             try {
@@ -163,11 +163,11 @@ public class AssignmentServiceImpl implements AssignmentService {
                 throw e;
             }
 
-            pendingAssignmentCount = Math.ceil(AssignmentRepository.
+            pendingAssignmentCount = Math.ceil(assignmentRepository.
                     countAllByEmployeeIdAndStatus(employeeId, "Pending"));
-            pendingHandoverCount = Math.ceil(AssignmentRepository.
+            pendingHandoverCount = Math.ceil(assignmentRepository.
                     countAllByEmployeeIdAndStatus(employeeId, "Approved"));
-            receivedCount = Math.ceil(AssignmentRepository.
+            receivedCount = Math.ceil(assignmentRepository.
                     countAllByEmployeeIdAndStatus(employeeId, "Received"));
         }
 
@@ -190,7 +190,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         }
         if (!validator.validateStatus(status))
             throw new AssignmentFieldWrongFormatException(ASSIGNMENT_STATUS_WRONG_FORMAT_ERROR);
-        return Math.ceil(AssignmentRepository.countAllByItemIdAndStatus(itemId, status));
+        return Math.ceil(assignmentRepository.countAllByItemIdAndStatus(itemId, status));
     }
 
     @Override
@@ -199,7 +199,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         String nullFieldAssignment = validator.validateNullFieldAssignment(assignment);
         if (nullFieldAssignment != null)
             throw new EntityNullFieldException(nullFieldAssignment);
-        return AssignmentRepository.save(assignment);
+        return assignmentRepository.save(assignment);
     }
 
     @Override
@@ -219,7 +219,7 @@ public class AssignmentServiceImpl implements AssignmentService {
 
             assignment.setStatus(status);
             assignment.setNotes(notes);
-            AssignmentRepository.save(assignment);
+            assignmentRepository.save(assignment);
         }
         return "Change status success";
     }
@@ -233,7 +233,7 @@ public class AssignmentServiceImpl implements AssignmentService {
             qty = 0;
             Assignment assignment;
             try {
-                assignment = AssignmentRepository.findById(id).get();
+                assignment = assignmentRepository.findById(id).get();
             } catch (RuntimeException e) {
                 throw new AssignmentNotFoundException(id, "Id");
             }

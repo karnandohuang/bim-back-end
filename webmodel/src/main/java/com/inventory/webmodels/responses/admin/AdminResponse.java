@@ -7,5 +7,5 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class AdminResponse {
-    private Admin value;
+    private Admin admin;
 }

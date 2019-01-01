@@ -16,6 +16,12 @@ public class ItemValidator extends EntityValidator {
         return false;
     }
 
+    public boolean validateImageUrlExist(String url) {
+        if (new File(url).exists() && url != null && !url.equals("null"))
+            return true;
+        return false;
+    }
+
     public String validateNullFieldItem(Item item) {
         if (item.getName() == null)
             return ITEM_NAME_EMPTY;

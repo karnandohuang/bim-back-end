@@ -1,4 +1,4 @@
-package com.inventory.webmodels.responses.assignment;
+package com.inventory.webmodels.responses.member;
 
 import lombok.Data;
 

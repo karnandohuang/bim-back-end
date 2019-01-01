@@ -4,7 +4,7 @@ import com.inventory.helpers.MemberHelper;
 import com.inventory.services.member.MemberService;
 import com.inventory.webmodels.requests.member.LoginRequest;
 import com.inventory.webmodels.responses.BaseResponse;
-import com.inventory.webmodels.responses.assignment.AuthenticationResponse;
+import com.inventory.webmodels.responses.member.AuthenticationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,6 +1,6 @@
 package com.inventory.helpers;
 
-import com.inventory.webmodels.responses.assignment.AuthenticationResponse;
+import com.inventory.webmodels.responses.member.AuthenticationResponse;
 import org.springframework.stereotype.Component;
 
 @Component
