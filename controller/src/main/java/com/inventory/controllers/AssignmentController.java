@@ -17,6 +17,7 @@ import com.inventory.webmodels.responses.BaseResponse;
 import com.inventory.webmodels.responses.assignment.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,7 +86,7 @@ public class AssignmentController {
         Paging paging = helper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         BaseResponse response;
         try {
-            UserDetails member = memberService.getLoggedInUser(principal);
+            UserDetails member = memberService.getLoggedInUser(((Authentication) principal).getPrincipal());
             Employee employee = employeeService.getEmployeeByEmail(member.getUsername());
             List<Assignment> listOfAssignment = assignmentService.getEmployeeAssignmentList(
                     employee.getId(),
@@ -123,7 +124,7 @@ public class AssignmentController {
         Paging paging = helper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         BaseResponse response;
         try {
-            UserDetails member = memberService.getLoggedInUser(principal);
+            UserDetails member = memberService.getLoggedInUser(((Authentication) principal).getPrincipal());
             Employee employee = employeeService.getEmployeeByEmail(member.getUsername());
             List<Assignment> listOfAssignment = assignmentService.getEmployeeSuperiorAssignmentList(
                     employee.getId(),
@@ -150,7 +151,7 @@ public class AssignmentController {
     @GetMapping(value = API_PATH_GET_ASSIGNMENT_COUNT_BY_EMPLOYEE_ID_AND_STATUS, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<AssignmentCountResponse> getAssignmentCount(@AuthenticationPrincipal Principal principal) {
         BaseResponse response;
-        UserDetails member = memberService.getLoggedInUser(principal);
+        UserDetails member = memberService.getLoggedInUser(((Authentication) principal).getPrincipal());
         if (memberService.getMemberRole(member.getUsername()).equals("ADMIN")) {
             try {
                 Map<String, Double> listOfCount = assignmentService.getAssignmentCountByEmployeeId("ADMIN");
@@ -195,26 +196,15 @@ public class AssignmentController {
         Employee employee;
         Item item;
         try {
-            UserDetails member = memberService.getLoggedInUser(principal);
+            UserDetails member = memberService.getLoggedInUser(((Authentication) principal).getPrincipal());
             employee = employeeService.getEmployeeByEmail(member.getUsername());
+            for (ItemRequest itemRequest : requestBody.getItems()) {
+                item = generalMapper.map(itemRequest, Item.class);
+                Assignment rb = helper.getMappedAssignment(employee, item);
+                assignmentService.saveAssignment(rb);
+            }
         } catch (RuntimeException e) {
             return helper.getStandardBaseResponse(false, e.getMessage());
-        }
-        for (ItemRequest itemRequest : requestBody.getItems()) {
-            item = generalMapper.map(itemRequest, Item.class);
-            int qty = item.getQty();
-            try {
-                item = itemService.getItem(item.getId());
-            } catch (RuntimeException e) {
-                return helper.getStandardBaseResponse(false, e.getMessage());
-            }
-            Assignment rb = helper.getMappedAssignment(employee, item, qty);
-            try {
-                itemService.changeItemQty(rb);
-                assignmentService.saveAssignment(rb);
-            } catch (RuntimeException e) {
-                return helper.getStandardBaseResponse(false, e.getMessage());
-            }
         }
             return helper.getStandardBaseResponse(true, "");
     }
@@ -223,16 +213,19 @@ public class AssignmentController {
             consumes = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     public BaseResponse<ChangeAssignmentStatusResponse> changeStatus(
-            @RequestBody ChangeAssignmentStatusRequest assignmentBody) {
+            @RequestBody ChangeAssignmentStatusRequest AssignmentBody,
+            @AuthenticationPrincipal Principal principal) {
         BaseResponse<ChangeAssignmentStatusResponse> response;
-        Assignment assignment = generalMapper.map(assignmentBody, Assignment.class);
+        Assignment Assignment = generalMapper.map(AssignmentBody, Assignment.class);
         Map<String, Integer> listOfRecoveredItems;
         try {
-            String success = assignmentService.changeStatusAssignments(assignmentBody.getIds(),
-                    assignment.getStatus(), assignment.getNotes(), assignmentBody.getEmployeeId());
+            UserDetails userDetails = memberService.getLoggedInUser(principal);
+            String memberEmail = userDetails.getUsername();
+            String success = assignmentService.changeStatusAssignments(AssignmentBody.getIds(),
+                    Assignment.getStatus(), Assignment.getNotes(), memberEmail);
             String successItem = "";
-            if (assignment.getStatus().equals("Rejected")) {
-                listOfRecoveredItems = assignmentService.getRecoveredItems(assignmentBody.getIds());
+            if (Assignment.getStatus().equals("Rejected")) {
+                listOfRecoveredItems = assignmentService.getRecoveredItems(AssignmentBody.getIds());
                 successItem = itemService.recoverItemQty(listOfRecoveredItems);
             }
             response = helper.getBaseResponse(true, "");

@@ -3,8 +3,10 @@ package com.inventory.services.item;
 import com.inventory.models.Paging;
 import com.inventory.models.entity.Assignment;
 import com.inventory.models.entity.Item;
+import com.itextpdf.text.DocumentException;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -26,4 +28,6 @@ public interface ItemService {
     String recoverItemQty(Map<String, Integer> listOfRecoveredItems);
 
     byte[] getItemImage(String path);
+
+    ByteArrayInputStream getPdf(Item item) throws DocumentException;
 }

@@ -132,28 +132,30 @@ public class AdminServiceTest {
     }
 
     @Test
-    public void findAdminAndPagingAscSuccess(){
+    public void findAdminAndPagingAscSuccess() {
         setPaging("asc");
 
         mockAdminList();
         mockCountTotalRecord();
         ArgumentCaptor<Pageable> pageArgument = ArgumentCaptor.forClass(Pageable.class);
 
-        List<Admin> listOfAdmin = adminService.getAdminList(paging);;
+        List<Admin> listOfAdmin = adminService.getAdminList(paging);
+        ;
 
         verify(adminRepository).findAll(pageArgument.capture());
         verify(adminRepository).count();
     }
 
     @Test
-    public void findAdminAndPagingDescSuccess(){
+    public void findAdminAndPagingDescSuccess() {
         setPaging("desc");
 
         mockAdminList();
         mockCountTotalRecord();
         ArgumentCaptor<Pageable> pageArgument = ArgumentCaptor.forClass(Pageable.class);
 
-        List<Admin> listOfAdmin = adminService.getAdminList(paging);;
+        List<Admin> listOfAdmin = adminService.getAdminList(paging);
+        ;
 
         verify(adminRepository).findAll(pageArgument.capture());
         verify(adminRepository).count();
@@ -229,7 +231,7 @@ public class AdminServiceTest {
 
         try {
             adminService.saveAdmin(admin);
-        } catch (RuntimeException e){
+        } catch (RuntimeException e) {
             verify(validator).validateNullFieldAdmin(admin);
             verify(validator).validateEmailFormatMember("admin@gdn-commerce.com");
             verify(adminRepository).findByEmail("admin@gdn-commerce.com");
@@ -239,7 +241,7 @@ public class AdminServiceTest {
     }
 
     @Test
-    public void insertAdminEmailNotValidPasswordNotNullFailed(){
+    public void insertAdminEmailNotValidPasswordNotNullFailed() {
         Admin admin = setAdminWithEmailAndPassword("admin@gn-commerce.com", null);
 
         mockFindAdminByEmail(false, "admin@gn-commerce.com");
@@ -247,7 +249,7 @@ public class AdminServiceTest {
 
         try {
             adminService.saveAdmin(admin);
-        } catch (RuntimeException e){
+        } catch (RuntimeException e) {
             verify(validator).validateNullFieldAdmin(admin);
             verify(validator).validateEmailFormatMember("admin@gn-commerce.com");
             verify(adminRepository).findByEmail("admin@gn-commerce.com");
@@ -257,7 +259,7 @@ public class AdminServiceTest {
     }
 
     @Test
-    public void insertAdminEmailValidFoundPasswordNotNullFailed(){
+    public void insertAdminEmailValidFoundPasswordNotNullFailed() {
         Admin admin = setAdminWithEmailAndPassword("admin@gdn-commerce.com", "admin");
 
         mockFindAdminByEmail(true, "admin@gdn-commerce.com");
@@ -265,7 +267,7 @@ public class AdminServiceTest {
 
         try {
             adminService.saveAdmin(admin);
-        } catch (RuntimeException e){
+        } catch (RuntimeException e) {
             verify(validator).validateNullFieldAdmin(admin);
             verify(validator).validateEmailFormatMember("admin@gdn-commerce.com");
             verify(adminRepository).findByEmail("admin@gdn-commerce.com");
@@ -275,10 +277,10 @@ public class AdminServiceTest {
     }
 
     @Test
-    public void editAdminEmailValidPasswordNotNullSuccess(){
-        Admin admin = setAdminWithIdEmailAndPassword("AD002","admin@gdn-commerce.com", "admin");
+    public void editAdminEmailValidPasswordNotNullSuccess() {
+        Admin admin = setAdminWithIdEmailAndPassword("AD002", "admin@gdn-commerce.com", "admin");
         mockFindAdminById(true, "AD002");
-        mockFindAdminByEmail(true,"admin@gdn-commerce.com");
+        mockFindAdminByEmail(true, "admin@gdn-commerce.com");
         mockValidateEmail(true, "admin@gdn-commerce.com");
         mockValidateId(true, "AD002");
         mockMapAdmin(false, admin);
@@ -295,7 +297,7 @@ public class AdminServiceTest {
     }
 
     @Test
-    public void deleteAdminByListOfIdSuccess(){
+    public void deleteAdminByListOfIdSuccess() {
         List<String> ids = new ArrayList<>();
         ids.add("AD001");
 
@@ -310,7 +312,8 @@ public class AdminServiceTest {
         verifyNoMoreInteractions(validator);
     }
 
-    @Test public void deleteAdminByListOfIdNotFoundFailed(){
+    @Test
+    public void deleteAdminByListOfIdNotFoundFailed() {
         List<String> ids = new ArrayList<>();
         ids.add("AD001");
 
@@ -319,7 +322,7 @@ public class AdminServiceTest {
 
         try {
             adminService.deleteAdmin(ids);
-        } catch (RuntimeException e){
+        } catch (RuntimeException e) {
             verify(validator).validateIdFormatEntity(ids.get(0), "AD");
             verify(adminRepository).findById(ids.get(0));
             verifyNoMoreInteractions(adminRepository);
@@ -328,7 +331,7 @@ public class AdminServiceTest {
     }
 
     @Test
-    public void deleteAdminByListOfIdNotValidNotFoundFailed(){
+    public void deleteAdminByListOfIdNotValidNotFoundFailed() {
         List<String> ids = new ArrayList<>();
         ids.add("AE001");
 
@@ -337,7 +340,7 @@ public class AdminServiceTest {
 
         try {
             adminService.deleteAdmin(ids);
-        } catch (RuntimeException e){
+        } catch (RuntimeException e) {
             verify(validator).validateIdFormatEntity(ids.get(0), "AD");
             verifyZeroInteractions(adminRepository);
             verifyNoMoreInteractions(validator);
@@ -404,23 +407,23 @@ public class AdminServiceTest {
                 .thenReturn(found ? "something" : null);
     }
 
-    private void mockMapAdmin(boolean isNull, Admin a){
+    private void mockMapAdmin(boolean isNull, Admin a) {
         when(mapper.map(a, Admin.class))
                 .thenReturn(isNull ? null : a);
     }
 
-    private void mockAdminList(){
+    private void mockAdminList() {
         when(adminRepository.findAll(any(Pageable.class)))
                 .thenReturn(adminPageList);
 
     }
 
-    private void mockCountTotalRecord(){
+    private void mockCountTotalRecord() {
         when(adminRepository.count())
                 .thenReturn((long) 2);
     }
 
-    private void setPaging(String sortedType){
+    private void setPaging(String sortedType) {
         this.paging.setPageNumber(1);
         this.paging.setPageSize(3);
         this.paging.setSortedBy("updatedDate");

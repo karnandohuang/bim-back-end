@@ -1,7 +1,6 @@
 package com.inventory.controllers;
 
 import com.inventory.helpers.ItemHelper;
-import com.inventory.helpers.PdfMapper;
 import com.inventory.models.Paging;
 import com.inventory.models.entity.Item;
 import com.inventory.services.item.ItemService;
@@ -36,9 +35,6 @@ public class ItemController {
 
     @Autowired
     private ItemHelper helper;
-
-    @Autowired
-    private PdfMapper pdfMapper;
 
     @GetMapping(value = API_PATH_ITEMS, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<ListOfItemResponse> getListItem(
@@ -125,7 +121,7 @@ public class ItemController {
     public ResponseEntity<InputStreamResource> getPdf(@PathVariable String id) throws DocumentException {
         Item item;
         item = itemService.getItem(id);
-        ByteArrayInputStream inputStream = pdfMapper.getPdf(item);
+        ByteArrayInputStream inputStream = itemService.getPdf(item);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");

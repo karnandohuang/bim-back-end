@@ -32,11 +32,11 @@ public class AssignmentHelper extends ModelHelper {
         return employeeAssignmentResponse;
     }
 
-    public Assignment getMappedAssignment(Employee employee, Item item, int qty) {
+    public Assignment getMappedAssignment(Employee employee, Item item) {
         Assignment assignment = new Assignment();
         assignment.setEmployee(employee);
         assignment.setItem(item);
-        assignment.setQty(qty);
+        assignment.setQty(item.getQty());
         assignment.setNotes("");
         assignment.setStatus("Pending");
         return assignment;

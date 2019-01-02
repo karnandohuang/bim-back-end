@@ -12,13 +12,13 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 
 import static java.util.Arrays.asList;
 
-@Service
+@Component
 public class MemberDetailsService implements UserDetailsService {
 
     @Autowired

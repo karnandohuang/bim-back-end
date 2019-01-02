@@ -13,12 +13,8 @@ import com.inventory.services.utils.validators.MemberValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-
-import java.security.Principal;
 
 @Service
 public class MemberServiceImpl implements MemberService {
@@ -71,21 +67,17 @@ public class MemberServiceImpl implements MemberService {
             member = adminService.getAdminByEmail(email);
             return "ADMIN";
         } catch (RuntimeException e) {
-            member = null;
-        }
-
-        if (member == null) {
             try {
                 member = employeeService.getEmployeeByEmail(email);
-            } catch (RuntimeException e) {
+                return ((Employee) member).getRole();
+            } catch (RuntimeException e1) {
                 throw new MemberNotFoundException(email);
             }
         }
-            return ((Employee) member).getRole();
     }
 
     @Override
-    public UserDetails getLoggedInUser(@AuthenticationPrincipal Principal principal) {
-        return (UserDetails) ((Authentication) principal).getPrincipal();
+    public UserDetails getLoggedInUser(Object principal) {
+        return (UserDetails) principal;
     }
 }

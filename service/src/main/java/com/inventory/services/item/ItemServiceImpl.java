@@ -7,9 +7,12 @@ import com.inventory.repositories.ItemRepository;
 import com.inventory.services.assignment.AssignmentService;
 import com.inventory.services.helper.PagingHelper;
 import com.inventory.services.utils.GeneralMapper;
+import com.inventory.services.utils.Header;
 import com.inventory.services.utils.exceptions.EntityNullFieldException;
 import com.inventory.services.utils.exceptions.item.*;
 import com.inventory.services.utils.validators.ItemValidator;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.Calendar;
 import java.util.List;
@@ -228,5 +228,64 @@ public class ItemServiceImpl implements ItemService {
                 return new byte[0];
             }
         }
+    }
+
+    @Override
+    public ByteArrayInputStream getPdf(Item item) throws DocumentException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        Document document = new Document(PageSize.LETTER);
+        PdfWriter writer = PdfWriter.getInstance(document, byteArrayOutputStream);
+        document.open();
+
+        //insert header
+        Calendar cal = Calendar.getInstance();
+        Header event = new Header();
+        writer.setPageEvent(event);
+        event.setHeader(new Phrase(String.format("Blibli Inventory Manager")));
+//        event.setHeader(new Phrase(String.format("" + cal.getTime())));
+
+        //insert text
+        Font titleFont = FontFactory.getFont(FontFactory.HELVETICA, 20, Font.BOLD);
+        Font chapterFont = FontFactory.getFont(FontFactory.HELVETICA, 14, Font.BOLD);
+        Font paragraphFont = FontFactory.getFont(FontFactory.HELVETICA, 12, Font.NORMAL);
+//        Chunk chunk = new Chunk(item.getName(), chapterFont);
+        Chapter chapter = new Chapter("", 1);
+        chapter.setNumberDepth(0);
+
+        Paragraph bim = new Paragraph("Blibli Inventory Manager", paragraphFont);
+        bim.setAlignment(Element.ALIGN_RIGHT);
+
+        Paragraph date = new Paragraph("Generated at : " + cal.getTime(), paragraphFont);
+        date.setAlignment(Element.ALIGN_RIGHT);
+
+        Paragraph pageTitle = new Paragraph("Item Information", titleFont);
+        pageTitle.setAlignment(Element.ALIGN_CENTER);
+        chapter.add(pageTitle);
+        chapter.add(new Paragraph(" "));
+        chapter.add(bim);
+        chapter.add(date);
+
+        chapter.add(new Paragraph(" "));
+        chapter.add(new Paragraph("Name : " + item.getName(), chapterFont));
+        chapter.add(new Paragraph("ID : " + item.getId(), paragraphFont));
+        chapter.add(new Paragraph("Price : " + Integer.toString(item.getPrice()), paragraphFont));
+        chapter.add(new Paragraph("Quantity : " + Integer.toString(item.getQty()), paragraphFont));
+        chapter.add(new Paragraph("Location : " + item.getLocation(), paragraphFont));
+
+
+        //insert image
+//        Path path = null;
+//        Image img = null;
+//        try {
+//            path = Paths.get(ClassLoader.getSystemResource(item.getImageUrl()).toURI());
+//            img = Image.getInstance(item.getImageUrl());
+//        } catch (IOException | NullPointerException | URISyntaxException e) {
+//            e.printStackTrace();
+//        }
+//        document.add(img);
+
+        document.add(chapter);
+        document.close();
+        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
     }
 }

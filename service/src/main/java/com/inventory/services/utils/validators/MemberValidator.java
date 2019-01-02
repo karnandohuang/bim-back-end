@@ -1,8 +1,11 @@
 package com.inventory.services.utils.validators;
 
+import org.springframework.stereotype.Component;
+
 import static com.inventory.services.utils.constants.ValidationConstant.MEMBER_EMAIL_EMPTY;
 import static com.inventory.services.utils.constants.ValidationConstant.MEMBER_PASSWORD_EMPTY;
 
+@Component
 public class MemberValidator extends EntityValidator {
 
     public boolean validateEmailFormatMember(String email) {
