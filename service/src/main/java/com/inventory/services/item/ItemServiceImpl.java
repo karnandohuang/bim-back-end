@@ -264,18 +264,18 @@ public class ItemServiceImpl implements ItemService {
         chapter.add(new Paragraph("Quantity : " + Integer.toString(item.getQty()), paragraphFont));
         chapter.add(new Paragraph("Location : " + item.getLocation(), paragraphFont));
 
-        String imageFile = item.getImageUrl();
+        if(!item.getImageUrl().equals("null")){
+            String imageUrl = item.getImageUrl();
+            Image image;
+            try {
+                image = Image.getInstance(imageUrl);
+                image.scaleToFit(250, 250);
+                chapter.add(image);
 
-//        insert image
-//        Path path = null;
-//        Image img = null;
-//        try {
-//            path = Paths.get(ClassLoader.getSystemResource(item.getImageUrl()).toURI());
-//            img = Image.getInstance(item.getImageUrl());
-//        } catch (IOException | NullPointerException | URISyntaxException e) {
-//            e.printStackTrace();
-//        }
-//        document.add(img);
+            } catch (IOException e) {
+                throw new ImageNotFoundException(imageUrl);
+            }
+        }
 
         document.add(chapter);
         document.close();

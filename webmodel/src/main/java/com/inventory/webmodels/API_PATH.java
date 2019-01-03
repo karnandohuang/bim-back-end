@@ -9,8 +9,8 @@ public class API_PATH {
     public static final String API_PATH_ASSIGNMENT = "api/assignments";
     public static final String API_PATH_API_ASSIGNMENT_BY_ID = "api/assignments/{id}";
     public static final String API_PATH_CHANGE_STATUS_ASSIGNMENT = "api/assignments/changeStatus";
-    public static final String API_PATH_EMPLOYEE_ASSIGNMENT = "api/assignments/value";
-    public static final String API_PATH_SUPERIOR_EMPLOYEE_ASSIGNMENT = "api/assignments/superior/value";
+    public static final String API_PATH_EMPLOYEE_ASSIGNMENT = "api/assignments/employee";
+    public static final String API_PATH_SUPERIOR_EMPLOYEE_ASSIGNMENT = "api/assignments/superior/employee";
     public static final String API_PATH_GET_ASSIGNMENT_COUNT_BY_EMPLOYEE_ID_AND_STATUS = "api/assignments/count";
 
     public static final String API_PATH_ITEMS = "api/items";
