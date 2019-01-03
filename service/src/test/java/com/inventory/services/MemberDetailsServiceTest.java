@@ -36,8 +36,8 @@ public class MemberDetailsServiceTest {
 
     @Test
     public void loadUserByUsernameAdminMock() {
-        String username = "admin";
-        User expected = new User("admin", "admin123", mockAdminAuthorities());
+        String username = "admin@gdn-commerce.com";
+        User expected = new User(username, "admin123", mockAdminAuthorities());
         assertEquals(expected, memberDetailsService.loadUserByUsername(username));
     }
 

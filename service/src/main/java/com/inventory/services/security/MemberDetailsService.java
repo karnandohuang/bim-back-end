@@ -30,8 +30,8 @@ public class MemberDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String name) {
         Member member;
-        if (name.equals("admin")) {
-            return new User("admin", "admin123", getAdminAuthorities());
+        if (name.equals("admin@gdn-commerce.com")) {
+            return new User("admin@gdn-commerce.com", "admin123", getAdminAuthorities());
         } else {
             try {
                 logger.info("checking if email is of an value...");

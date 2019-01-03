@@ -91,22 +91,20 @@ public class ItemServiceImpl implements ItemService {
         String nullFieldItem = validator.validateNullFieldItem(request);
 
         if (request.getId() != null) {
+            logger.info("request image url : " + request.getImageUrl());
             logger.info("edit value");
-            item = this.getItem(request.getId());
+            String url = this.getItem(request.getId()).getImageUrl();
             item = mapper.map(request, Item.class);
-            logger.info("editing value of id : " + item.getId());
+            if(request.getImageUrl() == null)
+                item.setImageUrl(url);
         } else {
             item = request;
         }
-
-        logger.info("info of value to be saved : " + item.getName());
 
         if (item.getImageUrl() == null) {
             item.setImageUrl("null");
             logger.info("image url is null");
         }
-
-        logger.info("image url : " + item.getImageUrl());
 
         boolean isImageUrlValid = validator.validateImageUrlItem(item.getImageUrl());
 
@@ -172,7 +170,7 @@ public class ItemServiceImpl implements ItemService {
         logger.info(item.getName());
         Calendar cal = Calendar.getInstance();
         logger.info("month : " + (cal.get(cal.MONTH) + 1));
-        File createdDir = new File("C:\\Users\\olive\\Desktop\\bim-back-end\\resources\\" +
+        File createdDir = new File("/Users/karnandohuang/Documents/Projects/blibli-inventory-system/bim-back-end/resources/" +
                 cal.get(cal.YEAR) + "/" + (cal.get(cal.MONTH) + 1) + "/" + itemId);
         File convertFile = new File(createdDir.getAbsolutePath() + "/" +
                 file.getOriginalFilename());
@@ -266,13 +264,14 @@ public class ItemServiceImpl implements ItemService {
         chapter.add(new Paragraph("Quantity : " + Integer.toString(item.getQty()), paragraphFont));
         chapter.add(new Paragraph("Location : " + item.getLocation(), paragraphFont));
 
+        String imageFile = item.getImageUrl();
 
-        //insert image
+//        insert image
 //        Path path = null;
 //        Image img = null;
 //        try {
-//            path = Paths.get(ClassLoader.getSystemResource(value.getImageUrl()).toURI());
-//            img = Image.getInstance(value.getImageUrl());
+//            path = Paths.get(ClassLoader.getSystemResource(item.getImageUrl()).toURI());
+//            img = Image.getInstance(item.getImageUrl());
 //        } catch (IOException | NullPointerException | URISyntaxException e) {
 //            e.printStackTrace();
 //        }

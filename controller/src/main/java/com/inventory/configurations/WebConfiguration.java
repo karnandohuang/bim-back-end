@@ -21,6 +21,7 @@ import javax.persistence.EntityManager;
 import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 @Configuration
 @EnableWebMvc
@@ -61,6 +62,16 @@ public class WebConfiguration implements WebMvcConfigurer {
         return new HibernatePersistenceProvider();
     }
 
+    private Properties additionalProperties() {
+        Properties properties = new Properties();
+        properties.setProperty("hibernate.hbm2ddl.auto", "update");
+        properties.setProperty(
+                "hibernate.dialect", "org.hibernate.dialect.PostgreSQL94Dialect");
+        properties.setProperty("hibernate.show_sql", "true");
+
+        return properties;
+    }
+
     @Bean
     public EntityManager entityManager() {
         return entityManagerFactory().getObject().createEntityManager();
@@ -72,6 +83,7 @@ public class WebConfiguration implements WebMvcConfigurer {
         em.setDataSource(dataSource());
         em.setPackagesToScan("com.inventory.models");
         em.setPersistenceProvider(hibernatePersistenceProvider());
+        em.setJpaProperties(additionalProperties());
         return em;
     }
 
