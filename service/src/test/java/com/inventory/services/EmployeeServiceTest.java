@@ -57,15 +57,12 @@ public class EmployeeServiceTest {
         Employee employee = setEmployeeWithIdAndSuperiorIdNull();
         mockValidateId(true, "EM040");
         mockFindEmployeeById(true, "EM040");
-        try {
             Employee e = employeeService.getEmployee("EM040");
             assertEquals(employee, e);
-        } catch (RuntimeException e) {
             verify(validator).validateIdFormatEntity(anyString(), anyString());
             verify(employeeRepository).findById("EM040");
             verifyNoMoreInteractions(validator);
             verifyNoMoreInteractions(employeeRepository);
-        }
     }
 
     @Test
@@ -316,7 +313,7 @@ public class EmployeeServiceTest {
         ArgumentCaptor<Employee> employeeArgument = ArgumentCaptor.forClass(Employee.class);
         verify(validator).validateNullFieldEmployee(employee);
         verify(validator).validateEmailFormatMember(employee.getEmail());
-        verify(validator).isDobValid(employee.getDob());
+        verify(validator).validateDobFormatEmployee(employee.getDob());
         verify(validator).assumeRoleEmployee(employee, false);
         verify(employeeRepository).findByEmail(employee.getEmail());
         verify(employeeRepository).save(employeeArgument.capture());
@@ -341,7 +338,7 @@ public class EmployeeServiceTest {
         ArgumentCaptor<Employee> employeeArgument = ArgumentCaptor.forClass(Employee.class);
         verify(validator).validateNullFieldEmployee(employee);
         verify(validator).validateEmailFormatMember(employee.getEmail());
-        verify(validator).isDobValid(employee.getDob());
+        verify(validator).validateDobFormatEmployee(employee.getDob());
         verify(validator).validateIdFormatEntity(employee.getSuperiorId(), "EM");
         verify(validator, times(2)).assumeRoleEmployee(any(Employee.class), anyBoolean());
         verify(employeeRepository).findByEmail(employee.getEmail());
@@ -391,7 +388,7 @@ public class EmployeeServiceTest {
         } catch (RuntimeException e) {
             verify(validator).validateNullFieldEmployee(employee);
             verify(validator).validateEmailFormatMember(employee.getEmail());
-            verify(validator).isDobValid(employee.getDob());
+            verify(validator).validateDobFormatEmployee(employee.getDob());
             verify(validator).assumeRoleEmployee(any(Employee.class), anyBoolean());
             verify(employeeRepository).findByEmail(employee.getEmail());
 
@@ -410,7 +407,7 @@ public class EmployeeServiceTest {
             Employee returned = employeeService.saveEmployee(employee);
         } catch (RuntimeException e) {
             verify(validator).validateNullFieldEmployee(employee);
-            verify(validator).isDobValid(employee.getDob());
+            verify(validator).validateDobFormatEmployee(employee.getDob());
             verify(validator).validateEmailFormatMember(employee.getEmail());
             verify(validator).assumeRoleEmployee(any(Employee.class), anyBoolean());
             verify(employeeRepository).findByEmail(employee.getEmail());
@@ -433,7 +430,7 @@ public class EmployeeServiceTest {
         } catch (RuntimeException e) {
             verify(validator).validateNullFieldEmployee(employee);
             verify(validator).validateEmailFormatMember(employee.getEmail());
-            verify(validator).isDobValid(employee.getDob());
+            verify(validator).validateDobFormatEmployee(employee.getDob());
             verify(validator).assumeRoleEmployee(employee, false);
             verify(employeeRepository).findByEmail(employee.getEmail());
             verifyNoMoreInteractions(employeeRepository);
@@ -564,7 +561,7 @@ public class EmployeeServiceTest {
             verify(employeeRepository).findById(anyString());
             verify(employeeRepository).findByEmail(anyString());
             verify(validator).validateIdFormatEntity(employee.getId(), "EM");
-            verify(validator).isDobValid(employee.getDob());
+            verify(validator).validateDobFormatEmployee(employee.getDob());
             verify(validator).validateEmailFormatMember(employee.getEmail());
             verify(validator).assumeRoleEmployee(any(Employee.class), anyBoolean());
             verify(validator).validateNullFieldEmployee(employee);
@@ -883,7 +880,7 @@ public class EmployeeServiceTest {
     }
 
     private void mockValidateDOB(boolean valid, String dob) {
-        when(validator.isDobValid(dob))
+        when(validator.validateDobFormatEmployee(dob))
                 .thenReturn(valid ? true : false);
     }
 

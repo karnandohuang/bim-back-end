@@ -10,6 +10,7 @@ import com.inventory.services.helper.PagingHelper;
 import com.inventory.services.item.ItemServiceImpl;
 import com.inventory.services.utils.GeneralMapper;
 import com.inventory.services.utils.validators.ItemValidator;
+import com.itextpdf.text.DocumentException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -445,6 +446,16 @@ public class ItemServiceTest {
             verify(itemRepository).findById(item.getId());
             verifyNoMoreInteractions(validator);
             verifyNoMoreInteractions(itemRepository);
+        }
+    }
+
+    @Test
+    public void getPdf() {
+        Item item = setItemWithId();
+        try {
+            itemService.getPdf(item);
+        } catch (DocumentException e) {
+            e.printStackTrace();
         }
     }
 

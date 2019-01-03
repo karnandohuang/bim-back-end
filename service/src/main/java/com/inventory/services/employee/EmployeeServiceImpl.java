@@ -232,7 +232,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             }
         }
 
-        boolean isDobValid = validator.isDobValid(employee.getDob());
+        boolean isDobValid = validator.validateDobFormatEmployee(employee.getDob());
 
         boolean isEmailValid = validator.validateEmailFormatMember(employee.getEmail());
 

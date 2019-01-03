@@ -24,19 +24,15 @@ import static com.inventory.services.utils.constants.ExceptionConstant.MEMBER_EM
 @Service
 public class AdminServiceImpl implements AdminService {
 
+    private static final String ADMIN_ID_PREFIX = "AD";
     @Autowired
     private AdminRepository adminRepository;
-
     @Autowired
     private BCryptPasswordEncoder encoder;
-
     @Autowired
     private AdminValidator validator;
-
     @Autowired
     private GeneralMapper mapper;
-
-    private static final String ADMIN_ID_PREFIX = "AD";
 
     @Override
     @Transactional
@@ -67,10 +63,10 @@ public class AdminServiceImpl implements AdminService {
         if (!isEmailValid)
             return false;
         Admin admin;
-            admin = adminRepository.findByEmail(
-                    email);
+        admin = adminRepository.findByEmail(
+                email);
         if (admin == null)
-            throw new AdminNotFoundException(email, "Email");
+            return false;
         if (!encoder.matches(password, admin.getPassword()))
             return false;
         return true;

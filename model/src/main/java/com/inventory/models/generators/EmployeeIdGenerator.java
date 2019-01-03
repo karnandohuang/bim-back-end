@@ -26,9 +26,8 @@ public class EmployeeIdGenerator extends EntityIdGenerator {
             connection = DriverManager.getConnection(DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSCODE);
             statement = connection.createStatement();
             rs = getCurrentSequenceValue(connection, statement);
-            if(rs.next())
-            {
-                int id=rs.getInt(1);
+            if (rs.next()) {
+                int id = rs.getInt(1);
                 String suffix = String.format("%03d", id);
                 result = prefix + suffix;
                 System.out.println("Generated Id: " + result);

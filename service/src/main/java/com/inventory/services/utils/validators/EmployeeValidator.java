@@ -24,7 +24,7 @@ public class EmployeeValidator extends EntityValidator {
         return null;
     }
 
-    public boolean isDobValid(String dob) {
+    public boolean validateDobFormatEmployee(String dob) {
         if (dob.charAt(2) == '/' && dob.charAt(5) == '/')
             return true;
         else
@@ -43,7 +43,6 @@ public class EmployeeValidator extends EntityValidator {
             return true;
         return false;
     }
-
 
 
 }

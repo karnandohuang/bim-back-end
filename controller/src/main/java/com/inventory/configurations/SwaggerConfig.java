@@ -20,6 +20,7 @@ import java.util.List;
 public class SwaggerConfig {
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
+
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)

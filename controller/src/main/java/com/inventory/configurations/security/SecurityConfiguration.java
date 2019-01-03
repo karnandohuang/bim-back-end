@@ -18,19 +18,16 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    @Autowired
-    private JwtAuthenticationProvider authenticationProvider;
-
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
-
-    @Autowired
-    private RestAuthenticationEntryPoint authenticationEntryPoint;
-
     private static final String ADMIN = "ADMIN";
     private static final String SUPERIOR = "SUPERIOR";
     private static final String EMPLOYEE = "EMPLOYEE";
     private static final String ALL_API_PATH = "/api/**";
+    @Autowired
+    private JwtAuthenticationProvider authenticationProvider;
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Autowired
+    private RestAuthenticationEntryPoint authenticationEntryPoint;
 
     @Override
     public void configure(HttpSecurity http) throws Exception {

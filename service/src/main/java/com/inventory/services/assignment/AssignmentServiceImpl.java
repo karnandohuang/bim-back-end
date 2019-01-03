@@ -30,20 +30,17 @@ import static com.inventory.services.utils.constants.ExceptionConstant.ID_WRONG_
 public class AssignmentServiceImpl implements AssignmentService {
 
     private static final Logger logger = LoggerFactory.getLogger(AssignmentServiceImpl.class);
+    private static final String ASSIGNMENT_ID_PREFIX = "AT";
     @Autowired
     private AssignmentRepository assignmentRepository;
     @Autowired
     private ItemService itemService;
     @Autowired
     private EmployeeService employeeService;
-
     @Autowired
     private AssignmentValidator validator;
-
     @Autowired
     private PagingHelper pagingHelper;
-
-    private static final String ASSIGNMENT_ID_PREFIX = "AT";
     @Autowired
     private MemberService memberService;
 
@@ -252,7 +249,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     public Map<String, Integer> getRecoveredItems(List<String> ids) {
         Map<String, Integer> listOfRecoveredItems = new HashMap<>();
         int qty = 0;
-        for(String id : ids) {
+        for (String id : ids) {
             qty = 0;
             Assignment assignment;
             assignment = this.getAssignment(id);

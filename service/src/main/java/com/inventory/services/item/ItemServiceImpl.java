@@ -33,24 +33,18 @@ import static com.inventory.services.utils.constants.ExceptionConstant.ID_WRONG_
 @Service
 public class ItemServiceImpl implements ItemService {
 
+    private final static String ITEM_ID_PREFIX = "IM";
+    private final static Logger logger = LoggerFactory.getLogger(ItemServiceImpl.class);
     @Autowired
     private ItemRepository itemRepository;
-
     @Autowired
     private ItemValidator validator;
-
     @Autowired
     private AssignmentService assignmentService;
-
     @Autowired
     private GeneralMapper mapper;
-
     @Autowired
     private PagingHelper pagingHelper;
-
-    private final static String ITEM_ID_PREFIX = "IM";
-
-    private final static Logger logger = LoggerFactory.getLogger(ItemServiceImpl.class);
 
     @Override
     @Transactional
@@ -158,13 +152,13 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public String deleteItem(List<String> ids) throws RuntimeException {
-        for (String id: ids){
+        for (String id : ids) {
             Item item = this.getItem(id);
             if (assignmentService.getAssignmentCountByItemIdAndStatus(item.getId(), "Pending") > 0)
-                    throw new ItemStillHaveAssignmentException();
-                else {
+                throw new ItemStillHaveAssignmentException();
+            else {
                 itemRepository.deleteById(item.getId());
-                }
+            }
         }
         return "Delete Success";
     }

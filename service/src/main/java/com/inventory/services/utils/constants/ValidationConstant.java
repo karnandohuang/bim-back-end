@@ -14,4 +14,8 @@ public class ValidationConstant {
     public final static String ITEM_QTY_EMPTY = "Qty is empty";
     public final static String ITEM_PRICE_EMPTY = "Price is empty";
     public final static String ITEM_LOCATION_EMPTY = "Location is empty";
+
+    public final static String ASSIGNMENT_EMPLOYEE_EMPTY = "Employee id is empty";
+    public final static String ASSIGNMENT_ITEM_EMTPTY = "Item id is empty";
+    public final static String ASSIGNMENT_QTY_EMPTY = "Qty is empty";
 }

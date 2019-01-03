@@ -14,7 +14,7 @@ import static org.junit.Assert.*;
 public class MemberValidatorTest {
 
     @InjectMocks
-    MemberValidator validator;
+    private MemberValidator validator;
 
     @Test
     public void validateEmailValidNotNullSuccess() {
@@ -54,5 +54,29 @@ public class MemberValidatorTest {
         String email = "example@gdn-commerce.com";
         String password = null;
         assertEquals(MEMBER_PASSWORD_EMPTY, validator.validateNullFieldMember(email, password));
+    }
+
+    @Test
+    public void validateIdFormatValidSuccess() {
+        String prefix = "EM";
+        String id = "EM001";
+        assertTrue(validator.validateIdFormatEntity(id, prefix));
+    }
+
+    @Test
+    public void validateIdFormatNotValidFailed() {
+        String prefix = "EM";
+        String id = "AD001";
+        assertFalse(validator.validateIdFormatEntity(id, prefix));
+    }
+
+    @Test
+    public void validateIdFormatNullFailed() {
+        assertFalse(validator.validateIdFormatEntity(null, "EM"));
+    }
+
+    @Test
+    public void validateIdFormatAllFieldNullFailed() {
+        assertFalse(validator.validateIdFormatEntity(null, null));
     }
 }

@@ -206,7 +206,7 @@ public class AssignmentController {
         } catch (RuntimeException e) {
             return helper.getStandardBaseResponse(false, e.getMessage());
         }
-            return helper.getStandardBaseResponse(true, "");
+        return helper.getStandardBaseResponse(true, "");
     }
 
     @PutMapping(value = API_PATH_CHANGE_STATUS_ASSIGNMENT, produces = MediaType.APPLICATION_JSON_VALUE,

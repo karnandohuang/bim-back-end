@@ -12,9 +12,10 @@ import com.inventory.webmodels.responses.BaseResponse;
 import com.inventory.webmodels.responses.employee.EmployeeResponse;
 import com.inventory.webmodels.responses.employee.ListOfEmployeeResponse;
 import com.inventory.webmodels.responses.employee.ListOfSuperiorResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -37,6 +38,8 @@ public class EmployeeController {
 
     @Autowired
     private EmployeeService employeeService;
+
+    private Logger logger = LoggerFactory.getLogger(EmployeeController.class);
 
     @GetMapping(value = API_PATH_EMPLOYEES, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<ListOfEmployeeResponse> listOfEmployee(
@@ -81,7 +84,6 @@ public class EmployeeController {
     }
 
     @GetMapping(value = API_PATH_GET_EMPLOYEE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @PostAuthorize("hasRole('ADMIN') OR returnObject.value.value.email == principal.username")
     public BaseResponse<EmployeeResponse> getEmployee(
             @PathVariable String id) {
         BaseResponse<EmployeeResponse> response;
@@ -92,7 +94,7 @@ public class EmployeeController {
             response = helper.getBaseResponse(true, "");
             response.setValue(new EmployeeResponse(employee));
         } catch (EmployeeNotFoundException e) {
-            response = helper.getBaseResponse(true, e.getMessage());
+            response = helper.getBaseResponse(false, e.getMessage());
             response.setValue(null);
         }
         return response;

@@ -21,13 +21,11 @@ import static java.util.Arrays.asList;
 @Component
 public class MemberDetailsService implements UserDetailsService {
 
+    private static final Logger logger = LoggerFactory.getLogger(MemberDetailsService.class);
     @Autowired
     private EmployeeService employeeService;
-
     @Autowired
     private AdminService adminService;
-
-    private static final Logger logger = LoggerFactory.getLogger(MemberDetailsService.class);
 
     @Override
     public UserDetails loadUserByUsername(String name) {

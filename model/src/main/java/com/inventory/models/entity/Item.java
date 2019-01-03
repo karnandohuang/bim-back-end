@@ -16,7 +16,7 @@ import static com.inventory.models.Constant.*;
 @JsonRootName(value = "item")
 @Data
 @Entity
-@Table(name=ITEM_TABLE_NAME, schema = SCHEMA_NAME, catalog = DATABASE_NAME)
+@Table(name = ITEM_TABLE_NAME, schema = SCHEMA_NAME, catalog = DATABASE_NAME)
 @JsonPropertyOrder({"id", "sku", "name", "price", "location", "imageurl", "createdDate",
         "updatedDate", "createdBy", "updatedBy"})
 public class Item extends BaseEntity {

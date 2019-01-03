@@ -19,16 +19,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class MemberServiceImpl implements MemberService {
 
+    private static final Logger logger = LoggerFactory.getLogger(MemberServiceImpl.class);
     @Autowired
     private EmployeeService employeeService;
-
     @Autowired
     private AdminService adminService;
-
     @Autowired
     private JwtService jwtService;
-
-    private static final Logger logger = LoggerFactory.getLogger(MemberServiceImpl.class);
     @Autowired
     private MemberValidator validator;
 
