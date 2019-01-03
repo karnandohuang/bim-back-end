@@ -45,13 +45,13 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public Employee getEmployee(String id) throws EmployeeNotFoundException {
         if (!validator.validateIdFormatEntity(id, EMPLOYEE_ID_PREFIX)) {
-            logger.info("employee id : " + id + " is in the wrong format!");
+            logger.info("value id : " + id + " is in the wrong format!");
             throw new EmployeeFieldWrongFormatException(ID_WRONG_FORMAT_ERROR);
         }
         try {
             return employeeRepository.findById(id).get();
         } catch (RuntimeException e) {
-            logger.info("error getting employee of id : " + id);
+            logger.info("error getting value of id : " + id);
             throw new EmployeeNotFoundException(id, "Id");
         }
     }
@@ -66,7 +66,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = null;
         employee = employeeRepository.findByEmail(email);
         if (employee == null) {
-            logger.info("error getting employee of email : " + email);
+            logger.info("error getting value of email : " + email);
             throw new EmployeeNotFoundException(email, "Email");
         }
         return employee;
@@ -77,7 +77,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee;
         employee = this.getEmployeeByEmail(email);
         logger.info("requested password : " + password);
-        logger.info("employee password : " + employee.getPassword());
+        logger.info("value password : " + employee.getPassword());
         if (!encoder.matches(password, employee.getPassword())) {
             logger.info("password is wrong!");
             return false;
@@ -148,7 +148,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private boolean isEmployeeHavingSubordinate(String id) {
         Float count = employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(id, "");
-        logger.info("employee count for superior : " + id + " is " + count);
+        logger.info("value count for superior : " + id + " is " + count);
         if (count > 1)
             return true;
         return false;
@@ -177,7 +177,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 Employee superior = employeeRepository.findById(employee.getSuperiorId()).get();
                 superior.setRole(validator.assumeRoleEmployee(superior, false));
                 employeeRepository.save(superior);
-                logger.info("Superior : " + employee.getSuperiorId() + " changed to employee role");
+                logger.info("Superior : " + employee.getSuperiorId() + " changed to value role");
             }
             String password = employee.getPassword();
             logger.info("password from db : " + employee.getPassword());
@@ -194,7 +194,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
             employee.setPassword(encoder.encode(request.getPassword()));
         }
-        logger.info("finding another employee with same email");
+        logger.info("finding another value with same email");
         Employee isEmployeeExist = employeeRepository.findByEmail(employee.getEmail());
 
         Employee superior;
@@ -247,7 +247,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new EmployeeFieldWrongFormatException(EMPLOYEE_DOB_WRONG_FORMAT_ERROR);
 
         } else if (isEmployeeExist != null && !isEmployeeExist.getId().equals(employee.getId())) {
-            logger.info("found another employee with email : " + employee.getEmail());
+            logger.info("found another value with email : " + employee.getEmail());
             throw new EmployeeAlreadyExistException(employee.getEmail());
 
         } else {
@@ -269,31 +269,27 @@ public class EmployeeServiceImpl implements EmployeeService {
             else {
                 try {
                     if (!employee.getSuperiorId().equals("-")) {
-                        logger.info("employee : " + employee.getSuperiorId());
+                        logger.info("value : " + employee.getSuperiorId());
                         Employee superior = employeeRepository.findById(employee.getSuperiorId()).get();
                         logger.info("superior : " + superior.getId());
                         logger.info("found superior : " + superior.getId());
                         if (!this.isEmployeeHavingSubordinate(superior.getId())) {
                             superior.setRole(validator.assumeRoleEmployee(superior, false));
                             employeeRepository.save(superior);
-                            logger.info("Superior : " + employee.getSuperiorId() + " changed to employee role");
+                            logger.info("Superior : " + employee.getSuperiorId() + " changed to value role");
                         }
                     }
                 } catch (RuntimeException e) {
                     logger.info("Employee : " + employee.getSuperiorId() + " is not exist!");
                     throw new EmployeeNotFoundException(employee.getSuperiorId(), "Id");
                 }
-                try {
-                    if (employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(employee.getId(), "") > 0f) {
-                        List<Employee> listOfEmployee = employeeRepository.findAllBySuperiorId(employee.getId());
-                        for (Employee e : listOfEmployee) {
-                            e.setSuperiorId("-");
-                            employeeRepository.save(e);
-                            logger.info("Employee : " + e.getId() + " is changed to null superior");
-                        }
+                if (employeeRepository.countAllBySuperiorIdAndNameContainingIgnoreCase(employee.getId(), "") > 0f) {
+                    List<Employee> listOfEmployee = employeeRepository.findAllBySuperiorId(employee.getId());
+                    for (Employee e : listOfEmployee) {
+                        e.setSuperiorId("-");
+                        employeeRepository.save(e);
+                        logger.info("Employee : " + e.getId() + " is changed to null superior");
                     }
-                } catch (RuntimeException e) {
-                    throw new EmployeeNotFoundException(id, "Id");
                 }
             }
             employeeRepository.deleteById(id);

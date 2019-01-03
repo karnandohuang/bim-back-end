@@ -91,15 +91,15 @@ public class ItemServiceImpl implements ItemService {
         String nullFieldItem = validator.validateNullFieldItem(request);
 
         if (request.getId() != null) {
-            logger.info("edit item");
+            logger.info("edit value");
             item = this.getItem(request.getId());
             item = mapper.map(request, Item.class);
-            logger.info("editing item of id : " + item.getId());
+            logger.info("editing value of id : " + item.getId());
         } else {
             item = request;
         }
 
-        logger.info("info of item to be saved : " + item.getName());
+        logger.info("info of value to be saved : " + item.getName());
 
         if (item.getImageUrl() == null) {
             item.setImageUrl("null");
@@ -166,7 +166,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public String uploadFile(MultipartFile file, String itemId) throws RuntimeException {
-        logger.info("uploading item image!");
+        logger.info("uploading value image!");
         Item item;
         item = this.getItem(itemId);
         logger.info(item.getName());
@@ -201,10 +201,10 @@ public class ItemServiceImpl implements ItemService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        logger.info("setting up image url in item! image url : " + convertFile.getAbsolutePath());
+        logger.info("setting up image url in value! image url : " + convertFile.getAbsolutePath());
         item.setAssignmentList(null);
         item.setImageUrl(convertFile.getAbsolutePath());
-        logger.info("saving item!");
+        logger.info("saving value!");
         this.saveItem(item);
         return "Upload image success";
     }
@@ -242,7 +242,7 @@ public class ItemServiceImpl implements ItemService {
         Font titleFont = FontFactory.getFont(FontFactory.HELVETICA, 20, Font.BOLD);
         Font chapterFont = FontFactory.getFont(FontFactory.HELVETICA, 14, Font.BOLD);
         Font paragraphFont = FontFactory.getFont(FontFactory.HELVETICA, 12, Font.NORMAL);
-//        Chunk chunk = new Chunk(item.getName(), chapterFont);
+//        Chunk chunk = new Chunk(value.getName(), chapterFont);
         Chapter chapter = new Chapter("", 1);
         chapter.setNumberDepth(0);
 
@@ -271,8 +271,8 @@ public class ItemServiceImpl implements ItemService {
 //        Path path = null;
 //        Image img = null;
 //        try {
-//            path = Paths.get(ClassLoader.getSystemResource(item.getImageUrl()).toURI());
-//            img = Image.getInstance(item.getImageUrl());
+//            path = Paths.get(ClassLoader.getSystemResource(value.getImageUrl()).toURI());
+//            img = Image.getInstance(value.getImageUrl());
 //        } catch (IOException | NullPointerException | URISyntaxException e) {
 //            e.printStackTrace();
 //        }

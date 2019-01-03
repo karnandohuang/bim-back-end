@@ -60,6 +60,8 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Override
     @Transactional
     public List<Assignment> getAssignmentList(String filterStatus, Paging paging) {
+        if (filterStatus == null)
+            filterStatus = "";
         List<Assignment> listOfAssignment;
         PageRequest pageRequest;
         if (paging.getSortedType().matches("desc")) {
@@ -75,14 +77,8 @@ public class AssignmentServiceImpl implements AssignmentService {
                     Sort.Direction.ASC,
                     paging.getSortedBy());
         }
-        float totalRecords;
-        if (filterStatus == null) {
             listOfAssignment = assignmentRepository.findAllByStatusContaining(filterStatus, pageRequest).getContent();
-            totalRecords = assignmentRepository.countAllByStatus(filterStatus);
-        } else {
-            listOfAssignment = assignmentRepository.findAll(pageRequest).getContent();
-            totalRecords = (float) assignmentRepository.count();
-        }
+        float totalRecords = assignmentRepository.countAllByStatusContaining(filterStatus);
         logger.info("totalRecords : " + totalRecords);
         pagingHelper.setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfAssignment;
@@ -159,11 +155,11 @@ public class AssignmentServiceImpl implements AssignmentService {
         Double receivedCount;
         if (employeeId.equals("ADMIN")) {
             pendingAssignmentCount = Math.ceil(assignmentRepository.
-                    countAllByStatus("Pending"));
+                    countAllByStatusContaining("Pending"));
             pendingHandoverCount = Math.ceil(assignmentRepository.
-                    countAllByStatus("Approved"));
+                    countAllByStatusContaining("Approved"));
             receivedCount = Math.ceil(assignmentRepository.
-                    countAllByStatus("Received"));
+                    countAllByStatusContaining("Received"));
         } else {
             try {
                 employeeService.getEmployee(employeeId);

@@ -62,12 +62,16 @@ public class EmployeeServiceTest {
         assertEquals(employee, e);
         verify(validator).validateIdFormatEntity(id, "EM");
         verify(employeeRepository).findById(id);
+        verifyZeroInteractions(assignmentService);
+        verifyZeroInteractions(encoder);
+        verifyZeroInteractions(pagingHelper);
+        verifyZeroInteractions(mapper);
         verifyNoMoreInteractions(validator);
         verifyNoMoreInteractions(employeeRepository);
     }
 
     @Test
-    public void getEmployeeIdValidFailed() {
+    public void getEmployeeIdValidNotFoundFailed() {
         String id = "EM099";
         mockValidateId(true, id);
         mockFindEmployeeById(false, id, null);
@@ -76,6 +80,11 @@ public class EmployeeServiceTest {
         } catch (RuntimeException e) {
             verify(validator).validateIdFormatEntity(id, "EM");
             verify(employeeRepository).findById(id);
+            verifyZeroInteractions(assignmentService);
+            verifyZeroInteractions(encoder);
+            verifyZeroInteractions(pagingHelper);
+            verifyZeroInteractions(mapper);
+            verifyNoMoreInteractions(validator);
             verifyNoMoreInteractions(employeeRepository);
         }
     }
@@ -87,6 +96,10 @@ public class EmployeeServiceTest {
             employeeService.getEmployee("99");
         } catch (RuntimeException e) {
             verify(validator).validateIdFormatEntity("99", "EM");
+            verifyZeroInteractions(assignmentService);
+            verifyZeroInteractions(encoder);
+            verifyZeroInteractions(pagingHelper);
+            verifyZeroInteractions(mapper);
             verifyNoMoreInteractions(validator);
             verifyZeroInteractions(employeeRepository);
         }
@@ -101,7 +114,14 @@ public class EmployeeServiceTest {
             Employee e = employeeService.getEmployeeByEmail(employee.getEmail());
             assertEquals(employee, e);
         } catch (RuntimeException e) {
+            verify(validator).validateEmailFormatMember(employee.getEmail());
             verify(employeeRepository).findByEmail(employee.getEmail());
+            verifyNoMoreInteractions(validator);
+            verifyNoMoreInteractions(employeeRepository);
+            verifyZeroInteractions(assignmentService);
+            verifyZeroInteractions(encoder);
+            verifyZeroInteractions(pagingHelper);
+            verifyZeroInteractions(mapper);
         }
     }
 
@@ -113,7 +133,15 @@ public class EmployeeServiceTest {
         try {
             employeeService.getEmployeeByEmail(email);
         } catch (RuntimeException e) {
+            verify(validator).validateEmailFormatMember(email);
             verify(employeeRepository).findByEmail(email);
+            verifyNoMoreInteractions(validator);
+            verifyNoMoreInteractions(employeeRepository);
+            verifyNoMoreInteractions(employeeRepository);
+            verifyZeroInteractions(assignmentService);
+            verifyZeroInteractions(encoder);
+            verifyZeroInteractions(pagingHelper);
+            verifyZeroInteractions(mapper);
         }
     }
 
@@ -124,9 +152,14 @@ public class EmployeeServiceTest {
         try {
             employeeService.getEmployeeByEmail(email);
         } catch (RuntimeException e) {
-            verify(validator).validateEmailFormatMember(anyString());
+            verify(validator).validateEmailFormatMember(email);
             verifyZeroInteractions(employeeRepository);
             verifyNoMoreInteractions(validator);
+            verifyNoMoreInteractions(employeeRepository);
+            verifyZeroInteractions(assignmentService);
+            verifyZeroInteractions(encoder);
+            verifyZeroInteractions(pagingHelper);
+            verifyZeroInteractions(mapper);
         }
     }
 
@@ -137,7 +170,15 @@ public class EmployeeServiceTest {
         mockFindEmployeeByEmail(true, employee.getEmail(), employee);
         mockBcryptEncoderMatch(true);
         assertTrue(employeeService.login(employee.getEmail(), employee.getPassword()));
+        verify(validator).validateEmailFormatMember(employee.getEmail());
+        verify(encoder).matches(anyString(), anyString());
         verify(employeeRepository).findByEmail(employee.getEmail());
+        verifyNoMoreInteractions(validator);
+        verifyNoMoreInteractions(employeeRepository);
+        verifyNoMoreInteractions(encoder);
+        verifyZeroInteractions(assignmentService);
+        verifyZeroInteractions(pagingHelper);
+        verifyZeroInteractions(mapper);
     }
 
     @Test
@@ -148,6 +189,7 @@ public class EmployeeServiceTest {
         mockFindEmployeeByEmail(true, employee.getEmail(), employee);
         mockBcryptEncoderMatch(false);
         assertFalse(employeeService.login(employee.getEmail(), passsword));
+        verify(validator).validateEmailFormatMember(employee.getEmail());
         verify(employeeRepository).findByEmail(employee.getEmail());
         verifyNoMoreInteractions(employeeRepository);
     }

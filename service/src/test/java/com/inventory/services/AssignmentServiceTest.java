@@ -106,7 +106,7 @@ public class AssignmentServiceTest {
         List<Assignment> returnAssignments = assignmentService.getAssignmentList("", paging);
         ArgumentCaptor<Pageable> pageArgument = ArgumentCaptor.forClass(Pageable.class);
         verify(assignmentRepository).findAllByStatusContaining(anyString(), pageArgument.capture());
-        verify(assignmentRepository).countAllByStatus("");
+        verify(assignmentRepository).countAllByStatusContaining("");
 
 
         Sort actualSort = pageArgument.getValue().getSort();
@@ -123,7 +123,7 @@ public class AssignmentServiceTest {
         List<Assignment> returnAssignments = assignmentService.getAssignmentList("", paging);
         ArgumentCaptor<Pageable> pageArgument = ArgumentCaptor.forClass(Pageable.class);
         verify(assignmentRepository).findAllByStatusContaining(anyString(), pageArgument.capture());
-        verify(assignmentRepository).countAllByStatus("");
+        verify(assignmentRepository).countAllByStatusContaining("");
 
 
         Sort actualSort = pageArgument.getValue().getSort();
@@ -140,7 +140,7 @@ public class AssignmentServiceTest {
         List<Assignment> returnAssignments = assignmentService.getAssignmentList(null, paging);
         ArgumentCaptor<Pageable> pageArgument = ArgumentCaptor.forClass(Pageable.class);
         verify(assignmentRepository).findAllByStatusContaining(anyString(), pageArgument.capture());
-        verify(assignmentRepository).countAllByStatus("");
+        verify(assignmentRepository).countAllByStatusContaining("");
 
 
         Sort actualSort = pageArgument.getValue().getSort();
@@ -347,7 +347,7 @@ public class AssignmentServiceTest {
         Map<String, Double> expected = getMapAssigmentCountByEmployeeIdReceivedCountOne();
         assertEquals(expected, assignmentService.getAssignmentCountByEmployeeId(employeeId));
         verify(assignmentRepository, times(3))
-                .countAllByStatus(anyString());
+                .countAllByStatusContaining(anyString());
         verifyNoMoreInteractions(assignmentRepository);
         verifyZeroInteractions(employeeService);
     }
@@ -433,7 +433,7 @@ public class AssignmentServiceTest {
         List<String> ids = new ArrayList<>();
         ids.add("AT001");
         String status = "Rejected";
-        String notes = "item currently unavailable!";
+        String notes = "value currently unavailable!";
         String memberEmail = "admin2@gdn-commerce.com";
         mockValidateId(true, ids.get(0));
         mockMemberGetAdminMemberService(true, false, memberEmail);
@@ -457,7 +457,7 @@ public class AssignmentServiceTest {
         List<String> ids = new ArrayList<>();
         ids.add("AT001");
         String status = "Pending";
-        String notes = "item currently unavailable!";
+        String notes = "value currently unavailable!";
         String memberEmail = "admin2@gdn-commerce.com";
         mockValidateId(true, ids.get(0));
         mockMemberGetAdminMemberService(true, false, memberEmail);
@@ -483,7 +483,7 @@ public class AssignmentServiceTest {
         List<String> ids = new ArrayList<>();
         ids.add("AT001");
         String status = "Received";
-        String notes = "item currently unavailable!";
+        String notes = "value currently unavailable!";
         String memberEmail = "admin2@gdn-commerce.com";
         mockValidateId(true, ids.get(0));
         mockMemberGetAdminMemberService(true, false, memberEmail);
@@ -510,7 +510,7 @@ public class AssignmentServiceTest {
         List<String> ids = new ArrayList<>();
         ids.add("AT001");
         String status = "abc";
-        String notes = "item currently unavailable!";
+        String notes = "value currently unavailable!";
         String memberEmail = "admin2@gdn-commerce.com";
         mockValidateId(true, ids.get(0));
         mockMemberGetAdminMemberService(true, false, memberEmail);
@@ -535,7 +535,7 @@ public class AssignmentServiceTest {
         List<String> ids = new ArrayList<>();
         ids.add("AT001");
         String status = "abc";
-        String notes = "item currently unavailable!";
+        String notes = "value currently unavailable!";
         String memberEmail = "david@gdn-commerce.com";
         mockGetSuperiorByEmail(true, memberEmail);
         mockValidateId(true, ids.get(0));
@@ -560,7 +560,7 @@ public class AssignmentServiceTest {
         List<String> ids = new ArrayList<>();
         ids.add("AT001");
         String status = "abc";
-        String notes = "item currently unavailable!";
+        String notes = "value currently unavailable!";
         String memberEmail = "stelli@gdn-commerce.com";
         mockGetEmployeeByEmail(true, memberEmail);
         mockValidateId(true, ids.get(0));
@@ -587,7 +587,7 @@ public class AssignmentServiceTest {
         List<String> ids = new ArrayList<>();
         ids.add("AT001");
         String status = "abc";
-        String notes = "item currently unavailable!";
+        String notes = "value currently unavailable!";
         String memberEmail = "david@gdn-commerce.com";
         mockGetAnotherSuperiorByEmail(true, memberEmail);
         mockValidateId(true, ids.get(0));
@@ -659,11 +659,11 @@ public class AssignmentServiceTest {
     }
 
     private void mockGetAssignmentCountByEmployeeIdAsAdminAllOne(boolean found) {
-        when(assignmentRepository.countAllByStatus("Pending"))
+        when(assignmentRepository.countAllByStatusContaining("Pending"))
                 .thenReturn(found ? 1.0f : 0.0f);
-        when(assignmentRepository.countAllByStatus("Approved"))
+        when(assignmentRepository.countAllByStatusContaining("Approved"))
                 .thenReturn(found ? 1.0f : 0.0f);
-        when(assignmentRepository.countAllByStatus("Received"))
+        when(assignmentRepository.countAllByStatusContaining("Received"))
                 .thenReturn(found ? 1.0f : 0.0f);
     }
 

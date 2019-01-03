@@ -83,13 +83,13 @@ public class EmployeeControllerTest {
         mockMvc.perform(get(url))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.value.employee.id", is(employee.getId())))
-                .andExpect(jsonPath("$.value.employee.name", is(employee.getName())))
-                .andExpect(jsonPath("$.value.employee.email", is(employee.getEmail())))
-                .andExpect(jsonPath("$.value.employee.superiorId", is(employee.getSuperiorId())))
-                .andExpect(jsonPath("$.value.employee.dob", is(employee.getDob())))
-                .andExpect(jsonPath("$.value.employee.division", is(employee.getDivision())))
-                .andExpect(jsonPath("$.value.employee.position", is(employee.getPosition())));
+                .andExpect(jsonPath("$.value.value.id", is(employee.getId())))
+                .andExpect(jsonPath("$.value.value.name", is(employee.getName())))
+                .andExpect(jsonPath("$.value.value.email", is(employee.getEmail())))
+                .andExpect(jsonPath("$.value.value.superiorId", is(employee.getSuperiorId())))
+                .andExpect(jsonPath("$.value.value.dob", is(employee.getDob())))
+                .andExpect(jsonPath("$.value.value.division", is(employee.getDivision())))
+                .andExpect(jsonPath("$.value.value.position", is(employee.getPosition())));
     }
 
     private void testPagingNull(String url) throws Exception {

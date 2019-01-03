@@ -8,5 +8,5 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class EmployeeResponse {
-    private Employee employee;
+    private Employee value;
 }

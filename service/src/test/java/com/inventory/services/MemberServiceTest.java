@@ -255,7 +255,7 @@ public class MemberServiceTest {
         Employee employee = new Employee();
         employee.setId("EM001");
         employee.setEmail(email);
-        employee.setPassword("employee");
+        employee.setPassword("value");
         employee.setRole("EMPLOYEE");
 
         if (found)

@@ -8,6 +8,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class ItemResponse {
 
-    private Item item;
+    private Item value;
 
 }

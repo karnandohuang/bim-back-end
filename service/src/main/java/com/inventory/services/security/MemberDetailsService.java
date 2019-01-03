@@ -34,14 +34,14 @@ public class MemberDetailsService implements UserDetailsService {
             return new User("admin", "admin123", getAdminAuthorities());
         } else {
             try {
-                logger.info("checking if email is of an employee...");
+                logger.info("checking if email is of an value...");
                 member = employeeService.getEmployeeByEmail(name);
             } catch (RuntimeException e) {
                 member = null;
             }
 
             if (member == null) {
-                logger.info("email is not of employee. checking admin...");
+                logger.info("email is not of value. checking admin...");
                 try {
                     member = adminService.getAdminByEmail(name);
                 } catch (RuntimeException rte) {

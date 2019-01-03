@@ -13,7 +13,7 @@ import java.util.List;
 import static com.inventory.models.Constant.*;
 
 
-@JsonRootName(value = "item")
+@JsonRootName(value = "value")
 @Data
 @Entity
 @Table(name = ITEM_TABLE_NAME, schema = SCHEMA_NAME, catalog = DATABASE_NAME)
