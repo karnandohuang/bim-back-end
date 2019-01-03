@@ -459,7 +459,6 @@ public class ItemServiceTest {
         }
     }
 
-
     private void mockValidExistImageUrl(boolean valid, String url) {
         when(validator.validateImageUrlExist(url))
                 .thenReturn(valid ? true : false);

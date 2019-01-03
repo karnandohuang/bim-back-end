@@ -7,6 +7,8 @@ import com.inventory.services.assignment.AssignmentService;
 import com.inventory.services.employee.EmployeeServiceImpl;
 import com.inventory.services.helper.PagingHelper;
 import com.inventory.services.utils.GeneralMapper;
+import com.inventory.services.utils.exceptions.employee.EmployeeFieldWrongFormatException;
+import com.inventory.services.utils.exceptions.employee.EmployeeNotFoundException;
 import com.inventory.services.utils.validators.EmployeeValidator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,10 +64,6 @@ public class EmployeeServiceTest {
         assertEquals(employee, e);
         verify(validator).validateIdFormatEntity(id, "EM");
         verify(employeeRepository).findById(id);
-        verifyZeroInteractions(assignmentService);
-        verifyZeroInteractions(encoder);
-        verifyZeroInteractions(pagingHelper);
-        verifyZeroInteractions(mapper);
         verifyNoMoreInteractions(validator);
         verifyNoMoreInteractions(employeeRepository);
     }
@@ -78,12 +76,9 @@ public class EmployeeServiceTest {
         try {
             employeeService.getEmployee(id);
         } catch (RuntimeException e) {
+            assertEquals(EmployeeNotFoundException.class, e.getClass());
             verify(validator).validateIdFormatEntity(id, "EM");
             verify(employeeRepository).findById(id);
-            verifyZeroInteractions(assignmentService);
-            verifyZeroInteractions(encoder);
-            verifyZeroInteractions(pagingHelper);
-            verifyZeroInteractions(mapper);
             verifyNoMoreInteractions(validator);
             verifyNoMoreInteractions(employeeRepository);
         }
@@ -95,11 +90,8 @@ public class EmployeeServiceTest {
         try {
             employeeService.getEmployee("99");
         } catch (RuntimeException e) {
+            assertEquals(EmployeeFieldWrongFormatException.class, e.getClass());
             verify(validator).validateIdFormatEntity("99", "EM");
-            verifyZeroInteractions(assignmentService);
-            verifyZeroInteractions(encoder);
-            verifyZeroInteractions(pagingHelper);
-            verifyZeroInteractions(mapper);
             verifyNoMoreInteractions(validator);
             verifyZeroInteractions(employeeRepository);
         }
@@ -110,19 +102,12 @@ public class EmployeeServiceTest {
         Employee employee = setEmployeeWithIdAndSuperiorIdNull();
         mockValidateEmail(true, employee.getEmail());
         mockFindEmployeeByEmail(true, employee.getEmail(), employee);
-        try {
             Employee e = employeeService.getEmployeeByEmail(employee.getEmail());
             assertEquals(employee, e);
-        } catch (RuntimeException e) {
             verify(validator).validateEmailFormatMember(employee.getEmail());
             verify(employeeRepository).findByEmail(employee.getEmail());
             verifyNoMoreInteractions(validator);
             verifyNoMoreInteractions(employeeRepository);
-            verifyZeroInteractions(assignmentService);
-            verifyZeroInteractions(encoder);
-            verifyZeroInteractions(pagingHelper);
-            verifyZeroInteractions(mapper);
-        }
     }
 
     @Test
@@ -133,15 +118,11 @@ public class EmployeeServiceTest {
         try {
             employeeService.getEmployeeByEmail(email);
         } catch (RuntimeException e) {
+            assertEquals(EmployeeNotFoundException.class, e.getClass());
             verify(validator).validateEmailFormatMember(email);
             verify(employeeRepository).findByEmail(email);
             verifyNoMoreInteractions(validator);
             verifyNoMoreInteractions(employeeRepository);
-            verifyNoMoreInteractions(employeeRepository);
-            verifyZeroInteractions(assignmentService);
-            verifyZeroInteractions(encoder);
-            verifyZeroInteractions(pagingHelper);
-            verifyZeroInteractions(mapper);
         }
     }
 
@@ -152,14 +133,10 @@ public class EmployeeServiceTest {
         try {
             employeeService.getEmployeeByEmail(email);
         } catch (RuntimeException e) {
+            assertEquals(EmployeeFieldWrongFormatException.class, e.getClass());
             verify(validator).validateEmailFormatMember(email);
             verifyZeroInteractions(employeeRepository);
             verifyNoMoreInteractions(validator);
-            verifyNoMoreInteractions(employeeRepository);
-            verifyZeroInteractions(assignmentService);
-            verifyZeroInteractions(encoder);
-            verifyZeroInteractions(pagingHelper);
-            verifyZeroInteractions(mapper);
         }
     }
 
@@ -176,9 +153,6 @@ public class EmployeeServiceTest {
         verifyNoMoreInteractions(validator);
         verifyNoMoreInteractions(employeeRepository);
         verifyNoMoreInteractions(encoder);
-        verifyZeroInteractions(assignmentService);
-        verifyZeroInteractions(pagingHelper);
-        verifyZeroInteractions(mapper);
     }
 
     @Test
@@ -189,8 +163,11 @@ public class EmployeeServiceTest {
         mockFindEmployeeByEmail(true, employee.getEmail(), employee);
         mockBcryptEncoderMatch(false);
         assertFalse(employeeService.login(employee.getEmail(), passsword));
+        verify(encoder).matches(anyString(), anyString());
         verify(validator).validateEmailFormatMember(employee.getEmail());
         verify(employeeRepository).findByEmail(employee.getEmail());
+        verifyNoMoreInteractions(validator);
+        verifyNoMoreInteractions(encoder);
         verifyNoMoreInteractions(employeeRepository);
     }
 
@@ -202,8 +179,10 @@ public class EmployeeServiceTest {
         try {
             employeeService.login(email, "karnando");
         } catch (RuntimeException e) {
+            verify(validator).validateEmailFormatMember(email);
             verify(employeeRepository).findByEmail("karnandoa@gdn-commerce.com");
             verifyNoMoreInteractions(employeeRepository);
+            verifyNoMoreInteractions(validator);
         }
     }
 
@@ -215,8 +194,7 @@ public class EmployeeServiceTest {
         ArgumentCaptor<Pageable> pageArgument = ArgumentCaptor.forClass(Pageable.class);
         verify(employeeRepository).findAllByNameContainingIgnoreCase(any(String.class),
                 pageArgument.capture());
-        verify(employeeRepository).countAllByNameContainingIgnoreCase(anyString());
-
+        verify(employeeRepository).countAllByNameContainingIgnoreCase("");
 
         Sort actualSort = pageArgument.getValue().getSort();
         assertEquals(Sort.Direction.DESC, actualSort.getOrderFor(paging.getSortedBy()).getDirection());
@@ -358,17 +336,14 @@ public class EmployeeServiceTest {
         mockValidateEmail(true, employee.getEmail());
         mockValidateDOB(true, employee.getDob());
         mockSaveEmployee(employee);
-        Employee returned = employeeService.saveEmployee(employee);
-        ArgumentCaptor<Employee> employeeArgument = ArgumentCaptor.forClass(Employee.class);
+        employeeService.saveEmployee(employee);
         verify(validator).validateNullFieldEmployee(employee);
         verify(validator).validateEmailFormatMember(employee.getEmail());
         verify(validator).validateDobFormatEmployee(employee.getDob());
         verify(validator).assumeRoleEmployee(employee, false);
         verify(employeeRepository).findByEmail(employee.getEmail());
-        verify(employeeRepository).save(employeeArgument.capture());
+        verify(employeeRepository).save(any(Employee.class));
 
-        assertEquals(employee, employeeArgument.getValue());
-        assertEquals(employee, returned);
 
         verifyNoMoreInteractions(validator);
         verifyNoMoreInteractions(employeeRepository);
@@ -377,6 +352,7 @@ public class EmployeeServiceTest {
     @Test
     public void insertEmployeeSuperiorIdValidSuccess() {
         Employee employee = setEmployeeWithIdAndSuperiorIdNull();
+        employee.setId(null);
         setsuperiorIdWithinEmployee(employee);
         Employee superior = setSuperiorWithIdAndSuperiorIdNull(employee.getSuperiorId());
         mockValidateEmail(true, employee.getEmail());
@@ -387,22 +363,15 @@ public class EmployeeServiceTest {
         mockFindEmployeeById(true, superior.getId(), superior);
         mockMapEmployee(false, employee);
         mockSaveEmployee(employee);
-        Employee returned = employeeService.saveEmployee(employee);
-        ArgumentCaptor<Employee> employeeArgument = ArgumentCaptor.forClass(Employee.class);
+        employeeService.saveEmployee(employee);
         verify(validator).validateNullFieldEmployee(employee);
         verify(validator).validateEmailFormatMember(employee.getEmail());
         verify(validator).validateDobFormatEmployee(employee.getDob());
-        verify(employeeRepository, times(3)).findById(anyString());
-        verify(employeeRepository).countAllBySuperiorIdAndNameContainingIgnoreCase(employee.getSuperiorId(), "");
-        verify(validator).validateIdFormatEntity(employee.getId(), "EM");
         verify(validator).validateIdFormatEntity(employee.getSuperiorId(), "EM");
-        verify(validator, times(3)).assumeRoleEmployee(any(Employee.class), anyBoolean());
+        verify(validator, times(2)).assumeRoleEmployee(any(Employee.class), anyBoolean());
         verify(employeeRepository).findByEmail(employee.getEmail());
-        verify(employeeRepository, times(2)).findById(employee.getSuperiorId());
-        verify(employeeRepository, times(3)).save(employeeArgument.capture());
-
-        assertEquals(employee, employeeArgument.getValue());
-        assertEquals(employee, returned);
+        verify(employeeRepository).findById(employee.getSuperiorId());
+        verify(employeeRepository, times(2)).save(any(Employee.class));
 
         verifyNoMoreInteractions(validator);
         verifyNoMoreInteractions(employeeRepository);
@@ -420,7 +389,7 @@ public class EmployeeServiceTest {
         System.out.println(employee.getId());
         mockSaveEmployee(employee);
         try {
-            Employee returned = employeeService.saveEmployee(employee);
+            employeeService.saveEmployee(employee);
         } catch (RuntimeException e) {
             verify(employeeRepository).findById(employee.getSuperiorId());
             verify(employeeRepository).findByEmail(employee.getEmail());
@@ -459,11 +428,11 @@ public class EmployeeServiceTest {
     @Test
     public void insertEmployeeSuperiorIdValidEmailNullFieldExistsFailed() {
         Employee employee = setEmployeeWithIdNullAndSuperiorIdNullAndEmailNull();
-        mockValidateId(true, employee.getId());
+        employee.setId(null);
         mockNullFieldEmployeeFound(true);
         mockSaveEmployee(employee);
         try {
-            Employee returned = employeeService.saveEmployee(employee);
+            employeeService.saveEmployee(employee);
         } catch (RuntimeException e) {
             verify(validator).validateNullFieldEmployee(employee);
             verify(validator).validateEmailFormatMember(employee.getEmail());
@@ -483,7 +452,7 @@ public class EmployeeServiceTest {
         mockValidateEmail(false, employee.getEmail());
         mockSaveEmployee(employee);
         try {
-            Employee returned = employeeService.saveEmployee(employee);
+            employeeService.saveEmployee(employee);
         } catch (RuntimeException e) {
             verify(validator).validateNullFieldEmployee(employee);
             verify(validator).validateDobFormatEmployee(employee.getDob());
@@ -506,7 +475,7 @@ public class EmployeeServiceTest {
         mockValidateDOB(false, employee.getDob());
         mockSaveEmployee(employee);
         try {
-            Employee returned = employeeService.saveEmployee(employee);
+            employeeService.saveEmployee(employee);
         } catch (RuntimeException e) {
             verify(validator).validateNullFieldEmployee(employee);
             verify(validator).validateEmailFormatMember(employee.getEmail());
@@ -547,21 +516,35 @@ public class EmployeeServiceTest {
         employee.setSuperiorId("-");
         employee.setPassword(null);
         mockSaveEmployee(employee);
-        Employee returned = employeeService.saveEmployee(employee);
+        employeeService.saveEmployee(employee);
     }
 
     @Test
     public void editEmployeeSuperiorIdNullAndPasswordSuccess() {
         Employee employee = setEmployeeWithIdAndSuperiorIdNull();
         mockValidateId(true, employee.getId());
-        mockValidateId(true, employee.getSuperiorId());
         mockValidateEmail(true, employee.getEmail());
         mockValidateDOB(true, employee.getDob());
         mockFindEmployeeById(true, employee.getId(), employee);
         employee.setPassword("asd75");
         mockMapEmployee(false, employee);
         mockSaveEmployee(employee);
-        Employee returned = employeeService.saveEmployee(employee);
+        employeeService.saveEmployee(employee);
+        verify(validator).validateNullFieldEmployee(employee);
+        verify(validator).assumeRoleEmployee(employee, false);
+        verify(validator).validateIdFormatEntity(anyString(), anyString());
+        verify(validator).validateEmailFormatMember(employee.getEmail());
+        verify(validator).validateDobFormatEmployee(employee.getDob());
+        verify(encoder).encode("asd75");
+        verify(employeeRepository).findById(employee.getId());
+        verify(employeeRepository).findByEmail(employee.getEmail());
+        verify(employeeRepository).countAllBySuperiorIdAndNameContainingIgnoreCase(anyString(), anyString());
+        verify(mapper).map(employee, Employee.class);
+        verify(employeeRepository).save(any(Employee.class));
+        verifyNoMoreInteractions(validator);
+        verifyNoMoreInteractions(encoder);
+        verifyNoMoreInteractions(mapper);
+        verifyNoMoreInteractions(employeeRepository);
     }
 
     @Test
@@ -583,8 +566,21 @@ public class EmployeeServiceTest {
         mockFindEmployeeById(true, employee.getSuperiorId(), superior);
         mockSaveEmployee(employee);
         System.out.println(employee.getSuperiorId());
-        Employee returned = employeeService.saveEmployee(employee);
-        assertEquals(employee, returned);
+        employeeService.saveEmployee(employee);
+        verify(validator).validateNullFieldEmployee(employee);
+        verify(validator, times(3)).assumeRoleEmployee(any(Employee.class), anyBoolean());
+        verify(validator, times(2)).validateIdFormatEntity(anyString(), anyString());
+        verify(validator).validateEmailFormatMember(employee.getEmail());
+        verify(validator).validateDobFormatEmployee(employee.getDob());
+        verify(employeeRepository, times(3)).findById(anyString());
+        verify(employeeRepository).findByEmail(employee.getEmail());
+        verify(employeeRepository).countAllBySuperiorIdAndNameContainingIgnoreCase(anyString(), anyString());
+        verify(mapper).map(employee, Employee.class);
+        verify(employeeRepository, times(3)).save(any(Employee.class));
+        verifyNoMoreInteractions(validator);
+        verifyZeroInteractions(encoder);
+        verifyNoMoreInteractions(mapper);
+        verifyNoMoreInteractions(employeeRepository);
     }
 
     @Test
@@ -606,8 +602,21 @@ public class EmployeeServiceTest {
         mockFindEmployeeById(true, employee.getSuperiorId(), superior);
         mockSaveEmployee(employee);
         System.out.println(employee.getSuperiorId());
-        Employee returned = employeeService.saveEmployee(employee);
-        assertEquals(employee, returned);
+        employeeService.saveEmployee(employee);
+        verify(validator).validateNullFieldEmployee(employee);
+        verify(validator, times(3)).assumeRoleEmployee(any(Employee.class), anyBoolean());
+        verify(validator, times(2)).validateIdFormatEntity(anyString(), anyString());
+        verify(validator).validateEmailFormatMember(employee.getEmail());
+        verify(validator).validateDobFormatEmployee(employee.getDob());
+        verify(employeeRepository, times(3)).findById(anyString());
+        verify(employeeRepository).findByEmail(employee.getEmail());
+        verify(employeeRepository).countAllBySuperiorIdAndNameContainingIgnoreCase(anyString(), anyString());
+        verify(mapper).map(employee, Employee.class);
+        verify(employeeRepository, times(3)).save(any(Employee.class));
+        verifyNoMoreInteractions(validator);
+        verifyZeroInteractions(encoder);
+        verifyNoMoreInteractions(mapper);
+        verifyNoMoreInteractions(employeeRepository);
     }
 
     @Test

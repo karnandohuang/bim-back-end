@@ -205,18 +205,9 @@ public class EmployeeServiceImpl implements EmployeeService {
             superior = new Employee();
 
         else {
-
-            boolean isSuperiorIdValid = validator
-                    .validateIdFormatEntity(employee.getSuperiorId(), EMPLOYEE_ID_PREFIX);
-
-            if (!isSuperiorIdValid) {
-                logger.info("superior id :" + employee.getSuperiorId() + " is not valid!");
-                throw new EmployeeFieldWrongFormatException(EMPLOYEE_SUPERIOR_ID_WRONG_FORMAT_ERROR);
-
-            } else {
                 try {
                     logger.info("finding new superior of id : " + employee.getSuperiorId());
-                    superior = employeeRepository.findById(employee.getSuperiorId()).get();
+                    superior = this.getEmployee(employee.getSuperiorId());
 
                     superior.setRole(validator.assumeRoleEmployee(superior, true));
 
@@ -225,7 +216,6 @@ public class EmployeeServiceImpl implements EmployeeService {
                     logger.info("Superior id : " + employee.getSuperiorId() + " is not exist!");
                     throw new EmployeeNotFoundException(employee.getSuperiorId(), "SuperiorId");
                 }
-            }
         }
 
         boolean isDobValid = validator.validateDobFormatEmployee(employee.getDob());

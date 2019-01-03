@@ -37,7 +37,7 @@ public class AssignmentValidator extends EntityValidator {
             return ASSIGNMENT_EMPLOYEE_EMPTY;
         else if (assignment.getItem() == null)
             return ASSIGNMENT_ITEM_EMTPTY;
-        else if (assignment.getQty() == 0)
+        else if (assignment.getQty() <= 0)
             return ASSIGNMENT_QTY_EMPTY;
         return null;
     }
