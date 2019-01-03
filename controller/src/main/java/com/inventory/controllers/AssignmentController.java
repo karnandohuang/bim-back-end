@@ -219,7 +219,7 @@ public class AssignmentController {
         Assignment Assignment = generalMapper.map(AssignmentBody, Assignment.class);
         Map<String, Integer> listOfRecoveredItems;
         try {
-            UserDetails userDetails = memberService.getLoggedInUser(principal);
+            UserDetails userDetails = memberService.getLoggedInUser(((Authentication) principal).getPrincipal());
             String memberEmail = userDetails.getUsername();
             String success = assignmentService.changeStatusAssignments(AssignmentBody.getIds(),
                     Assignment.getStatus(), Assignment.getNotes(), memberEmail);
