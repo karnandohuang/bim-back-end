@@ -60,8 +60,6 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Override
     @Transactional
     public List<Assignment> getAssignmentList(String filterStatus, Paging paging) {
-        if (filterStatus == null)
-            filterStatus = "";
         List<Assignment> listOfAssignment;
         PageRequest pageRequest;
         if (paging.getSortedType().matches("desc")) {
@@ -77,8 +75,15 @@ public class AssignmentServiceImpl implements AssignmentService {
                     Sort.Direction.ASC,
                     paging.getSortedBy());
         }
-        listOfAssignment = assignmentRepository.findAllByStatusContaining(filterStatus, pageRequest).getContent();
-        float totalRecords = assignmentRepository.countAllByStatus(filterStatus);
+        float totalRecords;
+        if (filterStatus == null) {
+            listOfAssignment = assignmentRepository.findAllByStatusContaining(filterStatus, pageRequest).getContent();
+            totalRecords = assignmentRepository.countAllByStatus(filterStatus);
+        } else {
+            listOfAssignment = assignmentRepository.findAll(pageRequest).getContent();
+            totalRecords = (float) assignmentRepository.count();
+        }
+        logger.info("totalRecords : " + totalRecords);
         pagingHelper.setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfAssignment;
     }

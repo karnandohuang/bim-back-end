@@ -75,7 +75,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Boolean login(String email, String password) {
         Employee employee;
-        employee = employeeRepository.findByEmail(email);
+        employee = this.getEmployeeByEmail(email);
         if (employee == null) {
             logger.info("email : " + email + " is wrong. not listed on the database!");
             return false;
