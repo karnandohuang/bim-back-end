@@ -76,10 +76,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     public Boolean login(String email, String password) {
         Employee employee;
         employee = this.getEmployeeByEmail(email);
-        if (employee == null) {
-            logger.info("email : " + email + " is wrong. not listed on the database!");
-            return false;
-        }
         logger.info("requested password : " + password);
         logger.info("employee password : " + employee.getPassword());
         if (!encoder.matches(password, employee.getPassword())) {

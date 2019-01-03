@@ -350,7 +350,8 @@ public class EmployeeServiceTest {
         verify(validator).validateNullFieldEmployee(employee);
         verify(validator).validateEmailFormatMember(employee.getEmail());
         verify(validator).validateDobFormatEmployee(employee.getDob());
-        verify(employeeRepository).findById(anyString());
+        verify(employeeRepository, times(3)).findById(anyString());
+        verify(employeeRepository).countAllBySuperiorIdAndNameContainingIgnoreCase(employee.getSuperiorId(), "");
         verify(validator).validateIdFormatEntity(employee.getId(), "EM");
         verify(validator).validateIdFormatEntity(employee.getSuperiorId(), "EM");
         verify(validator, times(3)).assumeRoleEmployee(any(Employee.class), anyBoolean());
@@ -380,6 +381,29 @@ public class EmployeeServiceTest {
             Employee returned = employeeService.saveEmployee(employee);
         } catch (RuntimeException e) {
             verify(employeeRepository).findById(employee.getSuperiorId());
+            verify(employeeRepository).findByEmail(employee.getEmail());
+
+            verify(validator).validateNullFieldEmployee(employee);
+            verify(validator).validateIdFormatEntity(employee.getSuperiorId(), "EM");
+
+            verifyNoMoreInteractions(validator);
+            verifyNoMoreInteractions(employeeRepository);
+        }
+    }
+
+    @Test
+    public void insertEmployeeSuperiorIdNotValidFailed() {
+        Employee employee = setEmployeeWithIdAndSuperiorIdNull();
+        employee.setSuperiorId("99");
+        employee.setId(null);
+        mockValidateId(false, employee.getSuperiorId());
+        mockValidateEmail(true, employee.getEmail());
+        mockValidateDOB(true, employee.getDob());
+        System.out.println(employee.getId());
+        mockSaveEmployee(employee);
+        try {
+            employeeService.saveEmployee(employee);
+        } catch (RuntimeException e) {
             verify(employeeRepository).findByEmail(employee.getEmail());
 
             verify(validator).validateNullFieldEmployee(employee);
