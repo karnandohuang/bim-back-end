@@ -1,27 +1,27 @@
 package com.inventory.controllers;
 
-import com.inventory.mappers.GeneralMapper;
-import com.inventory.models.Item;
+import com.inventory.helpers.ItemHelper;
 import com.inventory.models.Paging;
+import com.inventory.models.entity.Item;
 import com.inventory.services.item.ItemService;
+import com.inventory.services.utils.GeneralMapper;
+import com.inventory.webmodels.requests.DeleteRequest;
 import com.inventory.webmodels.requests.item.ItemRequest;
-import com.inventory.webmodels.requests.request.DeleteRequest;
 import com.inventory.webmodels.responses.BaseResponse;
-import com.inventory.webmodels.responses.DeleteResponse;
 import com.inventory.webmodels.responses.item.ItemResponse;
 import com.inventory.webmodels.responses.item.ListOfItemResponse;
-import com.inventory.webmodels.responses.item.UploadFileResponse;
+import com.itextpdf.text.DocumentException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
+import java.io.ByteArrayInputStream;
 
-import static com.inventory.constants.API_PATH.*;
-import static com.inventory.constants.ErrorConstant.NORMAL_ERROR;
-import static com.inventory.constants.ErrorConstant.SAVE_ERROR;
+import static com.inventory.webmodels.API_PATH.*;
 
 @CrossOrigin
 @RestController
@@ -33,74 +33,113 @@ public class ItemController {
     @Autowired
     private GeneralMapper generalMapper;
 
+    @Autowired
+    private ItemHelper helper;
+
     @GetMapping(value = API_PATH_ITEMS, produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<ListOfItemResponse> getItemList(
+    public BaseResponse<ListOfItemResponse> getListItem(
             @RequestParam(required = false) String name,
             @RequestParam int pageNumber,
             @RequestParam int pageSize,
             @RequestParam(required = false) String sortedBy,
             @RequestParam(required = false) String sortedType
-    ) throws IOException {
-        Paging paging = generalMapper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
+    ) {
+        Paging paging = helper.getPaging(pageNumber, pageSize, sortedBy, sortedType);
         if (name == null)
             name = "";
         ListOfItemResponse list = new ListOfItemResponse(itemService.getItemList(name, paging));
-        BaseResponse<ListOfItemResponse> response = generalMapper.getBaseResponse(true, "", paging);
+        BaseResponse<ListOfItemResponse> response = helper.getListBaseResponse(true, "", paging);
         response.setValue(list);
         return response;
     }
 
     @GetMapping(value = API_PATH_GET_ITEM, produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<ItemResponse> ItemData(@PathVariable String id) throws IOException{
-        ItemResponse itemResponse = new ItemResponse(itemService.getItem(id));
-        BaseResponse<ItemResponse> response = generalMapper.getBaseResponse(true, "", new Paging());
-        response.setValue(itemResponse);
+    public BaseResponse<ItemResponse> getItem(@PathVariable String id) {
+        Item item;
+        BaseResponse<ItemResponse> response;
+        try {
+            item = itemService.getItem(id);
+            response = helper.getBaseResponse(true, "");
+            response.setValue(helper.getMappedItemResponse(item));
+        } catch (RuntimeException e) {
+            response = helper.getBaseResponse(false, e.getMessage());
+            response.setValue(null);
+        }
         return response;
     }
 
     @RequestMapping(value = API_PATH_ITEMS, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE, method = {RequestMethod.POST, RequestMethod.PUT})
-    public BaseResponse<String> insertItem(@RequestBody ItemRequest request) {
-        Item item = generalMapper.getMappedItem(request);
-        if (itemService.saveItem(item) == null)
-            return generalMapper.getStandardBaseResponse(false, SAVE_ERROR);
-        return generalMapper.getStandardBaseResponse(true, "");
+    @Transactional
+    public BaseResponse<ItemResponse> saveItem(@RequestBody ItemRequest request) {
+        Item item = generalMapper.map(request, Item.class);
+        BaseResponse<ItemResponse> response;
+        try {
+            item = itemService.saveItem(item);
+            response = helper.getBaseResponse(true, "");
+            response.setValue(helper.getMappedItemResponse(item));
+        } catch (RuntimeException e) {
+            response = helper.getBaseResponse(false, e.getMessage());
+            response.setValue(null);
+        }
+        return response;
     }
 
     @PostMapping(value = API_PATH_UPLOAD_IMAGE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<UploadFileResponse> uploadFile(
+    @Transactional
+    public BaseResponse<String> uploadFile(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("sku") String itemSku
+            @RequestParam("itemId") String itemId,
+            HttpServletRequest request
     ) {
-        String imagePath = itemService.uploadFile(file, itemSku);
-        UploadFileResponse value = new UploadFileResponse(imagePath);
-        BaseResponse<UploadFileResponse> response = null;
-        if (imagePath == null)
-            response = generalMapper.getUploadBaseResponse(false, SAVE_ERROR);
-        else
-            response = generalMapper.getUploadBaseResponse(true, "");
-        response.setValue(value);
+        BaseResponse<String> response;
+        try {
+            String success = itemService.uploadFile(file, itemId);
+            response = helper.getStandardBaseResponse(true, success);
+        } catch (RuntimeException e) {
+            response = helper.getStandardBaseResponse(false, e.getMessage());
+        }
         return response;
     }
 
     @DeleteMapping(value = API_PATH_ITEMS, consumes = MediaType.APPLICATION_JSON_VALUE,
-    produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<DeleteResponse> deleteItem(@RequestBody DeleteRequest request){
-        DeleteResponse deleteResponse = null;
-        BaseResponse<DeleteResponse> response = null;
-
-        List<String> error = itemService.deleteItem(request.getIds());
-
-        if(error.size() <= 0){
-            response = generalMapper.getBaseResponse(true, "", new Paging());
-        }else {
-            response = generalMapper.getBaseResponse(false, NORMAL_ERROR, new Paging());
-            deleteResponse.setValue(error);
-            response.setValue(deleteResponse);
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    public BaseResponse<String> deleteItem(@RequestBody DeleteRequest request) {
+        BaseResponse<String> response;
+        try {
+            String success = itemService.deleteItem(request.getIds());
+            response = helper.getBaseResponse(true, success);
+        } catch (RuntimeException e) {
+            response = helper.getBaseResponse(false, e.getMessage());
         }
-
         return response;
     }
+
+    @GetMapping(value = API_PATH_GET_ITEM_DETAIL_PDF, produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<InputStreamResource> getPdf(@PathVariable String id) throws DocumentException {
+        Item item;
+        item = itemService.getItem(id);
+        ByteArrayInputStream inputStream = itemService.getPdf(item);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+        headers.set("Content-Disposition", "inline");
+        headers.set("filename", "details.pdf");
+
+        return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_PDF)
+                .body(new InputStreamResource(inputStream));
+    }
+
+    @GetMapping(value = API_PATH_ITEMS_GET_IMAGE, produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<byte[]> getImageAsResponseEntity(@RequestParam String imagePath) {
+        HttpHeaders headers = new HttpHeaders();
+        byte[] media = itemService.getItemImage(imagePath);
+        headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+
+        return new ResponseEntity<>(media, headers, HttpStatus.OK);
+    }
+
 
 }

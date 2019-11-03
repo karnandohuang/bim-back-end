@@ -11,7 +11,10 @@ public class EmployeeRequest {
     private String name;
     private String superiorId;
     private String email;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String password;
+
     private String dob;
     private String position;
     private String division;

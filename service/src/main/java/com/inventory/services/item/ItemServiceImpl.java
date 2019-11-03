@@ -1,9 +1,20 @@
 package com.inventory.services.item;
 
-import com.inventory.models.Item;
 import com.inventory.models.Paging;
-import com.inventory.models.Request;
+import com.inventory.models.entity.Assignment;
+import com.inventory.models.entity.Item;
 import com.inventory.repositories.ItemRepository;
+import com.inventory.services.assignment.AssignmentService;
+import com.inventory.services.helper.PagingHelper;
+import com.inventory.services.utils.GeneralMapper;
+import com.inventory.services.utils.Header;
+import com.inventory.services.utils.exceptions.EntityNullFieldException;
+import com.inventory.services.utils.exceptions.item.*;
+import com.inventory.services.utils.validators.ItemValidator;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -11,64 +22,114 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.io.*;
+import java.nio.file.Files;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
+import static com.inventory.services.utils.constants.ExceptionConstant.ID_WRONG_FORMAT_ERROR;
+
 @Service
 public class ItemServiceImpl implements ItemService {
 
+    private final static String ITEM_ID_PREFIX = "IM";
+    private final static Logger logger = LoggerFactory.getLogger(ItemServiceImpl.class);
     @Autowired
     private ItemRepository itemRepository;
+    @Autowired
+    private ItemValidator validator;
+    @Autowired
+    private AssignmentService assignmentService;
+    @Autowired
+    private GeneralMapper mapper;
+    @Autowired
+    private PagingHelper pagingHelper;
 
     @Override
     @Transactional
-    public Item getItem(String id) {
-        return itemRepository.findById(id).get();
+    public Item getItem(String id) throws RuntimeException {
+        if (!validator.validateIdFormatEntity(id, ITEM_ID_PREFIX))
+            throw new ItemFieldWrongFormatException(ID_WRONG_FORMAT_ERROR);
+        try {
+            return itemRepository.findById(id).get();
+        } catch (RuntimeException e) {
+            throw new ItemNotFoundException(id, "Id");
+        }
     }
 
     @Override
     @Transactional
-    public List<Item> getItemList(String name, Paging paging) {
+    public List<Item> getItemList(String search, Paging paging) {
         List<Item> listOfItem;
+        PageRequest pageRequest;
         if (paging.getSortedType().matches("desc")) {
-            listOfItem = itemRepository.findAllByNameContainingIgnoreCase(name,
-                    PageRequest.of(paging.getPageNumber() - 1,
-                            paging.getPageSize(),
-                            Sort.Direction.DESC,
-                            paging.getSortedBy())).getContent();
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
+                    paging.getPageSize(),
+                    Sort.Direction.DESC,
+                    paging.getSortedBy());
         } else {
-            listOfItem = itemRepository.findAllByNameContainingIgnoreCase(name,
-                    PageRequest.of(paging.getPageNumber() - 1,
-                            paging.getPageSize(),
-                            Sort.Direction.ASC,
-                            paging.getSortedBy())).getContent();
+            pageRequest = PageRequest.of(
+                    paging.getPageNumber() - 1,
+                    paging.getPageSize(),
+                    Sort.Direction.ASC,
+                    paging.getSortedBy());
         }
-        float totalRecords = itemRepository.countAllByNameContainingIgnoreCase(name);
-        paging.setTotalRecords((int) totalRecords);
-        double totalPage = (int) Math.ceil((totalRecords / paging.getPageSize()));
-        paging.setTotalPage((int) totalPage);
+        listOfItem = itemRepository.findAllByNameContainingIgnoreCaseOrIdContainingIgnoreCase(search, search, pageRequest).getContent();
+        float totalRecords = itemRepository.countAllByNameContainingIgnoreCaseOrIdContainingIgnoreCase(search, search);
+        pagingHelper.setPagingTotalRecordsAndTotalPage(paging, totalRecords);
         return listOfItem;
     }
 
     @Override
     @Transactional
-    public Item saveItem(Item item) {
-        return itemRepository.save(item);
+    public Item saveItem(Item request) throws RuntimeException {
+
+        Item item;
+
+        String nullFieldItem = validator.validateNullFieldItem(request);
+
+        if (request.getId() != null) {
+            logger.info("request image url : " + request.getImageUrl());
+            logger.info("edit value");
+            String url = this.getItem(request.getId()).getImageUrl();
+            item = mapper.map(request, Item.class);
+            if(request.getImageUrl() == null)
+                item.setImageUrl(url);
+        } else {
+            item = request;
+        }
+
+        if (item.getImageUrl() == null) {
+            item.setImageUrl("null");
+            logger.info("image url is null");
+        }
+
+        boolean isImageUrlValid = validator.validateImageUrlItem(item.getImageUrl());
+
+        logger.info("checking all validation!");
+
+        if (nullFieldItem != null)
+            throw new EntityNullFieldException(nullFieldItem);
+
+        else if (!isImageUrlValid)
+            throw new ImagePathWrongException();
+
+        item = itemRepository.save(item);
+        itemRepository.flush();
+        return item;
     }
 
     @Override
     @Transactional
-    public Item changeItemQty(Request request) {
-        Item item = itemRepository.findById(request.getItemId()).get();
-        int qty = item.getQty() - request.getQty();
-        if (qty < 0)
-            return null;
+    public Item changeItemQty(Assignment assignment) throws RuntimeException {
+        Item item = this.getItem(assignment.getItem().getId());
+        int qty = item.getQty() - assignment.getQty();
+        if (item.getQty() <= 0)
+            throw new ItemOutOfQtyException(item.getName());
+        else if (qty < 0)
+            throw new ItemQtyLimitReachedException(item.getName());
         item.setQty(qty);
         item = itemRepository.save(item);
         return item;
@@ -76,47 +137,49 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
-    public List<String> recoverItemQty(Map<String, Integer> listOfRecoveredItems) {
-        List<String> errorOfItem = new ArrayList<>();
+    public String recoverItemQty(Map<String, Integer> listOfRecoveredItems) throws RuntimeException {
         for (Map.Entry<String, Integer> entry : listOfRecoveredItems.entrySet()) {
-            Item item = itemRepository.findById(entry.getKey()).get();
+            Item item;
+            item = this.getItem(entry.getKey());
             item.setQty(item.getQty() + entry.getValue());
-            item = itemRepository.save(item);
-            if (item == null) {
-                errorOfItem.add("Failed saving item");
-            }
+            itemRepository.save(item);
         }
-        return errorOfItem;
+        return "Recover success";
     }
 
     @Override
     @Transactional
-    public List<String> deleteItem(List<String> ids) {
-        List<String> listOfNotFoundIds = new ArrayList<>();
-        for (String id: ids){
-            try {
-                itemRepository.deleteById(id);
-            }catch (NullPointerException e){
-                listOfNotFoundIds.add("id" + id + "not found");
+    public String deleteItem(List<String> ids) throws RuntimeException {
+        for (String id : ids) {
+            Item item = this.getItem(id);
+            if (assignmentService.getAssignmentCountByItemIdAndStatus(item.getId(), "Pending") > 0)
+                throw new ItemStillHaveAssignmentException();
+            else {
+                itemRepository.deleteById(item.getId());
             }
         }
-        return listOfNotFoundIds;
+        return "Delete Success";
     }
 
     @Override
-    public String uploadFile(MultipartFile file, String itemSku) {
+    @Transactional
+    public String uploadFile(MultipartFile file, String itemId) throws RuntimeException {
+        logger.info("uploading value image!");
+        Item item;
+        item = this.getItem(itemId);
+        logger.info(item.getName());
         Calendar cal = Calendar.getInstance();
-        File createdDir = new File("C:\\Users\\olive\\Desktop\\bim-back-end\\resources\\" +
-                cal.get(cal.YEAR) + "\\" + cal.get(cal.MONTH) + "\\" + itemSku);
-        File convertFile = new File(createdDir.getAbsolutePath() + "\\" +
+        logger.info("month : " + (cal.get(cal.MONTH) + 1));
+        File createdDir = new File("/Users/karnandohuang/Documents/Projects/blibli-inventory-system/bim-back-end/resources/" +
+                cal.get(cal.YEAR) + "/" + (cal.get(cal.MONTH) + 1) + "/" + itemId);
+        File convertFile = new File(createdDir.getAbsolutePath() + "/" +
                 file.getOriginalFilename());
         try {
-//            if(!convertFile.exists())
-            convertFile.getParentFile().mkdirs();
-//            else
-//                convertFile.createNewFile();
+            if (!convertFile.exists())
+                createdDir.mkdirs();
+            else
+                convertFile.createNewFile();
         } catch (Exception e) {
-            //throw custom exception;
             e.printStackTrace();
         }
         FileOutputStream fout = null;
@@ -127,11 +190,95 @@ public class ItemServiceImpl implements ItemService {
         }
 
         try {
-            fout.write(file.getBytes());
+            try {
+                fout.write(file.getBytes());
+            } catch (NullPointerException e) {
+                throw new ImageNotFoundException(file.getOriginalFilename());
+            }
             fout.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return convertFile.getAbsolutePath();
+        logger.info("setting up image url in value! image url : " + convertFile.getAbsolutePath());
+        item.setAssignmentList(null);
+        item.setImageUrl(convertFile.getAbsolutePath());
+        logger.info("saving value!");
+        this.saveItem(item);
+        return "Upload image success";
+    }
+
+    @Override
+    public byte[] getItemImage(String path) {
+        if (!validator.validateImageUrlExist(path))
+            throw new ImagePathWrongException();
+        else {
+            File file = new File(path);
+            try {
+                return Files.readAllBytes(file.toPath());
+            } catch (IOException e) {
+                logger.info("error getting image from path : " + path);
+                return new byte[0];
+            }
+        }
+    }
+
+    @Override
+    public ByteArrayInputStream getPdf(Item item) throws DocumentException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        Document document = new Document(PageSize.LETTER);
+        PdfWriter writer = PdfWriter.getInstance(document, byteArrayOutputStream);
+        document.open();
+
+        //insert header
+        Calendar cal = Calendar.getInstance();
+        Header event = new Header();
+        writer.setPageEvent(event);
+        event.setHeader(new Phrase(String.format("Blibli Inventory Manager")));
+//        event.setHeader(new Phrase(String.format("" + cal.getTime())));
+
+        //insert text
+        Font titleFont = FontFactory.getFont(FontFactory.HELVETICA, 20, Font.BOLD);
+        Font chapterFont = FontFactory.getFont(FontFactory.HELVETICA, 14, Font.BOLD);
+        Font paragraphFont = FontFactory.getFont(FontFactory.HELVETICA, 12, Font.NORMAL);
+//        Chunk chunk = new Chunk(value.getName(), chapterFont);
+        Chapter chapter = new Chapter("", 1);
+        chapter.setNumberDepth(0);
+
+        Paragraph bim = new Paragraph("Blibli Inventory Manager", paragraphFont);
+        bim.setAlignment(Element.ALIGN_RIGHT);
+
+        Paragraph date = new Paragraph("Generated at : " + cal.getTime(), paragraphFont);
+        date.setAlignment(Element.ALIGN_RIGHT);
+
+        Paragraph pageTitle = new Paragraph("Item Information", titleFont);
+        pageTitle.setAlignment(Element.ALIGN_CENTER);
+        chapter.add(pageTitle);
+        chapter.add(new Paragraph(" "));
+        chapter.add(bim);
+        chapter.add(date);
+
+        chapter.add(new Paragraph(" "));
+        chapter.add(new Paragraph("Name : " + item.getName(), chapterFont));
+        chapter.add(new Paragraph("ID : " + item.getId(), paragraphFont));
+        chapter.add(new Paragraph("Price : " + Integer.toString(item.getPrice()), paragraphFont));
+        chapter.add(new Paragraph("Quantity : " + Integer.toString(item.getQty()), paragraphFont));
+        chapter.add(new Paragraph("Location : " + item.getLocation(), paragraphFont));
+
+        if(!item.getImageUrl().equals("null")){
+            String imageUrl = item.getImageUrl();
+            Image image;
+            try {
+                image = Image.getInstance(imageUrl);
+                image.scaleToFit(250, 250);
+                chapter.add(image);
+
+            } catch (IOException e) {
+                throw new ImageNotFoundException(imageUrl);
+            }
+        }
+
+        document.add(chapter);
+        document.close();
+        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
     }
 }
